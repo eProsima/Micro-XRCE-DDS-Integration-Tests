@@ -21,8 +21,10 @@ macro(find_eprosima_package package)
                 if(next_is_option)
                     set(next_is_option FALSE)
                     list(APPEND LIST_OF_OPTIONS "-D${arg}=ON")
-                elseif("${arg}" STREQUAL "OPTION")
+                elseif(${arg} STREQUAL "OPTION")
                     set(next_is_option TRUE)
+                elseif(DEFINED ${arg})
+                    list(APPEND LIST_OF_OPTIONS "-D${arg}=${${arg}}")
                 endif()
             endforeach()
 
@@ -51,24 +53,31 @@ macro(find_eprosima_package package)
                 "\${CMAKE_INSTALL_PREFIX_}"
                 "\${CMAKE_PREFIX_PATH_}"
                 )
-            list(APPEND ${package}_CMAKE_ARGS LIST_SEPARATOR "|")
 
+            if(UPDATE_SUBMODULES)
+                set(UPDATE_COMMAND "cd \"${PROJECT_SOURCE_DIR}\" && git submodule update --remote --recursive --init \"${package}\"")
+            else()
+                set(UPDATE_COMMAND "")
+            endif()
+
+            list(APPEND ${package}_CMAKE_ARGS LIST_SEPARATOR "|")
             file(MAKE_DIRECTORY ${${package}ExternalDir})
             file(WRITE ${${package}ExternalDir}/CMakeLists.txt
                 "cmake_minimum_required(VERSION 2.8.12)\n"
                 "include(ExternalProject)\n"
-                "set(SOURCE_DIR_ \"${PROJECT_SOURCE_DIR}/thirdparty/${package}\")\n"
+                "set(SOURCE_DIR_ \"${PROJECT_SOURCE_DIR}/${package}\")\n"
                 "set(GENERATOR_ -G \"${CMAKE_GENERATOR}\")\n"
                 "set(CMAKE_INSTALL_PREFIX_ \"-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX_}\")\n"
-                "set(CMAKE_PREFIX_PATH_ -DCMAKE_PREFIX_PATH=\"${CMAKE_PREFIX_PATH_}\")\n"
+                "set(CMAKE_PREFIX_PATH_ \"-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH_}\")\n"
                 "ExternalProject_Add(${package}\n"
                 "CONFIGURE_COMMAND \"${CMAKE_COMMAND}\"\n"
                 "${${package}_CMAKE_ARGS}\n"
                 "DOWNLOAD_COMMAND \"\"\n"
-                "UPDATE_COMMAND cd \"${PROJECT_SOURCE_DIR}\" && git submodule update --remote --recursive --init \"thirdparty/${package}\"\n"
+                "UPDATE_COMMAND ${UPDATE_COMMAND}\n"
                 "SOURCE_DIR \${SOURCE_DIR_}\n"
                 "BINARY_DIR \"${${package}ExternalDir}/build\"\n"
                 ")\n")
+
 
             if(NOT "$ENV{CMAKE_MAKEFLAGS}" STREQUAL "")
                 set(ENV{MAKEFLAGS} "$ENV{CMAKE_MAKEFLAGS}")
