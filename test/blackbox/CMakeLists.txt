@@ -1,0 +1,53 @@
+###############################################################################
+#
+# Copyright 2017 Proyectos y Sistemas de Mantenimiento SL (eProsima).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+###############################################################################
+
+if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
+    find_package(PythonInterp 3)
+    
+    ###############################################################################
+    # Unit tests
+    ###############################################################################
+    set(BLACKBOXTESTS_SOURCE FirstTest.cpp)
+    add_executable(first_test ${BLACKBOXTESTS_SOURCE})
+    add_gtest(first_test ${BLACKBOXTESTS_SOURCE})
+    target_include_directories(first_test PRIVATE ${GTEST_INCLUDE_DIRS})
+    target_link_libraries(first_test ${GTEST_BOTH_LIBRARIES})
+    
+    
+    set(BASIC_UDP_SEND_SRC BasicUdpSendTest.c)
+    add_executable(send_test ${BASIC_UDP_SEND_SRC})
+    target_link_libraries(send_test transport)
+
+    set(BASIC_UDP_RECV_SRC BasicUdpRecvTest.c)
+    add_executable(recv_test ${BASIC_UDP_RECV_SRC})
+    target_link_libraries(recv_test transport)
+    if(PYTHONINTERP_FOUND)
+        add_test(NAME basic_udp_test
+            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/udp_basic_test.py)
+
+        set_property(TEST basic_udp_test PROPERTY ENVIRONMENT
+            "BASIC_UDP_SENDER_BIN=$<TARGET_FILE:send_test>")
+        set_property(TEST basic_udp_test APPEND PROPERTY ENVIRONMENT
+            "BASIC_UDP_RECEIVER_BIN=$<TARGET_FILE:recv_test>")
+        if(WIN32)
+            string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
+            set_property(TEST basic_udp_test APPEND PROPERTY ENVIRONMENT
+                "PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>\\;$<TARGET_FILE_DIR:transport>\\;${WIN_PATH}")
+        endif()
+    endif()
+endif()
