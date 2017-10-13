@@ -30,20 +30,20 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     
     
     set(BASIC_UDP_SEND_SRC BasicUdpSendTest.c)
-    add_executable(send_test ${BASIC_UDP_SEND_SRC})
-    target_link_libraries(send_test transport)
+    add_executable(udp_send_test ${BASIC_UDP_SEND_SRC})
+    target_link_libraries(udp_send_test transport)
 
     set(BASIC_UDP_RECV_SRC BasicUdpRecvTest.c)
-    add_executable(recv_test ${BASIC_UDP_RECV_SRC})
-    target_link_libraries(recv_test transport)
+    add_executable(udp_recv_test ${BASIC_UDP_RECV_SRC})
+    target_link_libraries(udp_recv_test transport)
     if(PYTHONINTERP_FOUND)
         add_test(NAME basic_udp_test
             COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/udp_basic_test.py)
 
         set_property(TEST basic_udp_test PROPERTY ENVIRONMENT
-            "BASIC_UDP_SENDER_BIN=$<TARGET_FILE:send_test>")
+            "BASIC_UDP_SENDER_BIN=$<TARGET_FILE:udp_send_test>")
         set_property(TEST basic_udp_test APPEND PROPERTY ENVIRONMENT
-            "BASIC_UDP_RECEIVER_BIN=$<TARGET_FILE:recv_test>")
+            "BASIC_UDP_RECEIVER_BIN=$<TARGET_FILE:udp_recv_test>")
         if(WIN32)
             string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
             set_property(TEST basic_udp_test APPEND PROPERTY ENVIRONMENT

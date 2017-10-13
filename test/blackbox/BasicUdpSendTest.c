@@ -17,13 +17,14 @@ int main(int argc, char *argv[])
 
     locator_id_t loc_id = add_udp_locator(2020, 2019);
 
-    int loops = 1000;
+    int loops = 10;
     while (loops--)
     {
         ++buffer[18];
         if (0 < (len = send_data(buffer, strlen("Mensaje_del_sender_") + 1, loc_id)))
         {
             printf("<< '%s'\n", buffer);
+            break;
         }
         else
         {

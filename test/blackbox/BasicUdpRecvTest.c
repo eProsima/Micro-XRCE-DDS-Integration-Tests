@@ -6,7 +6,6 @@
 
 #include <transport/ddsxrce_transport.h>
 
-
 int main(int argc, char *argv[])
 {
     printf("\nAt the very beginning everything was black\n\n");
@@ -22,6 +21,7 @@ int main(int argc, char *argv[])
         if (0 < (len = receive_data(buffer, sizeof(buffer), loc_id)))
         {
             printf(">> '%s'\n", buffer);
+            return 0;
         }
         else
         {
@@ -30,5 +30,5 @@ int main(int argc, char *argv[])
     }
 
     printf("exiting...\n");
-    return 0;
+    return -1;
 }

@@ -19,12 +19,12 @@ assert udp_sender_command
 udp_receiver_command = os.environ.get("BASIC_UDP_RECEIVER_BIN")
 assert udp_receiver_command
 
-sender_proc = subprocess.Popen([udp_sender_command])
 receiver_proc = subprocess.Popen([udp_receiver_command])
+sender_proc = subprocess.Popen([udp_sender_command])
 
-sender_proc.communicate()
+receiver_proc.communicate()
 retvalue = receiver_proc.returncode
 
-sender_proc.kill()
+#sender_proc.kill()
 
 sys.exit(retvalue)
