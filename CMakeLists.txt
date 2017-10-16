@@ -30,6 +30,10 @@ endif()
 
 project(micrortps_itest)
 
+set(AGENT_DIR ${PROJECT_SOURCE_DIR}/agent CACHE PATH "Directory for agent submodule")
+set(CLIENT_DIR ${PROJECT_SOURCE_DIR}/client CACHE PATH "Directory for client submodule")
+set(FASTRTPS_INSTALL_DIR ${CMAKE_PREFIX_PATH} CACHE PATH "Directory for fastrtps alternative install path")
+
 ###############################################################################
 # eProsima build options
 ###############################################################################
@@ -80,8 +84,8 @@ endif()
 
 
 if(THIRDPARTY)
-    add_subdirectory(agent)
-    add_subdirectory(client)
+    add_subdirectory(${AGENT_DIR})
+    add_subdirectory(${CLIENT_DIR})
 endif()
 
 ###############################################################################

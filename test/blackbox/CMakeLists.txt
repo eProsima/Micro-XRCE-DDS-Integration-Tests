@@ -20,7 +20,7 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     find_package(PythonInterp 3)
     
     ###############################################################################
-    # Unit tests
+    # blackbox
     ###############################################################################
     set(BLACKBOXTESTS_SOURCE FirstTest.cpp)
     add_executable(first_test ${BLACKBOXTESTS_SOURCE})
@@ -50,4 +50,5 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
                 "PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>\\;$<TARGET_FILE_DIR:transport>\\;${WIN_PATH}")
         endif()
     endif()
+
 endif()
