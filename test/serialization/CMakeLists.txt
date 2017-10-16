@@ -27,6 +27,7 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     set(X_SER_DES_SRC CrossSerDesTest.cpp
                       ${CLIENT_DIR}/src/c/serialization.c
                       ${CLIENT_DIR}/src/c/message.c
+                      ${CLIENT_DIR}/src/c/debug/message_debugger.c
                       ${CLIENT_DIR}/src/c/mini_cdr.c
                       ${CLIENT_DIR}/src/c/memory_cache.c
                       ${AGENT_DIR}/src/cpp/ObjectVariant.cpp
@@ -37,15 +38,15 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
                       ${AGENT_DIR}/src/cpp/Payloads.cpp
                       ${AGENT_DIR}/src/cpp/XRCEParser.cpp
                       )
-    add_executable(x_ser_des_test ${X_SER_DES_SRC})
-    add_gtest(x_ser_des_test ${X_SER_DES_SRC})
+    add_executable(cross_serialization_test ${X_SER_DES_SRC})
+    add_gtest(cross_serialization_test ${X_SER_DES_SRC})
     
-    target_include_directories(x_ser_des_test PRIVATE ${GTEST_INCLUDE_DIRS}
+    target_include_directories(cross_serialization_test PRIVATE ${GTEST_INCLUDE_DIRS}
                                                       ${CLIENT_DIR}/include
                                                       ${AGENT_DIR}/include
                                                       ${FASTRTPS_INSTALL_DIR}/include
                                                       )
-    target_link_libraries(x_ser_des_test ${GTEST_BOTH_LIBRARIES} fastcdr)
+    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES} fastcdr)
 
 
 endif()
