@@ -1,17 +1,15 @@
 #include <gtest/gtest.h>
 
-#include "agent/MessageHeader.h"
-#include "agent/SubMessageHeader.h"
-#include "agent/Payloads.h"
-#include "agent/XRCEParser.h"
-#include "micrortps/client/xrce_spec.h"
-#include <micrortps/client/message.h>
-#include <micrortps/client/serialization.h>
-#include <micrortps/client/debug/message_debugger.h>
+#include "MessageHeader.h"
+#include "SubMessageHeader.h"
+#include "Payloads.h"
+#include "XRCEParser.h"
+#include <micrortps/client/output_message.h>
+#include <micrortps/client/xrce_protocol_spec.h>
 
 #define BUFFER_SIZE 256
 
-using namespace eprosima::micrortps;
+using namespace eprosima;
 
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
@@ -42,48 +40,61 @@ int main(int args, char** argv)
     return RUN_ALL_TESTS();
 }
 
-int init_message_header(MessageHeaderSpec* header, void* data)
-{
-    header->client_key = 0xF1F2F3F4;
-    header->session_id = 0x01;
-    header->stream_id = 0x04;
-    header->sequence_number = 0x0200;
+typedef micrortps::MessageHeader agent_header;
+typedef MessageHeader            client_header;
+typedef micrortps::SubmessageHeader     agent_subheader;
+typedef SubmessageHeader client_subheader;
+typedef micrortps::CREATE_Payload       agent_create_payload;
+typedef CreateResourcePayload    client_create_payload;
+typedef micrortps::WRITE_DATA_Payload   agent_write_payload;
+typedef WriteDataPayload client_write_payload;
+typedef micrortps::READ_DATA_Payload    agent_read_payload;
+typedef ReadDataPayload  client_read_payload;
+typedef micrortps::DELETE_RESOURCE_Payload       agent_delete_payload;
+typedef DeleteResourcePayload    client_delete_payload;
 
-    return 1;
-}
-
-typedef MessageHeader        agent_header;
-typedef MessageHeaderSpec    client_header;
-typedef SubmessageHeader     agent_subheader;
-typedef SubmessageHeaderSpec client_subheader;
-typedef CREATE_PAYLOAD       agent_create_payload;
-typedef CreatePayloadSpec    client_create_payload;
-typedef WRITE_DATA_PAYLOAD   agent_write_payload;
-typedef WriteDataPayloadSpec client_write_payload;
-typedef READ_DATA_PAYLOAD    agent_read_payload;
-typedef ReadDataPayloadSpec  client_read_payload;
-typedef DELETE_PAYLOAD       agent_delete_payload;
-typedef DeletePayloadSpec    client_delete_payload;
-
+ClientKey client_key = {0xF1, 0xF2, 0xF3, 0xF4};
 
 client_header client_header_var = {
-        .client_key = 0xF1F2F3F4,
-        .session_id = 0x01,
+        .session_id = 0xFF,
         .stream_id = 0x04,
-        .sequence_number = 0x0200,
+        .sequence_nr = 0x0200,
 };
 
-client_subheader client_subheader_var = {
-        .id = 0x00,
-        .flags = 0x00,
-        .length = 0x0000,
-};
-
+client_subheader      client_subheader_var = {};
 client_create_payload client_create_payload_var = {};
-client_write_payload client_write_payload_var = {};
-client_read_payload client_read_payload_var = {};
+client_write_payload  client_write_payload_var = {};
+client_read_payload   client_read_payload_var = {};
 client_delete_payload client_delete_payload_var = {};
 
+
+char client_name[] = "Roy Batty";
+uint8_t client_write_data[] = "Tengo unos datos magnificos";
+
+void on_initialize_message(client_header* header, ClientKey* key, void* vstate)
+{
+    *header = client_header_var;
+    *key = client_key;
+}
+
+void on_initialize_submessage(client_subheader* header, void* vstate)
+{
+    client_subheader_var = *header;
+}
+
+/*RequestId& set_request_id(RequestId& r_id, const uint16_t val)
+{
+    r_id.data[0] = (0xFF & (val >>  0));
+    r_id.data[1] = (0xFF & (val >>  8));
+    return r_id;
+}
+
+ObjectId& set_object_id(ObjectId& o_id, const uint16_t val)
+{
+    o_id.data[0] = (0xFF & (val >>  0));
+    o_id.data[1] = (0xFF & (val >>  8));
+    return o_id;
+}*/
 
 bool operator==(const std::array<uint8_t, 2>& left, const uint16_t right)
 {
@@ -96,14 +107,14 @@ bool operator==(const uint16_t left, const std::array<uint8_t, 2>& right)
     return right == left;
 }
 
-bool operator==(const std::array<uint8_t, 3>& left, const uint_least24_t right)
+bool operator==(const std::array<uint8_t, 3>& left, const uint32_t right)
 {
     return ((left[0] == (0xFF & (right >>  0))) &&
             (left[1] == (0xFF & (right >>  8))) &&
             (left[2] == (0xFF & (right >> 16))));
 }
 
-bool operator==(const uint_least24_t left, const std::array<uint8_t, 3>& right)
+bool operator==(const uint32_t left, const std::array<uint8_t, 3>& right)
 {
     return right == left;
 }
@@ -114,6 +125,14 @@ bool operator==(const std::array<uint8_t, 4>& left, const uint32_t& right)
             (left[1] == (0xFF & (right >>  8))) &&
             (left[2] == (0xFF & (right >> 16))) &&
             (left[3] == (0xFF & (right >> 24))));
+}
+
+bool operator==(const micrortps::ClientKey& left, const ClientKey& right)
+{
+    return ((left[0] == right.data[0]) &&
+            (left[1] == right.data[1]) &&
+            (left[2] == right.data[2]) &&
+            (left[3] == right.data[3]));
 }
 
 bool operator==(const uint32_t& left, const std::array<uint8_t, 4>& right)
@@ -146,107 +165,57 @@ public:
     public:
         Client(uint8_t* buffer)
         {
-            callback.on_initialize_message = init_message_header;
-            callback.on_message_header = print_message_header;
-            callback.on_submessage_header = print_submessage_header;
-            callback.on_create_resource = print_create_submessage;
-            callback.on_delete_resource = print_delete_submessage;
-            callback.on_status = print_status_submessage;
-            callback.on_write_data = print_write_data_submessage;
-            callback.on_read_data = print_read_data_submessage;
-            callback.on_data = print_data_submessage;
-            callback.data = NULL;
-            init_message_manager(&message_manager, buffer, BUFFER_SIZE, buffer, BUFFER_SIZE, callback);
+            output_callback.object = nullptr; // +V+ User data
+            output_callback.on_initialize_message = on_initialize_message;
+            output_callback.on_initialize_submessage = on_initialize_submessage;
+            init_output_message(&output_message, output_callback, buffer, BUFFER_SIZE);
         }
 
         virtual ~Client()
         {
-            destroy_message_manager(&message_manager);
         }
 
         bool fill_client_create_payload(client_create_payload& payload)
         {
-            payload.request_id = 0xAABBCCDD;
-            payload.object_id = 0x778899;
-            payload.object.kind = OBJECT_KIND_DATA_WRITER;
-
-            // TODO: string
-            //char string[] = "Hello world";
-            //payload.object.string = string;
-            //payload.object.string_size = strlen(string) + 1;
-
-            switch(payload.object.kind)
-            {
-                case OBJECT_KIND_DATA_WRITER:
-                    payload.object.variant.data_writer.participant_id = 0xAAAAAA;
-                    payload.object.variant.data_writer.publisher_id = 0xBBBBBB;
-                break;
-
-                case OBJECT_KIND_DATA_READER:
-                    payload.object.variant.data_reader.participant_id = 0xCCCCCC;
-                    payload.object.variant.data_reader.subscriber_id = 0xDDDDDD;
-                break;
-
-                case OBJECT_KIND_SUBSCRIBER:
-                    payload.object.variant.subscriber.participant_id = 0xEEEEEE;
-                break;
-
-                case OBJECT_KIND_PUBLISHER:
-                    payload.object.variant.publisher.participant_id = 0xFFFFFF;
-                break;
-            }
+            payload.request.base.request_id = 0xAABB;
+            payload.request.object_id = 0x7799;
+            payload.representation.kind = OBJK_PARTICIPANT;
+            payload.representation._.participant.base2.format = REPRESENTATION_BY_REFERENCE;
+            payload.representation._.participant.base2._.object_name.data = client_name;
+            payload.representation._.participant.base2._.object_name.size = sizeof(client_name);
 
             return true;
         }
 
         bool fill_client_write_payload(client_write_payload& payload)
         {
-            uint8_t* data = new uint8_t[5];
-            for (uint8_t i = 0; i < 5; ++i) data[i] = i + 1;
-
-            payload.request_id = 0xAABBCCDD;
-            payload.object_id = 0x778899;
-            payload.data_writer.read_mode = READ_MODE_SAMPLE;
-
-            SampleKindSpec* kind = &payload.data_writer.sample_kind;
-            switch(payload.data_writer.read_mode)
-            {
-                case READ_MODE_DATA:
-                    kind->data.serialized_data = data;
-                    kind->data.serialized_data_size = 5;
-                break;
-
-                case READ_MODE_SAMPLE:
-                    kind->sample.info.state = 0x01;
-                    kind->sample.info.sequence_number = 0x01234567;
-                    kind->sample.info.session_time_offset = 0xAAAABBBB;
-                    kind->sample.data.serialized_data = data;
-                    kind->sample.data.serialized_data_size = 5;
-                break;
-            }
+            payload.request.base.request_id = 0xBBCC;
+            payload.request.object_id = 0x7889;
+            payload.data_to_write.format = FORMAT_SAMPLE;
+            payload.data_to_write._.sample.info.state = 0x11223344;
+            payload.data_to_write._.sample.info.sequence_number = 0x22334455;
+            payload.data_to_write._.sample.info.session_time_offset = 0x33445566;
+            payload.data_to_write._.sample.data.data = client_write_data;
+            payload.data_to_write._.sample.data.size = sizeof(client_write_data);
             return true;
         }
 
         bool fill_client_read_payload(client_read_payload& payload)
         {
-            //char expresion[] = "EXPRESION";
-
-            payload.request_id = 0x11223344;
-            payload.object_id = 0x778899;
-            payload.max_messages = 12345;
-            payload.read_mode = 0x02;
-            payload.max_elapsed_time = 987654321;
-            payload.max_rate = 123123123;
-            //payload.content_filter_expression = expresion;
-            //payload.expression_size = strlen(expresion) + 1;
-            payload.max_samples = 55555;
-            payload.include_sample_info = 1;
+            payload.request.base.request_id = 0xCCDD;
+            payload.request.object_id = 0x8899;
+            payload.read_specification.delivery_config.max_elapsed_time = 987654321;
+            payload.read_specification.delivery_config.max_rate = 123123123;
+            payload.read_specification.delivery_config.max_samples = 12345;
+            //payload.read_specification.content_filter_expression;
+            payload.read_specification.optional_content_filter_expression = false;
+            payload.read_specification.optional_delivery_config = FORMAT_SAMPLE;
             return true;
         }
 
 
-        MessageCallback callback = {};
-        MessageManager message_manager = {};
+        OutputMessageCallback output_callback = {};
+        OutputMessage output_message;
     };
 
     class Agent
@@ -258,10 +227,10 @@ public:
 
         virtual ~Agent(){}
 
-        class Listener : public XRCEListener
+        class Listener : public micrortps::XRCEListener
         {
         public:
-            void on_message(const MessageHeader& header, const SubmessageHeader& sub_header, const CREATE_PAYLOAD& create_payload) override
+            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::CREATE_Payload& create_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
                                  check_submessage_header(sub_header, client_subheader_var) &&
@@ -269,7 +238,7 @@ public:
                 if (content_match) ++msg_counter;
             }
 
-            void on_message(const MessageHeader& header, const SubmessageHeader& sub_header, const DELETE_PAYLOAD& delete_payload) override
+            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::DELETE_RESOURCE_Payload& delete_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
                                  check_submessage_header(sub_header, client_subheader_var) &&
@@ -277,7 +246,7 @@ public:
                 if (content_match) ++msg_counter;
             }
 
-            void on_message(const MessageHeader& header, const SubmessageHeader& sub_header, const WRITE_DATA_PAYLOAD&  write_payload) override
+            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::WRITE_DATA_Payload&  write_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
                                  check_submessage_header(sub_header, client_subheader_var) &&
@@ -285,7 +254,7 @@ public:
                 if (content_match) ++msg_counter;
             }
 
-            void on_message(const MessageHeader& header, const SubmessageHeader& sub_header, const READ_DATA_PAYLOAD&   read_payload) override
+            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::READ_DATA_Payload&   read_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
                                  check_submessage_header(sub_header, client_subheader_var) &&
@@ -303,10 +272,18 @@ public:
 
     static bool check_message_header(const agent_header& a_header,const client_header& c_header)
     {
-        return (EVALUATE(a_header.client_key(),  c_header.client_key) &&
-                EVALUATE(a_header.session_id(),  c_header.session_id) &&
+        bool res = true;
+        if (c_header.session_id > 127)
+        {
+            res = EVALUATE(a_header.client_key(),  client_key);
+        }
+
+        EXPECT_EQ(a_header.sequence_nr(), c_header.sequence_nr);
+
+        return res &&
+               (EVALUATE(a_header.session_id(),  c_header.session_id) &&
                 EVALUATE(a_header.stream_id(),   c_header.stream_id)  &&
-                EVALUATE(a_header.sequence_nr(), c_header.sequence_number));
+                EVALUATE(a_header.sequence_nr(), c_header.sequence_nr));
     }
 
     static bool check_submessage_header(const agent_subheader& a_subheader,const client_subheader& c_subheader)
@@ -318,14 +295,11 @@ public:
 
     static bool check_create_payload(const agent_create_payload& a_payload, const client_create_payload& c_payload)
     {
-        bool res = (EVALUATE(a_payload.request_id(),                            c_payload.request_id) &&
-                    EVALUATE(a_payload.object_id(),                             c_payload.object_id)  &&
-                    EVALUATE(a_payload.object_representation().discriminator(), c_payload.object.kind));
+        bool res = (EVALUATE(a_payload.request_id(),                 c_payload.request.base.request_id) &&
+                    EVALUATE(a_payload.object_id(),                  c_payload.request.object_id)  &&
+                    EVALUATE(a_payload.object_representation()._d(), c_payload.representation.kind));
 
-
-        // TODO: compare payload.object.string
-
-        switch (a_payload.object_representation().discriminator())
+        switch (a_payload.object_representation()._d())
         {
             case OBJK_PARTICIPANT:
                 // TODO
@@ -338,67 +312,90 @@ public:
             case OBJK_DATAWRITER:
             {
                 res = res && (EVALUATE(a_payload.object_representation().data_writer().participant_id(),
-                                       c_payload.object.variant.data_writer.participant_id)
+                                       c_payload.representation._.data_writer.participant_id)
                               &&
                               EVALUATE(a_payload.object_representation().data_writer().publisher_id(),
-                                       c_payload.object.variant.data_writer.publisher_id));
+                                       c_payload.representation._.data_writer.publisher_id)
+                              &&
+                              EVALUATE(a_payload.object_representation().data_writer().representation()._d(),
+                                       c_payload.representation._.data_writer.base3.format)
+                              );
+
+                const micrortps::OBJK_Representation3Formats& a_rep = a_payload.object_representation().data_writer().representation();
+                const OBJK_Representation3_Base& c_rep = c_payload.representation._.data_writer.base3;
+
+                switch (a_rep._d())
+                {
+                    case REPRESENTATION_BY_REFERENCE:
+                    {
+                        res = res && EVALUATE(a_rep.object_reference().size(), (uint32_t)c_rep._.object_name.size)
+                                  && EVALUATE(a_rep.object_reference(), c_rep._.object_name.data);
+
+                    }
+                    break;
+                    case REPRESENTATION_AS_XML_STRING:
+                    {
+                        res = res && EVALUATE(a_rep.xml_string_representation().size(), (uint32_t)c_rep._.string_representation.size)
+                                  && EVALUATE(a_rep.xml_string_representation(), c_rep._.string_representation.data);
+                    }
+                    break;
+                    case REPRESENTATION_IN_BINARY:
+                    {
+                        res = res && EVALUATE(a_rep.binary_representation().size(), (uint32_t)c_rep._.binary_representation.size)
+                                  && EVALUATE(are_the_same(a_rep.binary_representation(),
+                                                           c_rep._.binary_representation.data,
+                                                           (uint32_t)c_rep._.binary_representation.size),
+                                              true);
+                    }
+                    break;
+                }
+
             }
             break;
             case OBJK_DATAREADER:
             {
-                res = res && (EVALUATE(a_payload.object_representation().data_reader().participant_id(),
+                /*res = res && (EVALUATE(a_payload.object_representation().data_reader().participant_id(),
                                        c_payload.object.variant.data_reader.participant_id)
                               &&
                               EVALUATE(a_payload.object_representation().data_reader().subscriber_id(),
-                                       c_payload.object.variant.data_reader.subscriber_id));
+                                       c_payload.object.variant.data_reader.subscriber_id));*/
             }
             break;
             case OBJK_SUBSCRIBER:
             {
-                res = res && EVALUATE(a_payload.object_representation().subscriber().participant_id(),
-                                      c_payload.object.variant.subscriber.participant_id);
+                /*res = res && EVALUATE(a_payload.object_representation().subscriber().participant_id(),
+                                      c_payload.object.variant.subscriber.participant_id);*/
             }
             break;
             case OBJK_PUBLISHER:
             {
-                res = res && EVALUATE(a_payload.object_representation().publisher().participant_id(),
-                                      c_payload.object.variant.publisher.participant_id);
+                /*res = res && EVALUATE(a_payload.object_representation().publisher().participant_id(),
+                                      c_payload.object.variant.publisher.participant_id);*/
             }
             break;
             case OBJK_TYPE:
+            {
                 // TODO
                 // OBJK_TYPE_Representation type_;
+            }
             break;
             case OBJK_QOSPROFILE:
+            {
                 // TODO
                 // OBJK_QOSPROFILE_Representation qos_profile_;
+            }
             break;
             case OBJK_APPLICATION:
+            {
                 // TODO
                 // OBJK_APPLICATION_Representation application_;
-            break;
-            case OBJK_CLIENT:
-            {
-                res = res && (EVALUATE(a_payload.object_representation().client().xrce_cookie(),
-                                       c_payload.object.variant.client.xrce_cookie)
-                              &&
-                              EVALUATE(a_payload.object_representation().client().xrce_version(),
-                                       c_payload.object.variant.client.xrce_version)
-                              &&
-                              EVALUATE(a_payload.object_representation().client().xrce_vendor_id(),
-                                       c_payload.object.variant.client.xrce_vendor_id)
-                              &&
-                              EVALUATE(a_payload.object_representation().client().client_timestamp().seconds(),
-                                       c_payload.object.variant.client.timestamp.seconds)
-                              &&
-                              EVALUATE(a_payload.object_representation().client().client_timestamp().nanoseconds(),
-                                       c_payload.object.variant.client.timestamp.nanoseconds));
-
             }
             break;
             case OBJK_INVALID:
             default:
+            {
                 res = false;
+            }
             break;
         }
 
@@ -408,45 +405,45 @@ public:
 
     static bool check_write_payload(const agent_write_payload& a_payload, const client_write_payload& c_payload)
     {
-        bool res = (EVALUATE(a_payload.request_id(), c_payload.request_id) &&
-                    EVALUATE(a_payload.object_id(),  c_payload.object_id)  &&
-                    EVALUATE(a_payload.data_writer()._d(), c_payload.data_writer.read_mode));
+        bool res = (EVALUATE(a_payload.request_id(),         c_payload.request.base.request_id) &&
+                    EVALUATE(a_payload.object_id(),          c_payload.request.object_id)  &&
+                    EVALUATE(a_payload.data_to_write()._d(), c_payload.data_to_write.format));
 
-        switch (a_payload.data_writer()._d())
+        switch (a_payload.data_to_write()._d())
         {
-            case READM_DATA:
+            case FORMAT_DATA:
             {
-                res = res && are_the_same(a_payload.data_writer().data().serialized_data(),
-                                          c_payload.data_writer.sample_kind.data.serialized_data,
-                                          c_payload.data_writer.sample_kind.data.serialized_data_size);
+                res = res && EVALUATE(are_the_same(a_payload.data_to_write().data().serialized_data(),
+                                                   c_payload.data_to_write._.data.data,
+                                                   c_payload.data_to_write._.data.size), true);
 
             }
             break;
-            case READM_DATA_SEQ:
+            case FORMAT_DATA_SEQ:
                 // TODO
                 // SampleDataSeq data_seq_;
             break;
-            case READM_SAMPLE:
+            case FORMAT_SAMPLE:
             {
-                res = res && (EVALUATE(a_payload.data_writer().sample().info().state(),
-                                       c_payload.data_writer.sample_kind.sample.info.state)
+                res = res && (EVALUATE(a_payload.data_to_write().sample().info().state(),
+                                       c_payload.data_to_write._.sample.info.state)
                               &&
-                              EVALUATE(a_payload.data_writer().sample().info().sequence_number(),
-                                       c_payload.data_writer.sample_kind.sample.info.sequence_number)
+                              EVALUATE(a_payload.data_to_write().sample().info().sequence_number(),
+                                       c_payload.data_to_write._.sample.info.sequence_number)
                               &&
-                              EVALUATE(a_payload.data_writer().sample().info().session_time_offset(),
-                                       c_payload.data_writer.sample_kind.sample.info.session_time_offset)
+                              EVALUATE(a_payload.data_to_write().sample().info().session_time_offset(),
+                                       c_payload.data_to_write._.sample.info.session_time_offset)
                               &&
-                              are_the_same(a_payload.data_writer().sample().data().serialized_data(),
-                                           c_payload.data_writer.sample_kind.sample.data.serialized_data,
-                                           c_payload.data_writer.sample_kind.sample.data.serialized_data_size));
+                              EVALUATE(are_the_same(a_payload.data_to_write().sample().data().serialized_data(),
+                                                    c_payload.data_to_write._.sample.data.data,
+                                                    c_payload.data_to_write._.sample.data.size), true));
             }
             break;
-            case READM_SAMPLE_SEQ:
+            case FORMAT_SAMPLE_SEQ:
                 // TODO
                 // SampleSeq sample_seq_;
             break;
-            case READM_PACKED_SAMPLE_SEQ:
+            case FORMAT_PACKED_SAMPLES:
                 // TODO
                 // SamplePackedSeq sample_packed_seq_;
             break;
@@ -460,22 +457,39 @@ public:
 
     static bool check_read_payload(const agent_read_payload& a_payload, const client_read_payload& c_payload)
     {
-        bool res = (EVALUATE(a_payload.request_id(),          c_payload.request_id) &&
-                    EVALUATE(a_payload.object_id(),           c_payload.object_id)  &&
-                    EVALUATE(a_payload.max_messages(),        c_payload.max_messages)  &&
-                    EVALUATE(a_payload.read_mode(),           c_payload.read_mode)  &&
-                    EVALUATE(a_payload.max_elapsed_time(),    c_payload.max_elapsed_time)  &&
-                    EVALUATE(a_payload.max_rate(),            c_payload.max_rate)  &&
-                    EVALUATE(a_payload.max_samples(),         c_payload.max_samples)  &&
-                    EVALUATE(a_payload.include_sample_info(), c_payload.include_sample_info? true: false));
+        bool res = (EVALUATE(a_payload.request_id(), c_payload.request.base.request_id)
+                    &&
+                    EVALUATE(a_payload.object_id(), c_payload.request.object_id)
+                    &&
+                    EVALUATE(a_payload.read_specification().delivery_config()._d(),
+                             (uint8_t)c_payload.read_specification.optional_delivery_config) // TODO: must be different type, now bool from uint8_t
+                    &&
+                    EVALUATE(a_payload.read_specification().delivery_config().delivery_control().max_elapsed_time(),
+                             c_payload.read_specification.delivery_config.max_elapsed_time)
+                    &&
+                    EVALUATE(a_payload.read_specification().delivery_config().delivery_control().max_rate(),
+                             c_payload.read_specification.delivery_config.max_samples)
+                    &&
+                    EVALUATE(a_payload.read_specification().delivery_config().delivery_control().max_samples(),
+                             c_payload.read_specification.delivery_config.max_samples)
+                    &&
+                    EVALUATE(a_payload.read_specification().has_content_filter_expresion(),
+                             c_payload.read_specification.optional_content_filter_expression)
+                    &&
+                    (a_payload.read_specification().has_content_filter_expresion()?
+                            EVALUATE(a_payload.read_specification().content_filter_expression().compare(
+                                                  c_payload.read_specification.content_filter_expression.data),
+                                     0)
+                            : true)
+                    );
         return res;
     }
 
     static bool check_delete_payload(const agent_delete_payload& a_payload, const client_delete_payload& c_payload)
     {
 
-        bool res = (EVALUATE(a_payload.request_id(),          c_payload.request_id) &&
-                    EVALUATE(a_payload.object_id(),           c_payload.object_id));
+        bool res = (EVALUATE(a_payload.request_id(), c_payload.request.base.request_id) &&
+                    EVALUATE(a_payload.object_id(),  c_payload.request.object_id));
         return res;
     }
 
@@ -502,17 +516,14 @@ TEST_F(CrossSerializationTests, CreateMessage)
 {
     /// CLIENT serialization
     // [CREATE] SUBMESSAGE
+    // Writing a message
     client.fill_client_create_payload(client_create_payload_var);
-    add_create_submessage(&client.message_manager, &client_create_payload_var);
-    // Set aux variable
-    client_subheader_var.id = SUBMESSAGE_CREATE;
-    client_subheader_var.flags = 0x07;
-    client_subheader_var.length = size_of_create_payload(&client_create_payload_var);
+    add_create_resource_submessage(&client.output_message, &client_create_payload_var, CREATION_MODE_REPLACE); //This function calls the OutputMessageCallbacks
 
-    uint32_t seliarized_size = client.message_manager.writer.iterator - client.message_manager.writer.data;
+    uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
 
     /// AGENT deserialization
-    XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
+    micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
     ASSERT_TRUE(myParser.parse());
     ASSERT_TRUE(agent.listener.content_match);
 
@@ -524,18 +535,14 @@ TEST_F(CrossSerializationTests, MultiCreateMessage)
     /// CLIENT serialization
     // [CREATE] SUBMESSAGE
     client.fill_client_create_payload(client_create_payload_var);
-    add_create_submessage(&client.message_manager, &client_create_payload_var);
-    add_create_submessage(&client.message_manager, &client_create_payload_var);
-    add_create_submessage(&client.message_manager, &client_create_payload_var);
-    // Set aux variable
-    client_subheader_var.id = SUBMESSAGE_CREATE;
-    client_subheader_var.flags = 0x07;
-    client_subheader_var.length = size_of_create_payload(&client_create_payload_var);
+    add_create_resource_submessage(&client.output_message, &client_create_payload_var, CREATION_MODE_REPLACE); //This function calls the OutputMessageCallbacks
+    add_create_resource_submessage(&client.output_message, &client_create_payload_var, CREATION_MODE_REPLACE); //This function calls the OutputMessageCallbacks
+    add_create_resource_submessage(&client.output_message, &client_create_payload_var, CREATION_MODE_REPLACE); //This function calls the OutputMessageCallbacks
 
-    uint32_t seliarized_size = client.message_manager.writer.iterator - client.message_manager.writer.data;
+    uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
 
     /// AGENT deserialization
-    XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
+    micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
     ASSERT_TRUE(myParser.parse());
     ASSERT_EQ(agent.listener.msg_counter, num_msg);
 }
@@ -545,16 +552,12 @@ TEST_F(CrossSerializationTests, WriteMessage)
     /// CLIENT serialization
     // [WRITE] SUBMESSAGE
     client.fill_client_write_payload(client_write_payload_var);
-    add_write_data_submessage(&client.message_manager, &client_write_payload_var);
-    // Set aux variable
-    client_subheader_var.id = SUBMESSAGE_WRITE_DATA;
-    client_subheader_var.flags = 0x07;
-    client_subheader_var.length = size_of_write_data_payload(&client_write_payload_var);
+    add_write_data_submessage(&client.output_message, &client_write_payload_var);
 
-    uint32_t seliarized_size = client.message_manager.writer.iterator - client.message_manager.writer.data;
+    uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
 
     /// AGENT deserialization
-    XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
+    micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
     ASSERT_TRUE(myParser.parse());
     ASSERT_TRUE(agent.listener.content_match);
 }
@@ -565,18 +568,14 @@ TEST_F(CrossSerializationTests, MultiWriteMessage)
     /// CLIENT serialization
     // [WRITE] SUBMESSAGE
     client.fill_client_write_payload(client_write_payload_var);
-    add_write_data_submessage(&client.message_manager, &client_write_payload_var);
-    add_write_data_submessage(&client.message_manager, &client_write_payload_var);
-    add_write_data_submessage(&client.message_manager, &client_write_payload_var);
-    // Set aux variable
-    client_subheader_var.id = SUBMESSAGE_WRITE_DATA;
-    client_subheader_var.flags = 0x07;
-    client_subheader_var.length = size_of_write_data_payload(&client_write_payload_var);
+    add_write_data_submessage(&client.output_message, &client_write_payload_var);
+    add_write_data_submessage(&client.output_message, &client_write_payload_var);
+    add_write_data_submessage(&client.output_message, &client_write_payload_var);
 
-    uint32_t seliarized_size = client.message_manager.writer.iterator - client.message_manager.writer.data;
+    uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
 
     /// AGENT deserialization
-    XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
+    micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
     ASSERT_TRUE(myParser.parse());
     ASSERT_EQ(agent.listener.msg_counter, num_msg);
 }
@@ -586,16 +585,12 @@ TEST_F(CrossSerializationTests, ReadMessage)
     /// CLIENT serialization
     // [READ] SUBMESSAGE
     client.fill_client_read_payload(client_read_payload_var);
-    add_read_data_submessage(&client.message_manager, &client_read_payload_var);
-    // Set aux variable
-    client_subheader_var.id = SUBMESSAGE_READ_DATA;
-    client_subheader_var.flags = 0x07;
-    client_subheader_var.length = size_of_read_data_payload(&client_read_payload_var);
+    add_read_data_submessage(&client.output_message, &client_read_payload_var);
 
-    uint32_t seliarized_size = client.message_manager.writer.iterator - client.message_manager.writer.data;
+    uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
 
     /// AGENT deserialization
-    XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
+    micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
     ASSERT_TRUE(myParser.parse());
     ASSERT_TRUE(agent.listener.content_match);
 }
@@ -604,20 +599,15 @@ TEST_F(CrossSerializationTests, DeleteMessage)
 {
     /// CLIENT serialization
     // [DELETE] SUBMESSAGE
-    client_delete_payload_var.request_id = 0x12345678;
-    client_delete_payload_var.object_id = 0xABCDEF;
+    client_delete_payload_var.request.base.request_id = 0x12345678;
+    client_delete_payload_var.request.object_id = 0xABCDEF;
 
-    add_delete_submessage(&client.message_manager,  &client_delete_payload_var);
+    add_delete_resource_submessage(&client.output_message,  &client_delete_payload_var);
 
-    // Set aux variable
-    client_subheader_var.id = SUBMESSAGE_DELETE;
-    client_subheader_var.flags = 0x07;
-    client_subheader_var.length = size_of_delete_payload(&client_delete_payload_var);
-
-    uint32_t seliarized_size = client.message_manager.writer.iterator - client.message_manager.writer.data;
+    uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
 
     /// AGENT deserialization
-    XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
+    micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
     ASSERT_TRUE(myParser.parse());
     ASSERT_TRUE(agent.listener.content_match);
 }

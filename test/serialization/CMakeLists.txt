@@ -25,17 +25,17 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     ###############################################################################
     
     set(X_SER_DES_SRC CrossSerDesTest.cpp
-                      ${CLIENT_DIR}/src/c/serialization.c
-                      ${CLIENT_DIR}/src/c/message.c
-                      ${CLIENT_DIR}/src/c/debug/message_debugger.c
-                      ${CLIENT_DIR}/src/c/mini_cdr.c
-                      ${CLIENT_DIR}/src/c/memory_cache.c
-                      ${AGENT_DIR}/src/cpp/ObjectVariant.cpp
+                      ${CLIENT_DIR}/src/c/xrce_protocol_serialization.c
+                      ${CLIENT_DIR}/src/c/input_message.c
+                      ${CLIENT_DIR}/src/c/output_message.c
+                      ${CLIENT_DIR}/src/c/log/message.c
+                      ${CLIENT_DIR}/src/c/aux_memory.c
+                      ${AGENT_DIR}/src/cpp/DDSXRCETypes.cxx
+                      ${AGENT_DIR}/src/cpp/MessageHeader.cxx
+                      ${AGENT_DIR}/src/cpp/Payloads.cxx
                       ${AGENT_DIR}/src/cpp/Serializer.cpp
+                      ${AGENT_DIR}/src/cpp/SubMessageHeader.cxx
                       ${AGENT_DIR}/src/cpp/XRCEFactory.cpp
-                      ${AGENT_DIR}/src/cpp/MessageHeader.cpp
-                      ${AGENT_DIR}/src/cpp/SubMessageHeader.cpp
-                      ${AGENT_DIR}/src/cpp/Payloads.cpp
                       ${AGENT_DIR}/src/cpp/XRCEParser.cpp
                       )
     add_executable(cross_serialization_test ${X_SER_DES_SRC})
@@ -43,10 +43,15 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     
     target_include_directories(cross_serialization_test PRIVATE ${GTEST_INCLUDE_DIRS}
                                                       ${CLIENT_DIR}/include
+                                                      ${CLIENT_DIR}/include/micrortps/client
+                                                      ${CLIENT_DIR}/thirdparty/micro-CDR/include
+                                                      ${CLIENT_DIR}/thirdparty/micro-CDR/include/microcdr
+                                                      ${PROJECT_BINARY_DIR}/external/install/include/microcdr
                                                       ${AGENT_DIR}/include
-                                                      ${FASTRTPS_INSTALL_DIR}/include
-                                                      )
-    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES} fastcdr)
+                                                      ${AGENT_DIR}/include/agent
+                                                      ${AGENT_DIR}/src/cpp
+                                                      ${FASTRTPS_INSTALL_DIR}/include)
+    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES} microcdr fastcdr)
 
 
 endif()
