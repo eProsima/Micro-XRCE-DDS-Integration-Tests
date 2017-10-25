@@ -1,58 +1,36 @@
-#include <gtest/gtest.h>
+/****************************************************************************
+ *
+ * Copyright 2017 Proyectos y Sistemas de Mantenimiento SL (eProsima).
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ * may be used to endorse or promote products derived from this software without
+ * specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ****************************************************************************/
 
-#include "MessageHeader.h"
-#include "SubMessageHeader.h"
-#include "Payloads.h"
-#include "XRCEParser.h"
-#include <log/message.h>
-#include <micrortps/client/output_message.h>
-#include <micrortps/client/xrce_protocol_spec.h>
-
-#define BUFFER_SIZE 256
-
-using namespace eprosima;
-
-#define RESET   "\033[0m"
-#define BLACK   "\033[30m"      /* Black */
-#define RED     "\033[31m"      /* Red */
-#define GREEN   "\033[32m"      /* Green */
-#define BROWN   "\033[33m"      /* Brown */
-#define YELLOW  "\033[1;33m"      /* Yellow */
-#define BLUE    "\033[34m"      /* Blue */
-#define MAGENTA "\033[35m"      /* Magenta */
-#define CYAN    "\033[36m"      /* Cyan */
-#define WHITE   "\033[37m"      /* White */
-#define BOLDBLACK   "\033[1m\033[30m"      /* Bold Black */
-#define BOLDRED     "\033[1m\033[31m"      /* Bold Red */
-#define BOLDGREEN   "\033[1m\033[32m"      /* Bold Green */
-#define BOLDYELLOW  "\033[1m\033[33m"      /* Bold Yellow */
-#define BOLDBLUE    "\033[1m\033[34m"      /* Bold Blue */
-#define BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
-#define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
-#define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
-
-#define RESET   "\033[0m"
-
-#define EVALUATE(exp, val) ((exp == val)? true: (printf(RED "line %d: %s != %s\n" RESET, __LINE__, #exp, #val), false))
-
-int main(int args, char** argv)
-{
-    ::testing::InitGoogleTest(&args, argv);
-    return RUN_ALL_TESTS();
-}
-
-typedef micrortps::MessageHeader agent_header;
-typedef MessageHeader            client_header;
-typedef micrortps::SubmessageHeader     agent_subheader;
-typedef SubmessageHeader client_subheader;
-typedef micrortps::CREATE_Payload       agent_create_payload;
-typedef CreateResourcePayload    client_create_payload;
-typedef micrortps::WRITE_DATA_Payload   agent_write_payload;
-typedef WriteDataPayload client_write_payload;
-typedef micrortps::READ_DATA_Payload    agent_read_payload;
-typedef ReadDataPayload  client_read_payload;
-typedef micrortps::DELETE_RESOURCE_Payload       agent_delete_payload;
-typedef DeleteResourcePayload    client_delete_payload;
+#include "TestCommon.h"
 
 ClientKey client_key = {0xF1, 0xF2, 0xF3, 0xF4};
 
@@ -69,7 +47,6 @@ client_write_payload  client_write_payload_var = {};
 client_read_payload   client_read_payload_var = {};
 client_delete_payload client_delete_payload_var = {};
 
-
 char client_name[] = "Roy Batty";
 uint8_t client_write_data[] = "Tengo unos datos magnificos";
 
@@ -79,75 +56,12 @@ void on_initialize_message(client_header* header, ClientKey* key, void* vstate)
     *key = client_key;
 }
 
-//void (*on_submessage_header)(const SubmessageHeader* header, void* callback_object);
 void on_initialize_submessage(const client_subheader* header, void* vstate)
 {
     client_subheader_var[submsg_idx++] = *header;
 }
 
-bool operator==(const micrortps::OBJECTKIND& left, const uint8_t right)
-{
-    return left == static_cast<micrortps::OBJECTKIND>(right);
-}
-
-bool operator==(const uint8_t left, const micrortps::OBJECTKIND& right)
-{
-    return right == left;
-}
-
-bool operator==(const std::array<uint8_t, 2>& left, const uint16_t right)
-{
-    return ((left[0] == (0xFF & (right >>  0))) &&
-            (left[1] == (0xFF & (right >>  8))));
-}
-
-bool operator==(const uint16_t left, const std::array<uint8_t, 2>& right)
-{
-    return right == left;
-}
-
-bool operator==(const std::array<uint8_t, 3>& left, const uint32_t right)
-{
-    return ((left[0] == (0xFF & (right >>  0))) &&
-            (left[1] == (0xFF & (right >>  8))) &&
-            (left[2] == (0xFF & (right >> 16))));
-}
-
-bool operator==(const uint32_t left, const std::array<uint8_t, 3>& right)
-{
-    return right == left;
-}
-
-bool operator==(const std::array<uint8_t, 4>& left, const uint32_t& right)
-{
-    return ((left[0] == (0xFF & (right >>  0))) &&
-            (left[1] == (0xFF & (right >>  8))) &&
-            (left[2] == (0xFF & (right >> 16))) &&
-            (left[3] == (0xFF & (right >> 24))));
-}
-
-bool operator==(const micrortps::ClientKey& left, const ClientKey& right)
-{
-    return ((left[0] == right.data[0]) &&
-            (left[1] == right.data[1]) &&
-            (left[2] == right.data[2]) &&
-            (left[3] == right.data[3]));
-}
-
-bool operator==(const uint32_t& left, const std::array<uint8_t, 4>& right)
-{
-    return right == left;
-}
-
-
-bool are_the_same(const std::vector<uint8_t>& _vector, const uint8_t* _array, const uint32_t& array_length)
-{
-    return array_length == _vector.size() &&
-           std::equal(_vector.begin(), _vector.end(), _array, [](const uint8_t& a, const uint8_t& b){return a == b;});
-}
-
-
-class CrossSerializationTests : public testing::Test
+class ClientToAgent_CrossSerializationTests : public testing::Test
 {
 public:
 
@@ -163,6 +77,7 @@ public:
     class Client
     {
     public:
+
         Client(uint8_t* buffer)
         {
             output_callback.object = nullptr; // +V+ User data
@@ -222,6 +137,7 @@ public:
     class Agent
     {
     public:
+
         Agent()
         {
         }
@@ -512,11 +428,11 @@ public:
     }
 
 protected:
-    CrossSerializationTests(): client((uint8_t*)test_buffer)
+    ClientToAgent_CrossSerializationTests(): client((uint8_t*)test_buffer)
     {
     }
 
-    virtual ~CrossSerializationTests()
+    virtual ~ClientToAgent_CrossSerializationTests()
     {
     }
 
@@ -530,7 +446,7 @@ protected:
 /* ############################################## TESTS ##################################################### */
 
 
-TEST_F(CrossSerializationTests, CreateMessage)
+TEST_F(ClientToAgent_CrossSerializationTests, CreateMessage)
 {
     /// CLIENT serialization
     // [CREATE] SUBMESSAGE
@@ -550,7 +466,7 @@ TEST_F(CrossSerializationTests, CreateMessage)
 
 }
 
-TEST_F(CrossSerializationTests, MultiCreateMessage)
+TEST_F(ClientToAgent_CrossSerializationTests, MultiCreateMessage)
 {
     const int num_msg = 3;
     /// CLIENT serialization
@@ -570,7 +486,7 @@ TEST_F(CrossSerializationTests, MultiCreateMessage)
     ASSERT_EQ(agent.listener.msg_counter, num_msg);
 }
 
-TEST_F(CrossSerializationTests, WriteMessage)
+TEST_F(ClientToAgent_CrossSerializationTests, WriteMessage)
 {
     /// CLIENT serialization
     // [WRITE] SUBMESSAGE
@@ -587,7 +503,7 @@ TEST_F(CrossSerializationTests, WriteMessage)
     ASSERT_TRUE(agent.listener.content_match);
 }
 
-TEST_F(CrossSerializationTests, MultiWriteMessage)
+TEST_F(ClientToAgent_CrossSerializationTests, MultiWriteMessage)
 {
     const int num_msg = 3;
     /// CLIENT serialization
@@ -607,7 +523,7 @@ TEST_F(CrossSerializationTests, MultiWriteMessage)
     ASSERT_EQ(agent.listener.msg_counter, num_msg);
 }
 
-TEST_F(CrossSerializationTests, ReadMessage)
+TEST_F(ClientToAgent_CrossSerializationTests, ReadMessage)
 {
     /// CLIENT serialization
     // [READ] SUBMESSAGE
@@ -624,12 +540,12 @@ TEST_F(CrossSerializationTests, ReadMessage)
     ASSERT_TRUE(agent.listener.content_match);
 }
 
-TEST_F(CrossSerializationTests, DeleteMessage)
+TEST_F(ClientToAgent_CrossSerializationTests, DeleteMessage)
 {
     /// CLIENT serialization
     // [DELETE] SUBMESSAGE
-    client_delete_payload_var.request.base.request_id = 0x12345678;
-    client_delete_payload_var.request.object_id = 0xABCDEF;
+    client_delete_payload_var.request.base.request_id = 0x1234;
+    client_delete_payload_var.request.object_id = 0xABCD;
 
     add_delete_resource_submessage(&client.output_message,  &client_delete_payload_var);
 
@@ -642,3 +558,38 @@ TEST_F(CrossSerializationTests, DeleteMessage)
     ASSERT_TRUE(myParser.parse());
     ASSERT_TRUE(agent.listener.content_match);
 }
+
+/*TEST_F(ClientToAgent_CrossSerializationTests, StatusMessage)
+{
+    micrortps::XRCEFactory newMessage{test_buffer_, BUFFER_LENGTH};
+
+    MessageHeader message_header = generate_message_header();
+    newMessage.header(message_header);
+    micrortps::RESOURCE_STATUS_Payload resource_status = generate_resource_status_payload(STATUS_LAST_OP_NONE, STATUS_OK);
+    newMessage.status(resource_status);
+    SubmessageHeader submessage_header =
+        generate_submessage_header(STATUS, static_cast<uint16_t>(resource_status.getCdrSerializedSize()));
+
+    micrortps::MessageHeader deserialized_header;
+    micrortps::SubmessageHeader deserialized_submessage_header;
+    micrortps::RESOURCE_STATUS_Payload deserialized_status;
+    deserializer_.deserialize(deserialized_header);
+    deserializer_.deserialize(deserialized_submessage_header);
+    deserializer_.deserialize(deserialized_status);
+
+    ASSERT_EQ(client_key, deserialized_header.client_key());
+    ASSERT_EQ(session_id, deserialized_header.session_id());
+    ASSERT_EQ(stream_id, deserialized_header.stream_id());
+    ASSERT_EQ(sequence_nr, deserialized_header.sequence_nr());
+
+    ASSERT_EQ(submessage_header.submessage_id(), deserialized_submessage_header.submessage_id());
+    ASSERT_EQ(submessage_header.flags(), deserialized_submessage_header.flags());
+    ASSERT_EQ(submessage_header.submessage_length(), deserialized_submessage_header.submessage_length());
+
+    ASSERT_EQ(resource_status.object_id(), deserialized_status.object_id());
+    ASSERT_EQ(resource_status.request_id(), deserialized_status.request_id());
+    ASSERT_EQ(resource_status.result().status(), deserialized_status.result().status());
+    ASSERT_EQ(resource_status.result().implementation_status(), deserialized_status.result().implementation_status());
+
+}*/
+

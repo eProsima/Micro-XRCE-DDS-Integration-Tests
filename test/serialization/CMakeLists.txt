@@ -25,6 +25,7 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     ###############################################################################
     
     set(X_SER_DES_SRC CrossSerDesTest.cpp
+                      TestCommon.cpp
                       ${CLIENT_DIR}/src/c/xrce_protocol_serialization.c
                       ${CLIENT_DIR}/src/c/input_message.c
                       ${CLIENT_DIR}/src/c/output_message.c
