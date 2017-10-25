@@ -44,6 +44,7 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     target_include_directories(cross_serialization_test PRIVATE ${GTEST_INCLUDE_DIRS}
                                                       ${CLIENT_DIR}/include
                                                       ${CLIENT_DIR}/include/micrortps/client
+                                                      ${CLIENT_DIR}/src/c
                                                       ${CLIENT_DIR}/thirdparty/micro-CDR/include
                                                       ${CLIENT_DIR}/thirdparty/micro-CDR/include/microcdr
                                                       ${PROJECT_BINARY_DIR}/external/install/include/microcdr

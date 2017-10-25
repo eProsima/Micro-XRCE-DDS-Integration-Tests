@@ -34,6 +34,11 @@ set(AGENT_DIR ${PROJECT_SOURCE_DIR}/agent CACHE PATH "Directory for agent submod
 set(CLIENT_DIR ${PROJECT_SOURCE_DIR}/client CACHE PATH "Directory for client submodule")
 set(FASTRTPS_INSTALL_DIR ${CMAKE_PREFIX_PATH} CACHE PATH "Directory for fastrtps alternative install path")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSERIALIZATION_LOGS")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMESSAGE_LOGS")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSERIALIZATION_LOGS")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMESSAGE_LOGS")
+
 ###############################################################################
 # eProsima build options
 ###############################################################################

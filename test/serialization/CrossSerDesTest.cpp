@@ -4,6 +4,7 @@
 #include "SubMessageHeader.h"
 #include "Payloads.h"
 #include "XRCEParser.h"
+#include <log/message.h>
 #include <micrortps/client/output_message.h>
 #include <micrortps/client/xrce_protocol_spec.h>
 
@@ -61,7 +62,8 @@ client_header client_header_var = {
         .sequence_nr = 0x0200,
 };
 
-client_subheader      client_subheader_var = {};
+int submsg_idx = 0;
+client_subheader      client_subheader_var[16] = {};
 client_create_payload client_create_payload_var = {};
 client_write_payload  client_write_payload_var = {};
 client_read_payload   client_read_payload_var = {};
@@ -77,24 +79,21 @@ void on_initialize_message(client_header* header, ClientKey* key, void* vstate)
     *key = client_key;
 }
 
-void on_initialize_submessage(client_subheader* header, void* vstate)
+//void (*on_submessage_header)(const SubmessageHeader* header, void* callback_object);
+void on_initialize_submessage(const client_subheader* header, void* vstate)
 {
-    client_subheader_var = *header;
+    client_subheader_var[submsg_idx++] = *header;
 }
 
-/*RequestId& set_request_id(RequestId& r_id, const uint16_t val)
+bool operator==(const micrortps::OBJECTKIND& left, const uint8_t right)
 {
-    r_id.data[0] = (0xFF & (val >>  0));
-    r_id.data[1] = (0xFF & (val >>  8));
-    return r_id;
+    return left == static_cast<micrortps::OBJECTKIND>(right);
 }
 
-ObjectId& set_object_id(ObjectId& o_id, const uint16_t val)
+bool operator==(const uint8_t left, const micrortps::OBJECTKIND& right)
 {
-    o_id.data[0] = (0xFF & (val >>  0));
-    o_id.data[1] = (0xFF & (val >>  8));
-    return o_id;
-}*/
+    return right == left;
+}
 
 bool operator==(const std::array<uint8_t, 2>& left, const uint16_t right)
 {
@@ -154,6 +153,7 @@ public:
 
     virtual void SetUp()
     {
+        submsg_idx = 0;
     }
 
     virtual void TearDown()
@@ -167,8 +167,9 @@ public:
         {
             output_callback.object = nullptr; // +V+ User data
             output_callback.on_initialize_message = on_initialize_message;
-            output_callback.on_initialize_submessage = on_initialize_submessage;
+            output_callback.on_submessage_header = on_initialize_submessage;
             init_output_message(&output_message, output_callback, buffer, BUFFER_SIZE);
+            output_message.writer.endianness = LITTLE_ENDIANNESS;
         }
 
         virtual ~Client()
@@ -209,7 +210,7 @@ public:
             payload.read_specification.delivery_config.max_samples = 12345;
             //payload.read_specification.content_filter_expression;
             payload.read_specification.optional_content_filter_expression = false;
-            payload.read_specification.optional_delivery_config = FORMAT_SAMPLE;
+            payload.read_specification.optional_delivery_config = FORMAT_DATA;
             return true;
         }
 
@@ -233,7 +234,7 @@ public:
             void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::CREATE_Payload& create_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
-                                 check_submessage_header(sub_header, client_subheader_var) &&
+                                 check_submessage_header(sub_header, client_subheader_var[msg_counter]) &&
                                  check_create_payload(create_payload, client_create_payload_var));
                 if (content_match) ++msg_counter;
             }
@@ -241,7 +242,7 @@ public:
             void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::DELETE_RESOURCE_Payload& delete_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
-                                 check_submessage_header(sub_header, client_subheader_var) &&
+                                 check_submessage_header(sub_header, client_subheader_var[msg_counter]) &&
                                  check_delete_payload(delete_payload, client_delete_payload_var));
                 if (content_match) ++msg_counter;
             }
@@ -249,7 +250,7 @@ public:
             void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::WRITE_DATA_Payload&  write_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
-                                 check_submessage_header(sub_header, client_subheader_var) &&
+                                 check_submessage_header(sub_header, client_subheader_var[msg_counter]) &&
                                  check_write_payload(write_payload, client_write_payload_var));
                 if (content_match) ++msg_counter;
             }
@@ -257,7 +258,7 @@ public:
             void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::READ_DATA_Payload&   read_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
-                                 check_submessage_header(sub_header, client_subheader_var) &&
+                                 check_submessage_header(sub_header, client_subheader_var[msg_counter]) &&
                                  check_read_payload(read_payload, client_read_payload_var));
                 if (content_match) ++msg_counter;
             }
@@ -288,6 +289,7 @@ public:
 
     static bool check_submessage_header(const agent_subheader& a_subheader,const client_subheader& c_subheader)
     {
+        EXPECT_EQ(a_subheader.submessage_length(), c_subheader.length);
         return (EVALUATE(a_subheader.submessage_id(),     c_subheader.id)    &&
                 EVALUATE(a_subheader.flags(),             c_subheader.flags) &&
                 EVALUATE(a_subheader.submessage_length(), c_subheader.length));
@@ -295,11 +297,14 @@ public:
 
     static bool check_create_payload(const agent_create_payload& a_payload, const client_create_payload& c_payload)
     {
+        //uint16_t uint = (0xFF00 & (a_payload.object_id()[1] << 8)) | (0x00FF & a_payload.object_id()[0]);
+        //printf("cliente %u, agente %u %hhu %hhu\n", c_payload.request.object_id, uint, a_payload.object_id()[1], a_payload.object_id()[0]);
+
         bool res = (EVALUATE(a_payload.request_id(),                 c_payload.request.base.request_id) &&
                     EVALUATE(a_payload.object_id(),                  c_payload.request.object_id)  &&
                     EVALUATE(a_payload.object_representation()._d(), c_payload.representation.kind));
 
-        switch (a_payload.object_representation()._d())
+        switch (c_payload.representation.kind)
         {
             case OBJK_PARTICIPANT:
                 // TODO
@@ -462,26 +467,39 @@ public:
                     EVALUATE(a_payload.object_id(), c_payload.request.object_id)
                     &&
                     EVALUATE(a_payload.read_specification().delivery_config()._d(),
-                             (uint8_t)c_payload.read_specification.optional_delivery_config) // TODO: must be different type, now bool from uint8_t
-                    &&
-                    EVALUATE(a_payload.read_specification().delivery_config().delivery_control().max_elapsed_time(),
-                             c_payload.read_specification.delivery_config.max_elapsed_time)
-                    &&
-                    EVALUATE(a_payload.read_specification().delivery_config().delivery_control().max_rate(),
-                             c_payload.read_specification.delivery_config.max_samples)
-                    &&
-                    EVALUATE(a_payload.read_specification().delivery_config().delivery_control().max_samples(),
-                             c_payload.read_specification.delivery_config.max_samples)
-                    &&
-                    EVALUATE(a_payload.read_specification().has_content_filter_expresion(),
-                             c_payload.read_specification.optional_content_filter_expression)
-                    &&
-                    (a_payload.read_specification().has_content_filter_expresion()?
-                            EVALUATE(a_payload.read_specification().content_filter_expression().compare(
-                                                  c_payload.read_specification.content_filter_expression.data),
-                                     0)
-                            : true)
+                             (uint8_t)c_payload.read_specification.optional_delivery_config)
                     );
+
+        switch(a_payload.read_specification().delivery_config()._d())
+        {
+            case FORMAT_DATA_SEQ:
+            case FORMAT_SAMPLE_SEQ:
+            case FORMAT_PACKED_SAMPLES:
+            {
+                res = res &&
+                        EVALUATE(a_payload.read_specification().delivery_config().delivery_control().max_elapsed_time(),
+                                 c_payload.read_specification.delivery_config.max_elapsed_time)
+                        &&
+                        EVALUATE(a_payload.read_specification().delivery_config().delivery_control().max_rate(),
+                                 c_payload.read_specification.delivery_config.max_samples)
+                        &&
+                        EVALUATE(a_payload.read_specification().delivery_config().delivery_control().max_samples(),
+                                 c_payload.read_specification.delivery_config.max_samples)
+                        &&
+                        EVALUATE(a_payload.read_specification().has_content_filter_expresion(),
+                                 c_payload.read_specification.optional_content_filter_expression)
+                        &&
+                        (a_payload.read_specification().has_content_filter_expresion()?
+                                EVALUATE(a_payload.read_specification().content_filter_expression().compare(
+                                                      c_payload.read_specification.content_filter_expression.data),
+                                         0)
+                                : true);
+            }
+            break;
+            default:
+            break;
+        }
+
         return res;
     }
 
@@ -518,9 +536,12 @@ TEST_F(CrossSerializationTests, CreateMessage)
     // [CREATE] SUBMESSAGE
     // Writing a message
     client.fill_client_create_payload(client_create_payload_var);
-    add_create_resource_submessage(&client.output_message, &client_create_payload_var, CREATION_MODE_REPLACE); //This function calls the OutputMessageCallbacks
+    client_create_payload payload = client_create_payload_var;
+    add_create_resource_submessage(&client.output_message, &payload, CREATION_MODE_REPLACE); //This function calls the OutputMessageCallbacks
 
     uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
+
+    PRINTL_SERIALIZATION("", client.output_message.writer.init, seliarized_size);
 
     /// AGENT deserialization
     micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
@@ -541,6 +562,8 @@ TEST_F(CrossSerializationTests, MultiCreateMessage)
 
     uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
 
+    PRINTL_SERIALIZATION("", client.output_message.writer.init, seliarized_size);
+
     /// AGENT deserialization
     micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
     ASSERT_TRUE(myParser.parse());
@@ -555,6 +578,8 @@ TEST_F(CrossSerializationTests, WriteMessage)
     add_write_data_submessage(&client.output_message, &client_write_payload_var);
 
     uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
+
+    PRINTL_SERIALIZATION("", client.output_message.writer.init, seliarized_size);
 
     /// AGENT deserialization
     micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
@@ -574,6 +599,8 @@ TEST_F(CrossSerializationTests, MultiWriteMessage)
 
     uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
 
+    PRINTL_SERIALIZATION("", client.output_message.writer.init, seliarized_size);
+
     /// AGENT deserialization
     micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
     ASSERT_TRUE(myParser.parse());
@@ -588,6 +615,8 @@ TEST_F(CrossSerializationTests, ReadMessage)
     add_read_data_submessage(&client.output_message, &client_read_payload_var);
 
     uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
+
+    PRINTL_SERIALIZATION("", client.output_message.writer.init, seliarized_size);
 
     /// AGENT deserialization
     micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
@@ -605,6 +634,8 @@ TEST_F(CrossSerializationTests, DeleteMessage)
     add_delete_resource_submessage(&client.output_message,  &client_delete_payload_var);
 
     uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
+
+    PRINTL_SERIALIZATION("", client.output_message.writer.init, seliarized_size);
 
     /// AGENT deserialization
     micrortps::XRCEParser myParser{(char*)test_buffer, seliarized_size, &agent.listener};
