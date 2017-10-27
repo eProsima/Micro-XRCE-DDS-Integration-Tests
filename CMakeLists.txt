@@ -49,7 +49,7 @@ option(EPROSIMA_BUILD "Activate internal building" OFF)
 ###############################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/dev/eprosima_libraries.cmake)
 option(THIRDPARTY "Activate the build of thirdparties" OFF)
-option(UPDATE_SUBMODULES "Update to the latest" ON)
+option(UPDATE_SUBMODULES "Update to the latest" OFF)
 
 if(EPROSIMA_BUILD)
     set(THIRDPARTY ON)
@@ -88,10 +88,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG OR
 endif()
 
 
-if(THIRDPARTY)
-    add_subdirectory(${AGENT_DIR})
-    add_subdirectory(${CLIENT_DIR})
-endif()
+add_subdirectory(${AGENT_DIR})
+add_subdirectory(${CLIENT_DIR})
 
 ###############################################################################
 # Warning level
