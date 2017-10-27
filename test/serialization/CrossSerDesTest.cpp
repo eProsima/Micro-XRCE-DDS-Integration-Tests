@@ -31,37 +31,14 @@
  ****************************************************************************/
 
 #include "TestCommon.h"
+#include <agent/XRCEFactory.h>
+#include <micrortps/client/output_message.h>
+#include <micrortps/client/input_message.h>
 
-ClientKey client_key = {0xF1, 0xF2, 0xF3, 0xF4};
+    static char client_name[] = {"Roy Batty"};
+    uint8_t client_write_data[] = {"Tengo unos datos magnificos"};
 
-client_header client_header_var = {
-        .session_id = 0xFF,
-        .stream_id = 0x04,
-        .sequence_nr = 0x0200,
-};
-
-int submsg_idx = 0;
-client_subheader      client_subheader_var[16] = {};
-client_create_payload client_create_payload_var = {};
-client_write_payload  client_write_payload_var = {};
-client_read_payload   client_read_payload_var = {};
-client_delete_payload client_delete_payload_var = {};
-
-char client_name[] = "Roy Batty";
-uint8_t client_write_data[] = "Tengo unos datos magnificos";
-
-void on_initialize_message(client_header* header, ClientKey* key, void* vstate)
-{
-    *header = client_header_var;
-    *key = client_key;
-}
-
-void on_initialize_submessage(const client_subheader* header, void* vstate)
-{
-    client_subheader_var[submsg_idx++] = *header;
-}
-
-class ClientToAgent_CrossSerializationTests : public testing::Test
+class CrossSerializationTests : public testing::Test
 {
 public:
 
@@ -80,16 +57,77 @@ public:
 
         Client(uint8_t* buffer)
         {
-            output_callback.object = nullptr; // +V+ User data
+            output_callback.object = nullptr; // user data
             output_callback.on_initialize_message = on_initialize_message;
             output_callback.on_submessage_header = on_initialize_submessage;
             init_output_message(&output_message, output_callback, buffer, BUFFER_SIZE);
             output_message.writer.endianness = LITTLE_ENDIANNESS;
+
+            input_callback.object = nullptr; // user data
+            input_callback.on_message_header = on_message_header;
+            input_callback.on_submessage_header = on_submessage_header;
+            input_callback.on_status_submessage = on_status_submessage;
+            input_callback.on_info_submessage = on_info_submessage;
+            input_callback.on_data_submessage = on_data_submessage;
+            input_callback.on_data_payload = on_data_payload;
+            init_input_message(&input_message, input_callback, buffer, BUFFER_SIZE);
         }
 
         virtual ~Client()
         {
         }
+
+        static void on_initialize_message(client_header* header, ClientKey* key, void* vstate)
+        {
+            *header = client_header_var;
+            *key = client_client_key;
+        }
+
+        static void on_initialize_submessage(const client_subheader* header, void* vstate)
+        {
+            client_subheader_var[submsg_idx++] = *header;
+        }
+
+        static bool on_message_header(const client_header* header, const ClientKey* key, void* args)
+        {
+            content_match = check_message_header(agent_header_var, *header);
+            if (content_match) ++msg_counter;
+
+            return content_match;
+        }
+
+        static void on_submessage_header(const client_subheader* header, void* args)
+        {
+             content_match = check_submessage_header(agent_subheader_var, *header); // +V+ agent_subheader_var must be an array
+             if (content_match) ++msg_counter;
+        }
+
+        static void on_status_submessage(const StatusPayload* payload, void* args)
+        {
+            content_match = check_status_payload(agent_status_payload_var, *payload);
+            if (content_match) ++msg_counter;
+        }
+
+        static void on_info_submessage(const InfoPayload* payload, void* args)
+        {
+            // CHequeo
+        }
+
+        static DataFormat on_data_submessage(const BaseObjectReply* reply, void* args)
+        {
+            // Return format for a previous read data message
+            /*DataFormat previous_global_read_data_format;
+            if (reply->base.request_id == request_id_DATA)
+                return FORMAT_DATA;*/
+            return FORMAT_DATA;
+        }
+
+        static void on_data_payload(const BaseObjectReply* reply, const SampleData* data, void* args, Endianness endianness)
+        {
+            // CHequeo
+        }
+
+        // Struct initializers
 
         bool fill_client_create_payload(client_create_payload& payload)
         {
@@ -99,7 +137,6 @@ public:
             payload.representation._.participant.base2.format = REPRESENTATION_BY_REFERENCE;
             payload.representation._.participant.base2._.object_name.data = client_name;
             payload.representation._.participant.base2._.object_name.size = sizeof(client_name);
-
             return true;
         }
 
@@ -129,10 +166,16 @@ public:
             return true;
         }
 
-
         OutputMessageCallback output_callback = {};
         OutputMessage output_message;
-    };
+
+        InputMessageCallback input_callback = {};
+        InputMessage input_message;
+
+        static bool content_match;
+        static uint8_t msg_counter;
+
+    }; // Class Client
 
     class Agent
     {
@@ -185,14 +228,56 @@ public:
 
         Listener listener;
 
-    };
+        const micrortps::ClientKey agent_client_key = {{0xF1, 0xF2, 0xF3, 0xF4}};
+        const micrortps::XrceVendorId vendor_id     = {{0x00, 0x01}};
+        const micrortps::RequestId request_id       = {{1, 2}};
+        const micrortps::RequestId srequest_id      = {{0xCC, 0XDD}};
+        const micrortps::ObjectId object_id         = {{0X10, 0X20}};
+        const uint8_t session_id        = 0xFF;
+        const uint8_t stream_id         = 0x01;
+        const uint16_t sequence_nr      = 0x0001;
+        const uint8_t flags             = 0x07;
+        const uint16_t max_samples      = 0x0001;
+        const uint32_t max_elapsed_time = 0x00000001;
+        const uint32_t max_rate         = 0x00000012;
+
+        // Struct initializers
+
+        micrortps::MessageHeader generate_message_header()
+        {
+            agent_header_var.client_key(agent_client_key);
+            agent_header_var.session_id(session_id);
+            agent_header_var.stream_id(stream_id);
+            agent_header_var.sequence_nr(sequence_nr);
+            return agent_header_var;
+        }
+
+        micrortps::SubmessageHeader generate_submessage_header(const micrortps::SubmessageId& submessage_id, uint16_t length)
+        {
+            agent_subheader_var.submessage_id(submessage_id);
+            agent_subheader_var.flags(flags);
+            agent_subheader_var.submessage_length(length);
+            return agent_subheader_var;
+        }
+
+        micrortps::RESOURCE_STATUS_Payload generate_resource_status_payload(uint8_t status, uint8_t implementation_status)
+        {
+            agent_status_payload_var.object_id(object_id);
+            agent_status_payload_var.request_id(request_id);
+            agent_status_payload_var.result().request_id(srequest_id);
+            agent_status_payload_var.result().status(status);
+            agent_status_payload_var.result().implementation_status(implementation_status);
+            return agent_status_payload_var;
+        }
+
+    }; // Class agent
 
     static bool check_message_header(const agent_header& a_header,const client_header& c_header)
     {
         bool res = true;
         if (c_header.session_id > 127)
         {
-            res = EVALUATE(a_header.client_key(),  client_key);
+            res = EVALUATE(a_header.client_key(),  client_client_key);
         }
 
         EXPECT_EQ(a_header.sequence_nr(), c_header.sequence_nr);
@@ -205,10 +290,30 @@ public:
 
     static bool check_submessage_header(const agent_subheader& a_subheader,const client_subheader& c_subheader)
     {
+        EXPECT_EQ(a_subheader.submessage_id(), c_subheader.id);
+        EXPECT_EQ(a_subheader.flags(), c_subheader.flags);
         EXPECT_EQ(a_subheader.submessage_length(), c_subheader.length);
         return (EVALUATE(a_subheader.submessage_id(),     c_subheader.id)    &&
                 EVALUATE(a_subheader.flags(),             c_subheader.flags) &&
                 EVALUATE(a_subheader.submessage_length(), c_subheader.length));
+    }
+
+    static bool check_status_payload(const agent_status_payload& a_payload, const client_status_payload& c_payload)
+    {
+        /*uint16_t uint = (0xFF00 & (a_payload.object_id()[1] << 8)) | (0x00FF & a_payload.object_id()[0]);
+        printf("OBJ cliente %u, agente %u %hhu %hhu\n", c_payload.reply.object_id, uint, a_payload.object_id()[1], a_payload.object_id()[0]);
+        uint = (0xFF00 & (a_payload.request_id()[1] << 8)) | (0x00FF & a_payload.request_id()[0]);
+        printf("REQ cliente %u, agente %u %hhu %hhu\n", c_payload.reply.base.request_id, uint, a_payload.request_id()[1], a_payload.request_id()[0]);
+        uint = (0xFF00 & (a_payload.result().request_id()[1] << 8)) | (0x00FF & a_payload.result().request_id()[0]);
+        printf("REQ cliente %u, agente %u %hhu %hhu\n", c_payload.reply.base.result.request_id, uint, a_payload.result().request_id()[1], a_payload.result().request_id()[0]);
+        printf("STA cliente %u, agente %u\n", c_payload.reply.base.result.status, a_payload.result().status());
+        printf("IST cliente %u, agente %u\n", c_payload.reply.base.result.implementation_status, a_payload.result().implementation_status());
+        */
+        return (EVALUATE(a_payload.object_id(),                      c_payload.reply.object_id)              &&
+                EVALUATE(a_payload.request_id(),                     c_payload.reply.base.request_id)        &&
+                EVALUATE(a_payload.result().request_id(),            c_payload.reply.base.result.request_id) &&
+                EVALUATE(a_payload.result().status(),                c_payload.reply.base.result.status)     &&
+                EVALUATE(a_payload.result().implementation_status(), c_payload.reply.base.result.implementation_status));
     }
 
     static bool check_create_payload(const agent_create_payload& a_payload, const client_create_payload& c_payload)
@@ -323,11 +428,10 @@ public:
         return res;
     }
 
-
     static bool check_write_payload(const agent_write_payload& a_payload, const client_write_payload& c_payload)
     {
         bool res = (EVALUATE(a_payload.request_id(),         c_payload.request.base.request_id) &&
-                    EVALUATE(a_payload.object_id(),          c_payload.request.object_id)  &&
+                    EVALUATE(a_payload.object_id(),          c_payload.request.object_id)       &&
                     EVALUATE(a_payload.data_to_write()._d(), c_payload.data_to_write.format));
 
         switch (a_payload.data_to_write()._d())
@@ -428,31 +532,68 @@ public:
     }
 
 protected:
-    ClientToAgent_CrossSerializationTests(): client((uint8_t*)test_buffer)
+
+    CrossSerializationTests(): client((uint8_t*)test_buffer)
     {
     }
 
-    virtual ~ClientToAgent_CrossSerializationTests()
+    virtual ~CrossSerializationTests()
     {
     }
 
 
     Client client;
     Agent agent;
-    char test_buffer[BUFFER_SIZE];
+
+    char test_buffer[BUFFER_SIZE] = {};
+
+public:
+
+    // Aux structures to memorize pre serialized info.
+    static constexpr ClientKey client_client_key = {{0xF1, 0xF2, 0xF3, 0xF4}};
+    static constexpr client_header client_header_var = {.session_id = 0xFF,
+                                       .stream_id = 0x04,
+                                       .sequence_nr = 0x0200,};
+    static client_subheader client_subheader_var[16];
+    static client_create_payload client_create_payload_var;
+    static client_write_payload  client_write_payload_var;
+    static client_read_payload   client_read_payload_var;
+    static client_delete_payload client_delete_payload_var;
+
+    static agent_header agent_header_var;
+    static agent_subheader agent_subheader_var;
+    static agent_status_payload agent_status_payload_var;
+
+    static int submsg_idx;
+
 
 };
+
+constexpr ClientKey CrossSerializationTests::client_client_key;
+constexpr client_header CrossSerializationTests::client_header_var;
+client_subheader CrossSerializationTests::client_subheader_var[16];
+client_create_payload CrossSerializationTests::client_create_payload_var;
+client_write_payload  CrossSerializationTests::client_write_payload_var;
+client_read_payload   CrossSerializationTests::client_read_payload_var;
+client_delete_payload CrossSerializationTests::client_delete_payload_var;
+agent_header CrossSerializationTests::agent_header_var;
+agent_subheader CrossSerializationTests::agent_subheader_var;
+agent_status_payload CrossSerializationTests::agent_status_payload_var;
+int CrossSerializationTests::submsg_idx = 0;
+
+bool CrossSerializationTests::Client::content_match = false;
+uint8_t CrossSerializationTests::Client::msg_counter = 0;
 
 /* ############################################## TESTS ##################################################### */
 
 
-TEST_F(ClientToAgent_CrossSerializationTests, CreateMessage)
+TEST_F(CrossSerializationTests, CreateMessage)
 {
     /// CLIENT serialization
     // [CREATE] SUBMESSAGE
     // Writing a message
     client.fill_client_create_payload(client_create_payload_var);
-    client_create_payload payload = client_create_payload_var;
+    client_create_payload payload = CrossSerializationTests::client_create_payload_var;
     add_create_resource_submessage(&client.output_message, &payload, CREATION_MODE_REPLACE); //This function calls the OutputMessageCallbacks
 
     uint32_t seliarized_size = client.output_message.writer.iterator - client.output_message.writer.init;
@@ -466,7 +607,7 @@ TEST_F(ClientToAgent_CrossSerializationTests, CreateMessage)
 
 }
 
-TEST_F(ClientToAgent_CrossSerializationTests, MultiCreateMessage)
+TEST_F(CrossSerializationTests, MultiCreateMessage)
 {
     const int num_msg = 3;
     /// CLIENT serialization
@@ -486,7 +627,7 @@ TEST_F(ClientToAgent_CrossSerializationTests, MultiCreateMessage)
     ASSERT_EQ(agent.listener.msg_counter, num_msg);
 }
 
-TEST_F(ClientToAgent_CrossSerializationTests, WriteMessage)
+TEST_F(CrossSerializationTests, WriteMessage)
 {
     /// CLIENT serialization
     // [WRITE] SUBMESSAGE
@@ -503,7 +644,7 @@ TEST_F(ClientToAgent_CrossSerializationTests, WriteMessage)
     ASSERT_TRUE(agent.listener.content_match);
 }
 
-TEST_F(ClientToAgent_CrossSerializationTests, MultiWriteMessage)
+TEST_F(CrossSerializationTests, MultiWriteMessage)
 {
     const int num_msg = 3;
     /// CLIENT serialization
@@ -523,7 +664,7 @@ TEST_F(ClientToAgent_CrossSerializationTests, MultiWriteMessage)
     ASSERT_EQ(agent.listener.msg_counter, num_msg);
 }
 
-TEST_F(ClientToAgent_CrossSerializationTests, ReadMessage)
+TEST_F(CrossSerializationTests, ReadMessage)
 {
     /// CLIENT serialization
     // [READ] SUBMESSAGE
@@ -540,7 +681,7 @@ TEST_F(ClientToAgent_CrossSerializationTests, ReadMessage)
     ASSERT_TRUE(agent.listener.content_match);
 }
 
-TEST_F(ClientToAgent_CrossSerializationTests, DeleteMessage)
+TEST_F(CrossSerializationTests, DeleteMessage)
 {
     /// CLIENT serialization
     // [DELETE] SUBMESSAGE
@@ -559,37 +700,23 @@ TEST_F(ClientToAgent_CrossSerializationTests, DeleteMessage)
     ASSERT_TRUE(agent.listener.content_match);
 }
 
-/*TEST_F(ClientToAgent_CrossSerializationTests, StatusMessage)
+TEST_F(CrossSerializationTests, StatusMessage)
 {
-    micrortps::XRCEFactory newMessage{test_buffer_, BUFFER_LENGTH};
 
-    MessageHeader message_header = generate_message_header();
-    newMessage.header(message_header);
-    micrortps::RESOURCE_STATUS_Payload resource_status = generate_resource_status_payload(STATUS_LAST_OP_NONE, STATUS_OK);
-    newMessage.status(resource_status);
-    SubmessageHeader submessage_header =
-        generate_submessage_header(STATUS, static_cast<uint16_t>(resource_status.getCdrSerializedSize()));
+    /// AGENT serialization
+    micrortps::XRCEFactory newMessage{test_buffer, BUFFER_SIZE};
+    newMessage.header(agent.generate_message_header());
+    agent_status_payload_var = agent.generate_resource_status_payload(STATUS_LAST_OP_READ, STATUS_ERR_MISMATCH);
+    newMessage.status(agent_status_payload_var);
+    agent_subheader_var = agent.generate_submessage_header(micrortps::STATUS, static_cast<uint16_t>(agent_status_payload_var.getCdrSerializedSize()));
 
-    micrortps::MessageHeader deserialized_header;
-    micrortps::SubmessageHeader deserialized_submessage_header;
-    micrortps::RESOURCE_STATUS_Payload deserialized_status;
-    deserializer_.deserialize(deserialized_header);
-    deserializer_.deserialize(deserialized_submessage_header);
-    deserializer_.deserialize(deserialized_status);
+    uint32_t seliarized_size = newMessage.get_total_size(); // message length.
 
-    ASSERT_EQ(client_key, deserialized_header.client_key());
-    ASSERT_EQ(session_id, deserialized_header.session_id());
-    ASSERT_EQ(stream_id, deserialized_header.stream_id());
-    ASSERT_EQ(sequence_nr, deserialized_header.sequence_nr());
+    PRINTL_SERIALIZATION("", (uint8_t*)test_buffer, seliarized_size);
 
-    ASSERT_EQ(submessage_header.submessage_id(), deserialized_submessage_header.submessage_id());
-    ASSERT_EQ(submessage_header.flags(), deserialized_submessage_header.flags());
-    ASSERT_EQ(submessage_header.submessage_length(), deserialized_submessage_header.submessage_length());
+    /// CLIENT deserialization
 
-    ASSERT_EQ(resource_status.object_id(), deserialized_status.object_id());
-    ASSERT_EQ(resource_status.request_id(), deserialized_status.request_id());
-    ASSERT_EQ(resource_status.result().status(), deserialized_status.result().status());
-    ASSERT_EQ(resource_status.result().implementation_status(), deserialized_status.result().implementation_status());
-
-}*/
+    // Reading a message (the message must be in in_buffer.)
+    ASSERT_EQ(parse_message(&client.input_message, seliarized_size), 1); //This function calls the InputMessageCallbacks
+}
 

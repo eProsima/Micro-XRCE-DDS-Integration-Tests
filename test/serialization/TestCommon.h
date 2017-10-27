@@ -40,10 +40,9 @@
 #include "Payloads.h"
 #include "XRCEParser.h"
 #include <log/message.h>
-#include <micrortps/client/output_message.h>
 #include <micrortps/client/xrce_protocol_spec.h>
 
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 1024
 
 using namespace eprosima;
 
@@ -82,6 +81,8 @@ typedef micrortps::READ_DATA_Payload       agent_read_payload;
 typedef ReadDataPayload                    client_read_payload;
 typedef micrortps::DELETE_RESOURCE_Payload agent_delete_payload;
 typedef DeleteResourcePayload              client_delete_payload;
+typedef micrortps::RESOURCE_STATUS_Payload agent_status_payload;
+typedef StatusPayload                      client_status_payload;
 
 void on_initialize_message(client_header* header, ClientKey* key, void* vstate);
 void on_initialize_submessage(const client_subheader* header, void* vstate);

@@ -22,13 +22,15 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     ###############################################################################
     # blackbox
     ###############################################################################
+
+    # Hellow world test
     set(BLACKBOXTESTS_SOURCE FirstTest.cpp)
     add_executable(first_test ${BLACKBOXTESTS_SOURCE})
     add_gtest(first_test ${BLACKBOXTESTS_SOURCE})
     target_include_directories(first_test PRIVATE ${GTEST_INCLUDE_DIRS})
     target_link_libraries(first_test ${GTEST_BOTH_LIBRARIES})
-    
-    
+
+    # Basic test udp - C code
     set(BASIC_UDP_SEND_SRC BasicUdpSendTest.c)
     add_executable(udp_send_test ${BASIC_UDP_SEND_SRC})
     target_link_libraries(udp_send_test transport)
@@ -36,7 +38,26 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     set(BASIC_UDP_RECV_SRC BasicUdpRecvTest.c)
     add_executable(udp_recv_test ${BASIC_UDP_RECV_SRC})
     target_link_libraries(udp_recv_test transport)
+
+    # libdev.so
+    include_directories(${AGENT_DIR}/src/cpp/
+                        ${AGENT_DIR}/src/cpp/libdev/)
+    #file(GLOB LIBDEV_SRCS "${AGENT_DIR}/src/cpp/libdev/*.cpp")
+    #add_library(dev SHARED ${LIBDEV_SRCS})
+    #install(TARGETS dev DESTINATION ${CMAKE_SOURCE_DIR}/install)
+
+    # TestA TestB - C code
+    set(TEST_A_SRC TestA.cpp)
+    add_executable(test_a ${TEST_A_SRC})
+    target_link_libraries(test_a agent)
+
+    set(TEST_B_SRC TestB.cpp)
+    add_executable(test_b ${TEST_B_SRC})
+    target_link_libraries(test_b agent)
+
+
     if(PYTHONINTERP_FOUND)
+        # Basic test udp - python
         add_test(NAME basic_udp_test
             COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/udp_basic_test.py)
 
@@ -48,6 +69,16 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
             string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
             set_property(TEST basic_udp_test APPEND PROPERTY ENVIRONMENT
                 "PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>\\;$<TARGET_FILE_DIR:transport>\\;${WIN_PATH}")
+        endif()
+
+        # TestA TestB - python
+        add_test(NAME testA_testB COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test.py)
+        set_property(TEST testA_testB        PROPERTY ENVIRONMENT "TEST_A_BIN=$<TARGET_FILE:test_a>")
+        set_property(TEST testA_testB APPEND PROPERTY ENVIRONMENT "TEST_B_BIN=$<TARGET_FILE:test_b>")
+        if(WIN32)
+            string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
+            set_property(TEST basic_udp_test APPEND PROPERTY ENVIRONMENT
+                "PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>\\;$<TARGET_FILE_DIR:agent>\\;${WIN_PATH}")
         endif()
     endif()
 
