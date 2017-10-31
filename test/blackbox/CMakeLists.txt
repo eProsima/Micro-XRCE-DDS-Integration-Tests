@@ -16,9 +16,12 @@
 #
 ###############################################################################
 
+
 if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     find_package(PythonInterp 3)
-    
+    find_package(fastrtps REQUIRED)
+    find_package(fastcdr REQUIRED)
+
     ###############################################################################
     # blackbox
     ###############################################################################
@@ -49,12 +52,11 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     # TestA TestB - C code
     set(TEST_A_SRC TestA.cpp)
     add_executable(test_a ${TEST_A_SRC})
-    target_link_libraries(test_a agent)
+    target_link_libraries(test_a ${GTEST_BOTH_LIBRARIES} agent fastcdr fastrtps)
 
     set(TEST_B_SRC TestB.cpp)
     add_executable(test_b ${TEST_B_SRC})
-    target_link_libraries(test_b agent)
-
+    target_link_libraries(test_b ${GTEST_BOTH_LIBRARIES})
 
     if(PYTHONINTERP_FOUND)
         # Basic test udp - python
@@ -77,7 +79,21 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
         set_property(TEST testA_testB APPEND PROPERTY ENVIRONMENT "TEST_B_BIN=$<TARGET_FILE:test_b>")
         if(WIN32)
             string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
-            set_property(TEST basic_udp_test APPEND PROPERTY ENVIRONMENT
+            set_property(TEST testA_testB APPEND PROPERTY ENVIRONMENT
+                "PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>\\;$<TARGET_FILE_DIR:agent>\\;${WIN_PATH}")
+        endif()
+
+    endif()
+
+    if(PYTHONINTERP_FOUND)
+
+        # Integration - python
+        add_test(NAME integration_test COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_integration.py)
+        set_property(TEST integration_test        PROPERTY ENVIRONMENT "TEST_INTEGRATION_AGENT=$<TARGET_FILE:AgentIntegrationTest>")
+        set_property(TEST integration_test APPEND PROPERTY ENVIRONMENT "TEST_INTEGRATION_CLIENT=$<TARGET_FILE:ClientUnitTests>")
+        if(WIN32)
+            string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
+            set_property(TEST integration_test APPEND PROPERTY ENVIRONMENT
                 "PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>\\;$<TARGET_FILE_DIR:agent>\\;${WIN_PATH}")
         endif()
     endif()

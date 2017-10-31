@@ -57,13 +57,13 @@ public:
 
         Client(uint8_t* buffer)
         {
-            output_callback.object = nullptr; // user data
+            output_callback.args = nullptr; // user data
             output_callback.on_initialize_message = on_initialize_message;
             output_callback.on_submessage_header = on_initialize_submessage;
             init_output_message(&output_message, output_callback, buffer, BUFFER_SIZE);
             output_message.writer.endianness = LITTLE_ENDIANNESS;
 
-            input_callback.object = nullptr; // user data
+            input_callback.args = nullptr; // user data
             input_callback.on_message_header = on_message_header;
             input_callback.on_submessage_header = on_submessage_header;
             input_callback.on_status_submessage = on_status_submessage;
@@ -190,6 +190,12 @@ public:
         class Listener : public micrortps::XRCEListener
         {
         public:
+
+            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::CREATE_CLIENT_Payload& create_client_payload)
+            {
+
+            }
+
             void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::CREATE_Payload& create_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
