@@ -30,10 +30,6 @@ endif()
 
 project(micrortps_itest)
 
-set(AGENT_DIR ${PROJECT_SOURCE_DIR}/agent CACHE PATH "Directory for agent submodule")
-set(CLIENT_DIR ${PROJECT_SOURCE_DIR}/client CACHE PATH "Directory for client submodule")
-set(FASTRTPS_INSTALL_DIR ${CMAKE_PREFIX_PATH} CACHE PATH "Directory for fastrtps alternative install path")
-
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSERIALIZATION_LOGS")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMESSAGE_LOGS")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSERIALIZATION_LOGS")
@@ -72,8 +68,8 @@ endif()
 # Compile
 ###############################################################################
 # Find requirements
-find_eprosima_package(agent EPROSIMA_BUILD UPDATE_SUBMODULES)
-find_eprosima_package(client EPROSIMA_BUILD UPDATE_SUBMODULES)
+find_eprosima_package(agent NAME micrortps_agent)
+find_eprosima_package(client NAME micrortps-client)
 
 # Set C++11
 include(CheckCXXCompilerFlag)
