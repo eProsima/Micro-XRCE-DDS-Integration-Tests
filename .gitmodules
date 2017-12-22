@@ -4,3 +4,7 @@
 [submodule "thirdparty/agent"]
 	path = thirdparty/agent
 	url = git@git.sambaserver.eprosima.com:nanortps/micrortps_agent_dev.git
+[submodule "transport"]
+	path = thirdparty/transport
+	url = git@sambaserver.eprosima.com:nanortps/micrortps_transport.git
+	branch = develop

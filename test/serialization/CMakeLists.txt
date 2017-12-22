@@ -23,7 +23,7 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     ###############################################################################
     # serialization
     ###############################################################################
-    
+
     set(X_SER_DES_SRC CrossSerDesTest.cpp
                       TestCommon.cpp
                       ${CLIENT_DIR}/src/c/xrce_protocol_serialization.c
@@ -41,7 +41,7 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
                       )
     add_executable(cross_serialization_test ${X_SER_DES_SRC})
     add_gtest(cross_serialization_test ${X_SER_DES_SRC})
-    
+
     target_include_directories(cross_serialization_test PRIVATE ${GTEST_INCLUDE_DIRS}
                                                       ${CLIENT_DIR}/include
                                                       ${CLIENT_DIR}/include/micrortps/client
@@ -53,7 +53,9 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
                                                       ${AGENT_DIR}/include/agent
                                                       ${AGENT_DIR}/src/cpp
                                                       ${FASTRTPS_INSTALL_DIR}/include)
-    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES} microcdr fastcdr)
+
+    # TODO Check the really needed libraries.
+    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES} microcdr fastcdr client, transport)
 
 
 endif()

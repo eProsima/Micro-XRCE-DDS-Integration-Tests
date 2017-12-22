@@ -67,10 +67,6 @@ endif()
 ###############################################################################
 # Compile
 ###############################################################################
-# Find requirements
-find_eprosima_package(agent NAME micrortps_agent)
-find_eprosima_package(client NAME micrortps-client)
-
 # Set C++11
 include(CheckCXXCompilerFlag)
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG OR
@@ -82,10 +78,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG OR
         message(FATAL_ERROR "Compiler doesn't support C++11")
     endif()
 endif()
-
-
-add_subdirectory(${AGENT_DIR})
-add_subdirectory(${CLIENT_DIR})
 
 ###############################################################################
 # Warning level
@@ -102,6 +94,15 @@ if(EPROSIMA_EXTRA_CMAKE_CXX_FLAGS)
 endif()
 else()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Wno-unknown-pragmas -std=c++11")
+endif()
+
+set(AGENT_DIR ${PROJECT_SOURCE_DIR}/thirdparty/agent)
+set(CLIENT_DIR ${PROJECT_SOURCE_DIR}/thirdparty/client)
+set(TRANSPORT_DIR ${PROJECT_SOURCE_DIR}/thirdparty/transport)
+add_subdirectory(${AGENT_DIR})
+add_subdirectory(${CLIENT_DIR})
+if(NOT TARGET transport)
+  add_subdirectory(${TRANSPORT_DIR})
 endif()
 
 ###############################################################################
