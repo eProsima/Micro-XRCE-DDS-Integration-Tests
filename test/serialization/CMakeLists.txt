@@ -55,7 +55,7 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
                                                       ${FASTRTPS_INSTALL_DIR}/include)
 
     # TODO Check the really needed libraries.
-    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES} microcdr fastcdr client, transport)
+    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES} microcdr fastcdr micrortps-client transport)
 
 
 endif()

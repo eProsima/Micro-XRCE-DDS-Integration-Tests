@@ -93,3 +93,15 @@ bool are_the_same(const std::vector<uint8_t>& _vector, const uint8_t* _array, co
     return array_length == _vector.size() &&
            std::equal(_vector.begin(), _vector.end(), _array, [](const uint8_t& a, const uint8_t& b){return a == b;});
 }
+
+bool operator==(const std::array<unsigned char, 2>& left, const ObjectId& right)
+{
+    // TODO check it works.
+    return left == right;
+}
+
+bool operator==(const std::array<unsigned char, 2>& left, const RequestId& right)
+{
+    // TODO check it works.
+    return left == right;
+}
