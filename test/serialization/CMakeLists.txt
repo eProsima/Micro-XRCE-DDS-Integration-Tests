@@ -24,38 +24,36 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     # serialization
     ###############################################################################
 
-    set(X_SER_DES_SRC CrossSerDesTest.cpp
-                      TestCommon.cpp
-                      ${CLIENT_DIR}/src/c/xrce_protocol_serialization.c
-                      ${CLIENT_DIR}/src/c/input_message.c
-                      ${CLIENT_DIR}/src/c/output_message.c
-                      ${CLIENT_DIR}/src/c/log/message.c
-                      ${CLIENT_DIR}/src/c/aux_memory.c
-                      ${AGENT_DIR}/src/cpp/DDSXRCETypes.cxx
-                      ${AGENT_DIR}/src/cpp/MessageHeader.cxx
-                      ${AGENT_DIR}/src/cpp/Payloads.cxx
-                      ${AGENT_DIR}/src/cpp/Serializer.cpp
-                      ${AGENT_DIR}/src/cpp/SubMessageHeader.cxx
-                      ${AGENT_DIR}/src/cpp/XRCEFactory.cpp
-                      ${AGENT_DIR}/src/cpp/XRCEParser.cpp
-                      )
+    set(X_SER_DES_SRC #CrossSerDesTest.cpp
+        TestCommon.cpp
+	${CLIENT_SOURCE_DIR}/src/c/xrce_protocol_serialization.c
+        ${CLIENT_SOURCE_DIR}/src/c/input_message.c
+        ${CLIENT_SOURCE_DIR}/src/c/output_message.c
+        ${CLIENT_SOURCE_DIR}/src/c/log/message.c
+        ${CLIENT_SOURCE_DIR}/src/c/aux_memory.c
+	${AGENT_SOURCE_DIR}/src/cpp/DDSXRCETypes.cxx
+        ${AGENT_SOURCE_DIR}/src/cpp/MessageHeader.cxx
+        ${AGENT_SOURCE_DIR}/src/cpp/Payloads.cxx
+        ${AGENT_SOURCE_DIR}/src/cpp/Serializer.cpp
+        ${AGENT_SOURCE_DIR}/src/cpp/SubMessageHeader.cxx
+        ${AGENT_SOURCE_DIR}/src/cpp/XRCEFactory.cpp
+        ${AGENT_SOURCE_DIR}/src/cpp/XRCEParser.cpp
+    )
+
     add_executable(cross_serialization_test ${X_SER_DES_SRC})
     add_gtest(cross_serialization_test ${X_SER_DES_SRC})
 
     target_include_directories(cross_serialization_test PRIVATE ${GTEST_INCLUDE_DIRS}
-                                                      ${CLIENT_DIR}/include
-                                                      ${CLIENT_DIR}/include/micrortps/client
-                                                      ${CLIENT_DIR}/src/c
-                                                      ${CLIENT_DIR}/thirdparty/micro-CDR/include
-                                                      ${CLIENT_DIR}/thirdparty/micro-CDR/include/microcdr
-                                                      ${PROJECT_BINARY_DIR}/external/install/include/microcdr
-                                                      ${AGENT_DIR}/include
-                                                      ${AGENT_DIR}/include/agent
-                                                      ${AGENT_DIR}/src/cpp
-                                                      ${FASTRTPS_INSTALL_DIR}/include)
+        ${CLIENT_SOURCE_DIR}/include
+        ${CLIENT_BINARY_DIR}/include
+	${CLIENT_SOURCE_DIR}/src/c
+	${MICROCDR_SOURCE_DIR}/include
+	${AGENT_SOURCE_DIR}/include
+	${AGENT_SOURCE_DIR}/src/cpp
+    )
 
     # TODO Check the really needed libraries.
-    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES} microcdr fastcdr client, transport)
+    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES} microcdr micrortps-client fastcdr transport)
 
 
 endif()

@@ -30,6 +30,7 @@ endif()
 
 project(micrortps_itest)
 
+set(EPROSIMA_BUILD_TESTS ON)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSERIALIZATION_LOGS")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMESSAGE_LOGS")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSERIALIZATION_LOGS")
@@ -83,38 +84,43 @@ endif()
 # Warning level
 ###############################################################################
 if(MSVC OR MSVC_IDE)
-if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-    string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+
+    if(EPROSIMA_EXTRA_CMAKE_CXX_FLAGS)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EPROSIMA_EXTRA_CMAKE_CXX_FLAGS}")
+    endif()
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Wno-unknown-pragmas -std=c++11")
 endif()
 
-if(EPROSIMA_EXTRA_CMAKE_CXX_FLAGS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EPROSIMA_EXTRA_CMAKE_CXX_FLAGS}")
-endif()
-else()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Wno-unknown-pragmas -std=c++11")
-endif()
+###############################################################################
+# Subdirectories
+###############################################################################
+set(AGENT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/agent)
+set(CLIENT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/client)
+set(MICROCDR_SOURCE_DIR ${CLIENT_SOURCE_DIR}/thirdparty/micro-CDR)
+set(TRANSPORT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/transport)
 
-set(AGENT_DIR ${PROJECT_SOURCE_DIR}/thirdparty/agent)
-set(CLIENT_DIR ${PROJECT_SOURCE_DIR}/thirdparty/client)
-set(TRANSPORT_DIR ${PROJECT_SOURCE_DIR}/thirdparty/transport)
-add_subdirectory(${AGENT_DIR})
-add_subdirectory(${CLIENT_DIR})
+add_subdirectory(${AGENT_SOURCE_DIR})
+add_subdirectory(${CLIENT_SOURCE_DIR})
 if(NOT TARGET transport)
-  add_subdirectory(${TRANSPORT_DIR})
+    add_subdirectory(${TRANSPORT_SOURCE_DIR})
 endif()
+
+get_directory_property(CLIENT_BINARY_DIR DIRECTORY ${CLIENT_SOURCE_DIR} DEFINITION PROJECT_BINARY_DIR)
+get_directory_property(MICROCDR_BINARY_DIR DIRECTORY ${MICROCDR_SOURCE_DIR} DEFINITION PROJECT_BINARY_DIR)
 
 ###############################################################################
 # Testing
 ###############################################################################
-option(EPROSIMA_BUILD_TESTS "Activate the building and execution unit tests and integral tests" OFF)
-if(EPROSIMA_BUILD_TESTS)
-    include(${PROJECT_SOURCE_DIR}/cmake/dev/gtest.cmake)
-    check_gtest()
-    if(GTEST_FOUND)
-        enable_testing()
-        include(CTest)
-        add_subdirectory(test)
-    endif()
+include(${PROJECT_SOURCE_DIR}/cmake/dev/gtest.cmake)
+check_gtest()
+if(GTEST_FOUND)
+    enable_testing()
+    include(CTest)
+    add_subdirectory(test)
 endif()

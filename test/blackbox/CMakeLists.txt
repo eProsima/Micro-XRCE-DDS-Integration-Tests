@@ -20,18 +20,14 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     find_package(fastrtps REQUIRED)
     find_package(fastcdr REQUIRED)
 
-    ###############################################################################
-    # blackbox
-    ###############################################################################
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+        FILES_MATCHING PATTERN "*.xml"
+    )
 
-    # Hellow world test
-    set(BLACKBOXTESTS_SOURCE FirstTest.cpp)
-    add_executable(first_test ${BLACKBOXTESTS_SOURCE})
-    add_gtest(first_test ${BLACKBOXTESTS_SOURCE})
-    target_include_directories(first_test PRIVATE ${GTEST_INCLUDE_DIRS})
-    target_link_libraries(first_test ${GTEST_BOTH_LIBRARIES})
-
-    # Basic test udp - C code
+    ###############################################################################
+    # UDP test
+    ###############################################################################
     set(BASIC_UDP_SEND_SRC BasicUdpSendTest.c)
     add_executable(udp_send_test ${BASIC_UDP_SEND_SRC})
     target_link_libraries(udp_send_test transport)
@@ -40,61 +36,60 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     add_executable(udp_recv_test ${BASIC_UDP_RECV_SRC})
     target_link_libraries(udp_recv_test transport)
 
-    # libdev.so
-    # include_directories(${AGENT_DIR}/src/cpp/
-    #                     ${AGENT_DIR}/src/cpp/libdev/)
-    #file(GLOB LIBDEV_SRCS "${AGENT_DIR}/src/cpp/libdev/*.cpp")
-    #add_library(dev SHARED ${LIBDEV_SRCS})
-    #install(TARGETS dev DESTINATION ${CMAKE_SOURCE_DIR}/install)
+    ###############################################################################
+    # Client executable
+    ###############################################################################
+    add_executable(client_itest client_integration_test.cpp)
+    target_include_directories(client_itest PRIVATE ${GTEST_INCLUDE_DIR}
+        ${PROJECT_SOURCE_DIR}/include
+    )
+    target_link_libraries(client_itest ${GTEST_BOTH_LIBRARIES} micrortps-client)
 
-    # TestA TestB - C code
-    # TODO Agent cant be linked against
-    # set(TEST_A_SRC TestA.cpp)
-    # add_executable(test_a ${TEST_A_SRC})
-    # target_link_libraries(test_a ${GTEST_BOTH_LIBRARIES} agent fastcdr fastrtps)
+    ###############################################################################
+    # Agent executable
+    ###############################################################################
+    add_definitions(-DBOOST_ASIO_STANDALONE -DASIO_STANDALONE)
+    add_executable(agent_itest agent_integration_test.cpp)
+    target_include_directories(agent_itest PRIVATE ${GTEST_INCLUDE_DIR}
+        ${PROJECT_SOURCE_DIR}/thirdparty/agent/include
+	${PROJECT_SOURCE_DIR}/thirdparty/agent/src/cpp
+	${PROJECT_SOURCE_DIR}/thirdparty/agent/thirdparty/asio/asio/include
+    )
+    target_link_libraries(agent_itest agent transport fastcdr fastrtps ${GTEST_BOTH_LIBRARIES})
 
-    set(TEST_B_SRC TestB.cpp)
-    add_executable(test_b ${TEST_B_SRC})
-    target_link_libraries(test_b ${GTEST_BOTH_LIBRARIES})
-
+    ###############################################################################
+    # Client-Agent integration test
+    ###############################################################################
     if(PYTHONINTERP_FOUND)
-        # Basic test udp - python
-        add_test(NAME basic_udp_test
-            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/udp_basic_test.py)
-
-        set_property(TEST basic_udp_test PROPERTY ENVIRONMENT
-            "BASIC_UDP_SENDER_BIN=$<TARGET_FILE:udp_send_test>")
-        set_property(TEST basic_udp_test APPEND PROPERTY ENVIRONMENT
-            "BASIC_UDP_RECEIVER_BIN=$<TARGET_FILE:udp_recv_test>")
-        if(WIN32)
-            string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
-            set_property(TEST basic_udp_test APPEND PROPERTY ENVIRONMENT
-                "PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>\\;$<TARGET_FILE_DIR:transport>\\;${WIN_PATH}")
-        endif()
-
-        # TestA TestB - python
-        add_test(NAME testA_testB COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test.py)
-        # set_property(TEST testA_testB        PROPERTY ENVIRONMENT "TEST_A_BIN=$<TARGET_FILE:test_a>")
-        set_property(TEST testA_testB APPEND PROPERTY ENVIRONMENT "TEST_B_BIN=$<TARGET_FILE:test_b>")
-        if(WIN32)
-            string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
-            set_property(TEST testA_testB APPEND PROPERTY ENVIRONMENT
-                "PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>\\;$<TARGET_FILE_DIR:agent>\\;${WIN_PATH}")
-        endif()
-
+        set(ITESTS 
+	    CreateDeleteClient
+	    CreateDeleteParticipant
+	    CreateDeleteTopic
+	    CreateDeletePublisher
+	    CreateDeleteSubscriber
+	    CreateDeleteDataWriter
+	    CreateDeleteDataReader
+        )
+        foreach(INTEGRATION_TEST ${ITESTS}) 
+            add_test(NAME ${INTEGRATION_TEST}	
+                COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/integration_test.py
+            )
+            set_property(TEST ${INTEGRATION_TEST} PROPERTY ENVIRONMENT 
+                "AGENT_EXEC=$<TARGET_FILE:agent_itest>"
+            )
+            set_property(TEST ${INTEGRATION_TEST} APPEND PROPERTY ENVIRONMENT 
+                "CLIENT_EXEC=$<TARGET_FILE:client_itest>"
+            )
+            set_property(TEST ${INTEGRATION_TEST} APPEND PROPERTY ENVIRONMENT
+                "TEST_TYPE=${INTEGRATION_TEST}"
+            )
+            if(WIN32)
+                string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
+                set_property(TEST ${INTEGRATION_TEST} APPEND PROPERTY ENVIRONMENT 
+    		    "PATH=$<SHELL_PATH:$<TARGET_FILE_DIR:microcdr>\\;$<TARGET_FILE_DIR:transport>\\;
+    		          $<TARGET_FILE_DIR:fastcdr>\\;$<TARGET_FILE_DIR:fastrtps>\\;${WIN_PATH}>"
+                )
+            endif()
+        endforeach()
     endif()
-
-    if(PYTHONINTERP_FOUND)
-
-        # Integration - python
-        add_test(NAME integration_test COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_integration.py)
-        set_property(TEST integration_test        PROPERTY ENVIRONMENT "TEST_INTEGRATION_AGENT=$<TARGET_FILE:AgentIntegrationTest>")
-        set_property(TEST integration_test APPEND PROPERTY ENVIRONMENT "TEST_INTEGRATION_CLIENT=$<TARGET_FILE:ClientUnitTests>")
-        if(WIN32)
-            string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
-            set_property(TEST integration_test APPEND PROPERTY ENVIRONMENT
-                "PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>\\;$<TARGET_FILE_DIR:agent>\\;${WIN_PATH}")
-        endif()
-    endif()
-
 endif()

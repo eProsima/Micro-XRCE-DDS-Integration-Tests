@@ -2,7 +2,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <unistd.h>
+#ifdef WIN32
+    #define _WINSOCKAPI_
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
 
 #include <transport/micrortps_transport.h>
 
@@ -10,7 +15,7 @@ int main(int argc, char *argv[])
 {
     printf("\nAt the very beginning everything was black\n\n");
 
-    octet buffer[256] = {"Mensaje_del_senderA"};
+    octet_t buffer[256] = {"Mensaje_del_senderA"};
     size_t buffer_len = 256;
     int len = 0;
 
@@ -30,7 +35,11 @@ int main(int argc, char *argv[])
             printf("# send len %d\n", len);
         }
 
-        usleep(1000000);
+        #ifdef WIN32
+	    Sleep(1000000);
+	#else
+	    usleep(1000000);
+	#endif
     }
 
     printf("exiting...\n");

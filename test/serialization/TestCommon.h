@@ -35,10 +35,8 @@
 
 #include <gtest/gtest.h>
 
-#include "MessageHeader.h"
-#include "SubMessageHeader.h"
-#include "Payloads.h"
-#include "XRCEParser.h"
+#include <Payloads.h>
+#include <agent/XRCEParser.h>
 #include <log/message.h>
 #include <micrortps/client/xrce_protocol_spec.h>
 
