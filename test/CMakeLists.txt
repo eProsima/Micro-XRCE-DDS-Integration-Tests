@@ -17,4 +17,4 @@
 ###############################################################################
 
 add_subdirectory(blackbox)
-add_subdirectory(serialization)
+#add_subdirectory(serialization)
