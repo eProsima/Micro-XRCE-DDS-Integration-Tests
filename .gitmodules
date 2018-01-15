@@ -8,3 +8,6 @@
 	path = thirdparty/transport
 	url = git@git.sambaserver.eprosima.com:nanortps/micrortps_transport.git
 	branch = develop
+[submodule "thirdparty/gen"]
+	path = thirdparty/gen
+	url = git@git.sambaserver.eprosima.com:nanortps/micrortpsgen.git

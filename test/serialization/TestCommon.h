@@ -95,4 +95,7 @@ bool operator==(const micrortps::ClientKey& left, const ClientKey& right);
 bool operator==(const uint32_t& left, const std::array<uint8_t, 4>& right);
 bool are_the_same(const std::vector<uint8_t>& _vector, const uint8_t* _array, const uint32_t& array_length);
 
+bool operator==(const std::array<unsigned char, 2>& left, const ObjectId& right);
+bool operator==(const std::array<unsigned char, 2>& left, const RequestId& right);
+
 #endif
