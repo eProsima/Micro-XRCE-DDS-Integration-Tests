@@ -1,6 +1,7 @@
 .cproject
 .project
 .pydevproject
+CMakeLists.txt.user
 
 # Directories
 build

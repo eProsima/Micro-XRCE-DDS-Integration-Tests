@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     printf("\nAt the very beginning everything was black\n\n");
 
-    octet_t buffer[1024] = {""};
+    octet buffer[1024] = {""};
     int len = 0;
 
     locator_id_t loc_id = add_udp_locator(2021, 2019, 2020, "127.0.0.1");

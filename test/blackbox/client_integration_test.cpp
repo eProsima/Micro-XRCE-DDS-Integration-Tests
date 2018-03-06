@@ -30,7 +30,8 @@
 
 #include <fstream>
 
-#define MESSAGE_TRIES_WAIT 100
+#define MAX_NUM_ATTEMPTS  100
+#define MAX_TIME_WAIT	  100
 
 typedef struct HelloWorld
 {
@@ -88,28 +89,27 @@ class ClientTests : public ::testing::Test
         void waitMessage()
         {
             int messageWaitCounter = 0;
-            while(!receive_from_agent(state) && messageWaitCounter < MESSAGE_TRIES_WAIT)
+            while(!receive_from_agent(state) && messageWaitCounter < MAX_NUM_ATTEMPTS)
             {
                 #ifdef WIN32
-		    Sleep(1000);
-		#else 
+                    Sleep(1);
+                #else
                     usleep(1000);
-		#endif
+                #endif
                 messageWaitCounter++;
             }
 
-            ASSERT_LT(messageWaitCounter, MESSAGE_TRIES_WAIT);
+            ASSERT_LT(messageWaitCounter, MAX_NUM_ATTEMPTS);
             
             // Wait until agent realizes.
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+            std::this_thread::sleep_for(std::chrono::milliseconds(MAX_TIME_WAIT));
         }
 
-        void checkStatus(uint8_t operation)
+        void checkStatus()
         {
             ASSERT_EQ(statusObjectId, lastObject);
             ASSERT_EQ(statusRequestId, lastRequest);
-            ASSERT_EQ(statusOperation, operation);
-            ASSERT_EQ(statusImplementation, STATUS_OK);
+            ASSERT_EQ(statusOperation, STATUS_OK);
         }
 
         void checkDataTopic(int expectedNumTopic)
@@ -291,6 +291,7 @@ class ClientTests : public ::testing::Test
         }
 
         ClientState* state;
+        char buf[MAX_MESSAGE_SIZE];
 
         uint16_t statusObjectId;
         uint16_t statusRequestId;
@@ -422,21 +423,20 @@ void printl_hello_topic(const HelloTopic* hello_topic)
 TEST_F(ClientTests, CreateDeleteClient)
 {
     uint16_t client_id = createClient();
-    checkStatus(STATUS_LAST_OP_CREATE);
-
+    checkStatus();
     deleteXRCEObject(client_id);
-    checkStatus(STATUS_LAST_OP_DELETE);
+    checkStatus();
 }
 
 TEST_F(ClientTests, CreateDeleteParticipant)
 {
     uint16_t client_id = createClient();
+
     uint16_t participant_id = createParticipant();
-    checkStatus(STATUS_LAST_OP_CREATE);
-
-
+    checkStatus();
     deleteXRCEObject(participant_id);
-    checkStatus(STATUS_LAST_OP_DELETE);
+    checkStatus();
+
     deleteXRCEObject(client_id);
 }
 
@@ -444,12 +444,12 @@ TEST_F(ClientTests, CreateDeleteTopic)
 {
     uint16_t client_id = createClient();
     uint16_t participant_id = createParticipant();
+
     uint16_t topic_id = createTopic("shape_topic.xml", participant_id);
-
-    checkStatus(STATUS_LAST_OP_CREATE);
-
+    checkStatus();
     deleteXRCEObject(topic_id);
-    checkStatus(STATUS_LAST_OP_DELETE);
+    checkStatus();
+
     deleteXRCEObject(participant_id);
     deleteXRCEObject(client_id);
 }
@@ -458,12 +458,12 @@ TEST_F(ClientTests, CreateDeletePublisher)
 {
     uint16_t client_id = createClient();
     uint16_t participant_id = createParticipant();
+
     uint16_t publisher_id = createPublisher(participant_id);
-
-    checkStatus(STATUS_LAST_OP_CREATE);
-
+    checkStatus();
     deleteXRCEObject(publisher_id);
-    checkStatus(STATUS_LAST_OP_DELETE);
+    checkStatus();
+
     deleteXRCEObject(participant_id);
     deleteXRCEObject(client_id);
 }
@@ -472,12 +472,12 @@ TEST_F(ClientTests, CreateDeleteSubscriber)
 {
     uint16_t client_id = createClient();
     uint16_t participant_id = createParticipant();
+
     uint16_t subscriber_id = createSubscriber(participant_id);
-
-    checkStatus(STATUS_LAST_OP_CREATE);
-
+    checkStatus();
     deleteXRCEObject(subscriber_id);
-    checkStatus(STATUS_LAST_OP_DELETE);
+    checkStatus();
+
     deleteXRCEObject(participant_id);
     deleteXRCEObject(client_id);
 }
@@ -488,12 +488,12 @@ TEST_F(ClientTests, CreateDeleteDataWriter)
     uint16_t participant_id = createParticipant();
     uint16_t topic_id = createTopic("shape_topic.xml", participant_id);
     uint16_t publisher_id = createPublisher(participant_id);
-    uint16_t data_writer_id = createDataWriter("data_writer_profile.xml", participant_id, publisher_id);
-    
-    checkStatus(STATUS_LAST_OP_CREATE);
 
+    uint16_t data_writer_id = createDataWriter("data_writer_profile.xml", participant_id, publisher_id);
+    checkStatus();
     deleteXRCEObject(data_writer_id);
-    checkStatus(STATUS_LAST_OP_DELETE);
+    checkStatus();
+
     deleteXRCEObject(publisher_id);
     deleteXRCEObject(topic_id);
     deleteXRCEObject(participant_id);
@@ -506,12 +506,12 @@ TEST_F(ClientTests, CreateDeleteDataReader)
     uint16_t participant_id = createParticipant();
     uint16_t topic_id = createTopic("shape_topic.xml", participant_id);
     uint16_t subscriber_id = createSubscriber(participant_id);
+
     uint16_t data_reader_id = createDataReader("data_reader_profile.xml", participant_id, subscriber_id);
-
-    checkStatus(STATUS_LAST_OP_CREATE);
-
+    checkStatus();
     deleteXRCEObject(data_reader_id);
-    checkStatus(STATUS_LAST_OP_DELETE);
+    checkStatus();
+
     deleteXRCEObject(subscriber_id);
     deleteXRCEObject(topic_id);
     deleteXRCEObject(participant_id);
@@ -528,7 +528,7 @@ TEST_F(ClientTests, WriteData)
     
     writeShapeData(data_writer_id);
 
-    checkStatus(STATUS_LAST_OP_WRITE);
+    checkStatus();
 
     deleteXRCEObject(data_writer_id);
     deleteXRCEObject(publisher_id);
@@ -547,7 +547,7 @@ TEST_F(ClientTests, WriteHelloData)
 
     writeHelloData(data_writer_id);
 
-    checkStatus(STATUS_LAST_OP_WRITE);
+    checkStatus();
 
     deleteXRCEObject(data_writer_id);
     deleteXRCEObject(publisher_id);
@@ -566,7 +566,7 @@ TEST_F(ClientTests, ReadData)
 
     readShapeData(data_reader_id);
     
-    checkStatus(STATUS_LAST_OP_READ);
+    checkStatus();
     
     waitMessage();
     checkDataTopic(1);
@@ -585,7 +585,7 @@ TEST_F(ClientTests, ReadHelloData)
     uint16_t subscriber_id = createSubscriber(participant_id);
     uint16_t data_reader_id = createDataReader("hello_data_reader_profile.xml", participant_id, subscriber_id);
     readHelloData(data_reader_id);
-    checkStatus(STATUS_LAST_OP_READ);
+    checkStatus();
     waitMessage();
     checkDataTopic(1);
     deleteXRCEObject(data_reader_id);
@@ -601,7 +601,7 @@ TEST_F(ClientTests, ReadMultiData)
     uint16_t subscriber_id = createSubscriber(participant_id);
     uint16_t data_reader_id = createDataReader("data_reader_profile.xml", participant_id, subscriber_id);
     readShapeData(data_reader_id);
-    checkStatus(STATUS_LAST_OP_READ);
+    checkStatus();
     {
         waitMessage();
         std::this_thread::sleep_for(std::chrono::milliseconds(2));

@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
     printf("\nAt the very beginning everything was black\n\n");
 
-    octet_t buffer[256] = {"Mensaje_del_senderA"};
+    octet buffer[256] = {"Mensaje_del_senderA"};
     size_t buffer_len = 256;
     int len = 0;
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
         }
 
         #ifdef WIN32
-	    Sleep(1000000);
+        Sleep(1000);
 	#else
 	    usleep(1000000);
 	#endif
