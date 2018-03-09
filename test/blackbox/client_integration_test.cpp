@@ -68,7 +68,7 @@ class ClientTests : public ::testing::Test
     public:
         ClientTests()
         {
-            state = new_udp_client_state(MAX_MESSAGE_SIZE, 4000, 2020, 2019, "127.0.0.1");
+            new_udp_session(&session, buf, MAX_MESSAGE_SIZE, 4000, 2020, 2019, "127.0.0.1");
 
             statusObjectId = 0x0000;
             statusRequestId = 0x0000;
@@ -83,13 +83,13 @@ class ClientTests : public ::testing::Test
 
         ~ClientTests()
         {
-            free_client_state(state);
+            close_session(&session);
         }
 
         void waitMessage()
         {
             int messageWaitCounter = 0;
-            while(!receive_from_agent(state) && messageWaitCounter < MAX_NUM_ATTEMPTS)
+            while(!receive_from_agent(&session) && messageWaitCounter < MAX_NUM_ATTEMPTS)
             {
                 #ifdef WIN32
                     Sleep(1);
@@ -119,10 +119,11 @@ class ClientTests : public ::testing::Test
 
         uint16_t createClient()
         {
-            XRCEInfo info = create_client(state, on_status, this);
+            XRCEInfo info;
+            init_session(&session, &info, on_status, this);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
 
@@ -131,10 +132,10 @@ class ClientTests : public ::testing::Test
 
         uint16_t createParticipant()
         {
-            XRCEInfo info = create_participant(state);
+            XRCEInfo info = create_participant(&session);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
 
@@ -154,10 +155,10 @@ class ClientTests : public ::testing::Test
                 in.read(data, xml.length);
             }
 
-            XRCEInfo info = create_topic(state, participant_id, xml);
+            XRCEInfo info = create_topic(&session, participant_id, xml);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
 
@@ -166,10 +167,10 @@ class ClientTests : public ::testing::Test
 
         uint16_t createPublisher(uint16_t participant_id)
         {
-            XRCEInfo info = create_publisher(state, participant_id);
+            XRCEInfo info = create_publisher(&session, participant_id);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
 
@@ -178,10 +179,10 @@ class ClientTests : public ::testing::Test
 
         uint16_t createSubscriber(uint16_t participant_id)
         {
-            XRCEInfo info = create_subscriber(state, participant_id);
+            XRCEInfo info = create_subscriber(&session, participant_id);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
 
@@ -201,10 +202,10 @@ class ClientTests : public ::testing::Test
                 in.read(data, xml.length);
             }
 
-            XRCEInfo info = create_data_writer(state, participant_id, publisher_id, xml);
+            XRCEInfo info = create_data_writer(&session, participant_id, publisher_id, xml);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
 
@@ -224,10 +225,10 @@ class ClientTests : public ::testing::Test
                 in.read(data, xml.length);
             }
 
-            XRCEInfo info = create_data_reader(state, participant_id, subscriber_id, xml);
+            XRCEInfo info = create_data_reader(&session, participant_id, subscriber_id, xml);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
 
@@ -238,21 +239,22 @@ class ClientTests : public ::testing::Test
         {
             char message[] = "Hello data sample";
             HelloTopic hello_topic = {10, message};
-            XRCEInfo info = write_data(state, data_writer_id, serialize_hello_topic, &hello_topic);
+            XRCEInfo info = write_data(&session, data_writer_id, serialize_hello_topic, &hello_topic);
             printl_hello_topic(&hello_topic);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
         }
 
         void readHelloData(uint16_t data_reader_id)
         {
-            XRCEInfo info = read_data(state, data_reader_id, on_hello_topic, this);
+            XRCEInfo info;
+            read_data(&session, &info, data_reader_id, on_hello_topic, this);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
         }
@@ -261,37 +263,38 @@ class ClientTests : public ::testing::Test
         {
             char topicColor[64] = "PURPLE";
             ShapeTopic shape_topic = {topicColor, 100, 100, 50};
-            XRCEInfo info = write_data(state, data_writer_id, serialize_shape_topic, &shape_topic);
+            XRCEInfo info = write_data(&session, data_writer_id, serialize_shape_topic, &shape_topic);
             printl_shape_topic(&shape_topic);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
         }
 
         void readShapeData(uint16_t data_reader_id)
         {
-            XRCEInfo info = read_data(state, data_reader_id, on_shape_topic, this);
+            XRCEInfo info;
+            read_data(&session, &info, data_reader_id, on_shape_topic, this);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
         }
 
         void deleteXRCEObject(uint16_t id)
         {
-            XRCEInfo info = delete_resource(state, id);
+            XRCEInfo info = delete_resource(&session, id);
             lastObject = info.object_id;
             lastRequest = info.request_id;
-            send_to_agent(state);
+            send_to_agent(&session);
 
             waitMessage();
         }
 
-        ClientState* state;
-        char buf[MAX_MESSAGE_SIZE];
+        Session session;
+        uint8_t buf[MAX_MESSAGE_SIZE];
 
         uint16_t statusObjectId;
         uint16_t statusRequestId;
