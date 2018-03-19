@@ -68,7 +68,8 @@ class ClientTests : public ::testing::Test
     public:
         ClientTests()
         {
-            new_udp_session(&session, buf, MAX_MESSAGE_SIZE, 4000, 2020, 2019, "127.0.0.1");
+            uint8_t ip[4] = {127, 0, 0, 1};
+            new_udp_session(&session, buf, MAX_MESSAGE_SIZE, 2019, ip, &locator);
 
             statusObjectId = 0x0000;
             statusRequestId = 0x0000;
@@ -295,6 +296,7 @@ class ClientTests : public ::testing::Test
 
         Session session;
         uint8_t buf[MAX_MESSAGE_SIZE];
+        micrortps_locator_t locator;
 
         uint16_t statusObjectId;
         uint16_t statusRequestId;

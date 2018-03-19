@@ -3,16 +3,17 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <transport/micrortps_transport.h>
+#include <micrortps/transport/micrortps_transport.h>
 
 int main(int argc, char *argv[])
 {
     printf("\nAt the very beginning everything was black\n\n");
 
-    octet buffer[1024] = {""};
+    octet_t buffer[1024] = {""};
     int len = 0;
+    micrortps_locator_t locator;
 
-    locator_id_t loc_id = add_udp_locator(2021, 2019, 2020, "127.0.0.1");
+    locator_id_t loc_id = add_udp_locator_agent(2019, &locator);
 
     int loops = 10;
     while (loops--)

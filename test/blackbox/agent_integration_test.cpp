@@ -38,7 +38,7 @@ class AgentTests : public ::testing::Test
   protected:
     AgentTests()
     {
-        agent_.init(4001, 2019, 2020, "127.0.0.1");
+        agent_.init(2019);
     }
 
     virtual ~AgentTests() = default;
