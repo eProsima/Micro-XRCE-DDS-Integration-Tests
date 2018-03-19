@@ -1,13 +1,15 @@
 [submodule "thirdparty/client"]
 	path = thirdparty/client
-    url = git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-client.git
+	url = git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-client.git
+	branch = feature/new_transport_api
 [submodule "thirdparty/agent"]
 	path = thirdparty/agent
-    url = git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-agent.git
+	url = git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-agent.git
+	branch = feature/new_transport_api
 [submodule "thirdparty/transport"]
 	path = thirdparty/transport
-    url = git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-transports.git
-	branch = develop
+	url = git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-transports.git
+	branch = feature/new_transport_api
 [submodule "thirdparty/gen"]
 	path = thirdparty/gen
-    url = git@gitlab.sambaserver.eprosima.com:eProsima/micrortpsgen.git
+	url = git@gitlab.sambaserver.eprosima.com:eProsima/micrortpsgen.git
