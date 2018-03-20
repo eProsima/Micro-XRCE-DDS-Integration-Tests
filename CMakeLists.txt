@@ -105,11 +105,9 @@ set(CLIENT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/client)
 set(MICROCDR_SOURCE_DIR ${CLIENT_SOURCE_DIR}/thirdparty/micro-CDR)
 set(TRANSPORT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/transport)
 
+add_subdirectory(${TRANSPORT_SOURCE_DIR})
 add_subdirectory(${AGENT_SOURCE_DIR})
 add_subdirectory(${CLIENT_SOURCE_DIR})
-if(NOT TARGET transport)
-    add_subdirectory(${TRANSPORT_SOURCE_DIR})
-endif()
 
 get_directory_property(CLIENT_BINARY_DIR DIRECTORY ${CLIENT_SOURCE_DIR} DEFINITION PROJECT_BINARY_DIR)
 get_directory_property(MICROCDR_BINARY_DIR DIRECTORY ${MICROCDR_SOURCE_DIR} DEFINITION PROJECT_BINARY_DIR)
