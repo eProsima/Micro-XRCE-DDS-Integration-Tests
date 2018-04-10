@@ -107,14 +107,14 @@ public:
             if (content_match) ++msg_counter;
         }
 
-        static void on_status_submessage(const StatusPayload* payload, void* args)
+        static void on_status_submessage(const STATUS_Payload* payload, void* args)
         {
             (void) args;
             content_match = check_status_payload(agent_status_payload_var, *payload);
             if (content_match) ++msg_counter;
         }
 
-        static void on_info_submessage(const InfoPayload* payload, void* args)
+        static void on_info_submessage(const INFO_Payload* payload, void* args)
         {
             (void) payload;
             (void) args;
@@ -145,8 +145,8 @@ public:
 
         bool fill_client_create_payload(client_create_payload& payload)
         {
-            payload.request.base.request_id = {{0xAA, 0xBB}};
-            payload.request.object_id = {{0x77, 0x99}};
+            payload.base.request_id = {{0xAA, 0xBB}};
+            payload.base.object_id = {{0x77, 0x99}};
             payload.representation.kind = OBJK_PARTICIPANT;
             payload.representation._.participant.base2.format = REPRESENTATION_BY_REFERENCE;
             payload.representation._.participant.base2._.object_name.data = client_name;
@@ -156,8 +156,8 @@ public:
 
         bool fill_client_write_payload(client_write_payload& payload)
         {
-            payload.request.base.request_id = {{0xBB, 0xCC}};
-            payload.request.object_id = {{0x78, 0x89}};
+            payload.base.request_id = {{0xBB, 0xCC}};
+            payload.base.object_id = {{0x78, 0x89}};
             payload.data_to_write.format = FORMAT_SAMPLE;
             payload.data_to_write._.sample.info.state = 0x11223344;
             payload.data_to_write._.sample.info.sequence_number = 0x22334455;
@@ -169,14 +169,13 @@ public:
 
         bool fill_client_read_payload(client_read_payload& payload)
         {
-            payload.request.base.request_id = {{0xCC, 0XDD}};
-            payload.request.object_id = {{0x88, 0x99}};
-            payload.read_specification.delivery_config.max_elapsed_time = 987654321;
-            payload.read_specification.delivery_config.max_rate = 123123123;
-            payload.read_specification.delivery_config.max_samples = 12345;
-            //payload.read_specification.content_filter_expression;
+            payload.base.request_id = {{0xCC, 0XDD}};
+            payload.base.object_id = {{0x88, 0x99}};
+            payload.read_specification.delivery_control.max_elapsed_time = 987654321;
+            payload.read_specification.delivery_control.max_bytes_per_seconds = 123123123;
+            payload.read_specification.delivery_control.max_samples = 12345;
             payload.read_specification.optional_content_filter_expression = false;
-            payload.read_specification.optional_delivery_config = FORMAT_DATA;
+            payload.read_specification.optional_delivery_control = true;
             return true;
         }
 
@@ -201,18 +200,18 @@ public:
 
         virtual ~Agent(){}
 
-        class Listener : public micrortps::XRCEListener
+        class Listener : public eprosima::micrortps::XRCEListener
         {
         public:
 
-            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::CREATE_CLIENT_Payload& create_client_payload)
+            void on_message(const dds::xrce::MessageHeader& header, const dds::xrce::SubmessageHeader& sub_header, const micrortps::CREATE_CLIENT_Payload& create_client_payload)
             {
                 (void) header;
                 (void) sub_header;
                 (void) create_client_payload;
             }
 
-            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::CREATE_Payload& create_payload) override
+            void on_message(const dds::xrce::MessageHeader& header, const dds::xrce::SubmessageHeader& sub_header, const micrortps::CREATE_Payload& create_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
                                  check_submessage_header(sub_header, client_subheader_var[msg_counter]) &&
@@ -220,7 +219,7 @@ public:
                 if (content_match) ++msg_counter;
             }
 
-            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::DELETE_RESOURCE_Payload& delete_payload) override
+            void on_message(const dds::xrce::MessageHeader& header, const dds::xrce::SubmessageHeader& sub_header, const micrortps::DELETE_RESOURCE_Payload& delete_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
                                  check_submessage_header(sub_header, client_subheader_var[msg_counter]) &&
@@ -228,7 +227,7 @@ public:
                 if (content_match) ++msg_counter;
             }
 
-            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::WRITE_DATA_Payload&  write_payload) override
+            void on_message(const dds::xrce::MessageHeader& header, const dds::xrce::SubmessageHeader& sub_header, const micrortps::WRITE_DATA_Payload&  write_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
                                  check_submessage_header(sub_header, client_subheader_var[msg_counter]) &&
@@ -236,7 +235,7 @@ public:
                 if (content_match) ++msg_counter;
             }
 
-            void on_message(const micrortps::MessageHeader& header, const micrortps::SubmessageHeader& sub_header, const micrortps::READ_DATA_Payload&   read_payload) override
+            void on_message(const dds::xrce::MessageHeader& header, const dds::xrce::SubmessageHeader& sub_header, const micrortps::READ_DATA_Payload&   read_payload) override
             {
                 content_match = (check_message_header(header, client_header_var) &&
                                  check_submessage_header(sub_header, client_subheader_var[msg_counter]) &&
@@ -250,11 +249,11 @@ public:
 
         Listener listener;
 
-        const micrortps::ClientKey agent_client_key = {{0xF1, 0xF2, 0xF3, 0xF4}};
-        const micrortps::XrceVendorId vendor_id     = {{0x00, 0x01}};
-        const micrortps::RequestId request_id       = {{1, 2}};
-        const micrortps::RequestId srequest_id      = {{0xCC, 0XDD}};
-        const micrortps::ObjectId object_id         = {{0X10, 0X20}};
+        const dds::xrce::ClientKey agent_client_key = {{0xF1, 0xF2, 0xF3, 0xF4}};
+        const dds::xrce::XrceVendorId vendor_id     = {{0x00, 0x01}};
+        const dds::xrce::RequestId request_id       = {{1, 2}};
+        const dds::xrce::RequestId srequest_id      = {{0xCC, 0XDD}};
+        const dds::xrce::ObjectId object_id         = {{0X10, 0X20}};
         const uint8_t session_id        = 0xFF;
         const uint8_t stream_id         = 0x01;
         const uint16_t sequence_nr      = 0x0001;
@@ -265,7 +264,7 @@ public:
 
         // Struct initializers
 
-        micrortps::MessageHeader generate_message_header()
+        dds::xrce::MessageHeader generate_message_header()
         {
             agent_header_var.client_key(agent_client_key);
             agent_header_var.session_id(session_id);
@@ -274,7 +273,7 @@ public:
             return agent_header_var;
         }
 
-        micrortps::SubmessageHeader generate_submessage_header(const micrortps::SubmessageId& submessage_id, uint16_t length)
+        dds::xrce::SubmessageHeader generate_submessage_header(const dds::xrce::SubmessageId& submessage_id, uint16_t length)
         {
             agent_subheader_var.submessage_id(submessage_id);
             agent_subheader_var.flags(flags);
@@ -282,7 +281,7 @@ public:
             return agent_subheader_var;
         }
 
-        micrortps::RESOURCE_STATUS_Payload generate_resource_status_payload(uint8_t status, uint8_t implementation_status)
+        dds::xrce::STATUS_Payload generate_resource_status_payload(uint8_t status, uint8_t implementation_status)
         {
             agent_status_payload_var.object_id(object_id);
             agent_status_payload_var.request_id(request_id);

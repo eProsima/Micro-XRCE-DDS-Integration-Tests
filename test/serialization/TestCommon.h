@@ -35,14 +35,12 @@
 
 #include <gtest/gtest.h>
 
-#include <Payloads.h>
+#include <XRCETypes.h>
 #include <agent/XRCEParser.h>
 #include <log/message.h>
 #include <micrortps/client/xrce_protocol_spec.h>
 
 #define BUFFER_SIZE 1024
-
-using namespace eprosima;
 
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
@@ -67,31 +65,29 @@ using namespace eprosima;
 
 #define EVALUATE(exp, val) ((exp == val)? true: (printf(RED "line %d: %s != %s\n" RESET, __LINE__, #exp, #val), false))
 
-typedef micrortps::MessageHeader           agent_header;
+typedef dds::xrce::MessageHeader           agent_header;
 typedef MessageHeader                      client_header;
-typedef micrortps::SubmessageHeader        agent_subheader;
+typedef dds::xrce::SubmessageHeader        agent_subheader;
 typedef SubmessageHeader                   client_subheader;
-typedef micrortps::CREATE_Payload          agent_create_payload;
-typedef CreateResourcePayload              client_create_payload;
-typedef micrortps::WRITE_DATA_Payload      agent_write_payload;
-typedef WriteDataPayload                   client_write_payload;
-typedef micrortps::READ_DATA_Payload       agent_read_payload;
-typedef ReadDataPayload                    client_read_payload;
-typedef micrortps::DELETE_RESOURCE_Payload agent_delete_payload;
-typedef DeleteResourcePayload              client_delete_payload;
-typedef micrortps::RESOURCE_STATUS_Payload agent_status_payload;
-typedef StatusPayload                      client_status_payload;
+typedef dds::xrce::CREATE_Payload          agent_create_payload;
+typedef CREATE_CLIENT_Payload              client_create_payload;
+typedef dds::xrce::WRITE_DATA_Payload_Data agent_write_payload;
+typedef WRITE_DATA_Payload_Data            client_write_payload;
+typedef dds::xrce::READ_DATA_Payload       agent_read_payload;
+typedef READ_DATA_Payload                  client_read_payload;
+typedef dds::xrce::DELETE_Payload          agent_delete_payload;
+typedef DELETE_Payload                     client_delete_payload;
+typedef dds::xrce::STATUS_Payload          agent_status_payload;
+typedef STATUS_Payload                     client_status_payload;
 
 void on_initialize_message(client_header* header, ClientKey* key, void* vstate);
 void on_initialize_submessage(const client_subheader* header, void* vstate);
-bool operator==(const micrortps::OBJECTKIND& left, const uint8_t right);
-bool operator==(const uint8_t left, const micrortps::OBJECTKIND& right);
 bool operator==(const std::array<uint8_t, 2>& left, const uint16_t right);
 bool operator==(const uint16_t left, const std::array<uint8_t, 2>& right);
 bool operator==(const std::array<uint8_t, 3>& left, const uint32_t right);
 bool operator==(const uint32_t left, const std::array<uint8_t, 3>& right);
 bool operator==(const std::array<uint8_t, 4>& left, const uint32_t& right);
-bool operator==(const micrortps::ClientKey& left, const ClientKey& right);
+bool operator==(const dds::xrce::ClientKey& left, const ClientKey& right);
 bool operator==(const uint32_t& left, const std::array<uint8_t, 4>& right);
 bool are_the_same(const std::vector<uint8_t>& _vector, const uint8_t* _array, const uint32_t& array_length);
 

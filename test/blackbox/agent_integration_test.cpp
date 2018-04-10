@@ -184,7 +184,7 @@ TEST_F(AgentTests, CreateDeleteTopic)
 TEST_F(AgentTests, CreateDeletePublisher)
 {
     const dds::xrce::ObjectId participant_id = {{0x00, 0x01}};
-    const dds::xrce::ObjectId publisher_id   = {{0x00, 0x02}};
+    const dds::xrce::ObjectId publisher_id   = {{0x00, 0x03}};
     ASSERT_EQ(agent_.get_client(client_key), nullptr);
     agent_thread        = std::thread(&Agent::run, &agent_);
     ProxyClient* client = wait_client(client_key);
@@ -211,7 +211,7 @@ TEST_F(AgentTests, CreateDeletePublisher)
 TEST_F(AgentTests, CreateDeleteSubscriber)
 {
     const dds::xrce::ObjectId participant_id = {{0x00, 0x01}};
-    const dds::xrce::ObjectId subscriber_id  = {{0x00, 0x02}};
+    const dds::xrce::ObjectId subscriber_id  = {{0x00, 0x04}};
     ASSERT_EQ(agent_.get_client(client_key), nullptr);
     agent_thread        = std::thread(&Agent::run, &agent_);
     ProxyClient* client = wait_client(client_key);
@@ -240,7 +240,7 @@ TEST_F(AgentTests, CreateDeleteDataWriter)
     const dds::xrce::ObjectId participant_id = {{0x00, 0x01}};
     const dds::xrce::ObjectId topic_id       = {{0x00, 0x02}};
     const dds::xrce::ObjectId publisher_id   = {{0x00, 0x03}};
-    const dds::xrce::ObjectId datawriter_id  = {{0x00, 0x04}};
+    const dds::xrce::ObjectId datawriter_id  = {{0x00, 0x05}};
     ASSERT_EQ(agent_.get_client(client_key), nullptr);
     agent_thread        = std::thread(&Agent::run, &agent_);
     ProxyClient* client = wait_client(client_key);
@@ -278,8 +278,8 @@ TEST_F(AgentTests, CreateDeleteDataReader)
 {
     const dds::xrce::ObjectId participant_id = {{0x00, 0x01}};
     const dds::xrce::ObjectId topic_id       = {{0x00, 0x02}};
-    const dds::xrce::ObjectId subscriber_id  = {{0x00, 0x03}};
-    const dds::xrce::ObjectId datareader_id  = {{0x00, 0x04}};
+    const dds::xrce::ObjectId subscriber_id  = {{0x00, 0x04}};
+    const dds::xrce::ObjectId datareader_id  = {{0x00, 0x06}};
     ASSERT_EQ(agent_.get_client(client_key), nullptr);
     agent_thread        = std::thread(&Agent::run, &agent_);
     ProxyClient* client = wait_client(client_key);

@@ -33,16 +33,6 @@
 #include "TestCommon.h"
 
 
-bool operator==(const micrortps::OBJECTKIND& left, const uint8_t right)
-{
-    return left == static_cast<micrortps::OBJECTKIND>(right);
-}
-
-bool operator==(const uint8_t left, const micrortps::OBJECTKIND& right)
-{
-    return right == left;
-}
-
 bool operator==(const std::array<uint8_t, 2>& left, const uint16_t right)
 {
     return ((left[0] == (0xFF & (right >>  0))) &&
@@ -74,7 +64,7 @@ bool operator==(const std::array<uint8_t, 4>& left, const uint32_t& right)
             (left[3] == (0xFF & (right >> 24))));
 }
 
-bool operator==(const micrortps::ClientKey& left, const ClientKey& right)
+bool operator==(const dds::xrce::ClientKey& left, const ClientKey& right)
 {
     return ((left[0] == right.data[0]) &&
             (left[1] == right.data[1]) &&
