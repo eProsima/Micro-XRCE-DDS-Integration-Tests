@@ -74,7 +74,7 @@ class ClientTests : public ::testing::Test
 
         ~ClientTests()
         {
-            close_session(&session);
+            close_session_sync(&session);
         }
 
         void checkStatus()
@@ -91,7 +91,7 @@ class ClientTests : public ::testing::Test
 
         bool createClient()
         {
-            return init_session_syn(&session);
+            return init_session_sync(&session);
         }
 
         bool createParticipant()
