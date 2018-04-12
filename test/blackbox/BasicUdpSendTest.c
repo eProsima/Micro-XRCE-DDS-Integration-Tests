@@ -38,10 +38,10 @@ int main(int argc, char *argv[])
             printf("# send len %d\n", len);
         }
 
-        #ifdef WIN32
+    #ifdef WIN32
         Sleep(1000);
-	#else
-	    usleep(1000000);
+    #else
+        usleep(1000000);
 	#endif
     }
 

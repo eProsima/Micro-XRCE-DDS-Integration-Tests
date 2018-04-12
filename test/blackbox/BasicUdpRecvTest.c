@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     printf("\nAt the very beginning everything was black\n\n");
 
-    octet_t buffer[1024] = {""};
+    octet_t buffer[1024] = {0};
     int len = 0;
     micrortps_locator_t locator;
 
