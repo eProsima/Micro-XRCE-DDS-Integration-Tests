@@ -94,6 +94,11 @@ class ClientTests : public ::testing::Test
             return init_session_sync(&session);
         }
 
+        bool closeSession()
+        {
+            return close_session_sync(&session);
+        }
+
         bool createParticipant()
         {
             return create_participant_sync_by_ref(&session, participant_id_, "default_participant", false, false);
@@ -189,7 +194,7 @@ TEST_F(ClientTests, CreateDeleteClient)
 {
     ASSERT_EQ(createClient(), true);
     sleep(1);
-    ASSERT_EQ(delete_object(OBJECTID_CLIENT), true);
+    ASSERT_EQ(closeSession(), true);
 }
 
 TEST_F(ClientTests, CreateDeleteParticipant)
@@ -198,7 +203,7 @@ TEST_F(ClientTests, CreateDeleteParticipant)
     ASSERT_EQ(createParticipant(), true);
     sleep(1);
     ASSERT_EQ(delete_object(participant_id_), true);
-    ASSERT_EQ(delete_object(OBJECTID_CLIENT), true);
+    ASSERT_EQ(closeSession(), true);
 }
 
 TEST_F(ClientTests, CreateDeleteTopic)
@@ -209,7 +214,7 @@ TEST_F(ClientTests, CreateDeleteTopic)
     sleep(1);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
-    ASSERT_EQ(delete_object(OBJECTID_CLIENT), true);
+    ASSERT_EQ(closeSession(), true);
 }
 
 TEST_F(ClientTests, CreateDeletePublisher)
@@ -222,7 +227,7 @@ TEST_F(ClientTests, CreateDeletePublisher)
     ASSERT_EQ(delete_object(publisher_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
-    ASSERT_EQ(delete_object(OBJECTID_CLIENT), true);
+    ASSERT_EQ(closeSession(), true);
 }
 
 TEST_F(ClientTests, CreateDeleteSubscriber)
@@ -235,7 +240,7 @@ TEST_F(ClientTests, CreateDeleteSubscriber)
     ASSERT_EQ(delete_object(subscriber_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
-    ASSERT_EQ(delete_object(OBJECTID_CLIENT), true);
+    ASSERT_EQ(closeSession(), true);
 }
 
 TEST_F(ClientTests, CreateDeleteDataWriter)
@@ -250,7 +255,7 @@ TEST_F(ClientTests, CreateDeleteDataWriter)
     ASSERT_EQ(delete_object(publisher_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
-    ASSERT_EQ(delete_object(OBJECTID_CLIENT), true);
+    ASSERT_EQ(closeSession(), true);
 }
 
 TEST_F(ClientTests, CreateDeleteDataReader)
@@ -265,5 +270,5 @@ TEST_F(ClientTests, CreateDeleteDataReader)
     ASSERT_EQ(delete_object(subscriber_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
-    ASSERT_EQ(delete_object(OBJECTID_CLIENT), true);
+    ASSERT_EQ(closeSession(), true);
 }
