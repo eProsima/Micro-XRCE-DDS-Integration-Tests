@@ -193,7 +193,7 @@ void printl_hello_topic(const HelloTopic* hello_topic)
 TEST_F(ClientTests, CreateDeleteClient)
 {
     ASSERT_EQ(createClient(), true);
-    sleep(1);
+    ms_sleep(1000);
     ASSERT_EQ(closeSession(), true);
 }
 
@@ -201,7 +201,7 @@ TEST_F(ClientTests, CreateDeleteParticipant)
 {
     ASSERT_EQ(createClient(), true);
     ASSERT_EQ(createParticipant(), true);
-    sleep(1);
+    ms_sleep(1000);
     ASSERT_EQ(delete_object(participant_id_), true);
     ASSERT_EQ(closeSession(), true);
 }
@@ -211,7 +211,7 @@ TEST_F(ClientTests, CreateDeleteTopic)
     ASSERT_EQ(createClient(), true);
     ASSERT_EQ(createParticipant(), true);
     ASSERT_EQ(createTopic(), true);
-    sleep(1);
+    ms_sleep(1000);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
     ASSERT_EQ(closeSession(), true);
@@ -223,7 +223,7 @@ TEST_F(ClientTests, CreateDeletePublisher)
     ASSERT_EQ(createParticipant(), true);
     ASSERT_EQ(createTopic(), true);
     ASSERT_EQ(createPublisher(), true);
-    sleep(1);
+    ms_sleep(1000);
     ASSERT_EQ(delete_object(publisher_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
@@ -236,7 +236,7 @@ TEST_F(ClientTests, CreateDeleteSubscriber)
     ASSERT_EQ(createParticipant(), true);
     ASSERT_EQ(createTopic(), true);
     ASSERT_EQ(createSubscriber(), true);
-    sleep(1);
+    ms_sleep(1000);
     ASSERT_EQ(delete_object(subscriber_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
@@ -250,7 +250,7 @@ TEST_F(ClientTests, CreateDeleteDataWriter)
     ASSERT_EQ(createTopic(), true);
     ASSERT_EQ(createPublisher(), true);
     ASSERT_EQ(createDataWriter(), true);
-    sleep(1);
+    ms_sleep(1000);
     ASSERT_EQ(delete_object(datawriter_id_), true);
     ASSERT_EQ(delete_object(publisher_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
@@ -265,7 +265,7 @@ TEST_F(ClientTests, CreateDeleteDataReader)
     ASSERT_EQ(createTopic(), true);
     ASSERT_EQ(createSubscriber(), true);
     ASSERT_EQ(createDataReader(), true);
-    sleep(1);
+    ms_sleep(1000);
     ASSERT_EQ(delete_object(datareader_id_), true);
     ASSERT_EQ(delete_object(subscriber_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);

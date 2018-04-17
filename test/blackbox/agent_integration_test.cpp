@@ -113,7 +113,7 @@ class AgentTests : public ::testing::Test
         } while (++count < MAX_NUM_ATTEMPTS);
     }
 
-    eprosima::micrortps::Agent& agent_ = *root();
+    eprosima::micrortps::Agent& agent_ = root();
     const dds::xrce::ClientKey client_key         = {{0xAA, 0xBB, 0xCC, 0xDD}};
     std::thread agent_thread;
 };
@@ -218,6 +218,7 @@ TEST_F(AgentTests, CreateDeleteSubscriber)
     XRCEParticipant* participant =
         dynamic_cast<XRCEParticipant*>(wait_object(client, participant_id));
     Subscriber* subscriber = dynamic_cast<Subscriber*>(wait_object(client, subscriber_id));
+
     Subscriber* delete_subscriber =
         dynamic_cast<Subscriber*>(wait_delete_object(client, subscriber_id));
     XRCEParticipant* delete_participant =
