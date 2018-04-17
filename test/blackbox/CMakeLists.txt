@@ -17,8 +17,6 @@
 ###############################################################################
 if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     find_package(PythonInterp 3)
-    find_package(fastrtps REQUIRED)
-    find_package(fastcdr REQUIRED)
 
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
@@ -101,8 +99,8 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
             if(WIN32)
                 string(REPLACE ";" "\\;" WIN_PATH "$ENV{PATH}")
                 set_property(TEST ${INTEGRATION_TEST} APPEND PROPERTY ENVIRONMENT 
-    		    "PATH=$<SHELL_PATH:$<TARGET_FILE_DIR:microcdr>\\;$<TARGET_FILE_DIR:transport>\\;
-    		          $<TARGET_FILE_DIR:fastcdr>\\;$<TARGET_FILE_DIR:fastrtps>\\;${WIN_PATH}>"
+                    "PATH=$<SHELL_PATH:$<TARGET_FILE_DIR:microcdr>\\;$<TARGET_FILE_DIR:transport>\\;
+                    $<TARGET_FILE_DIR:fastcdr>\\;$<TARGET_FILE_DIR:fastrtps>\\;${WIN_PATH}>"
                 )
             endif()
         endforeach()

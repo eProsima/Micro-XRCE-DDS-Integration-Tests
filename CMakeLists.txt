@@ -17,15 +17,18 @@
 ###############################################################################
 cmake_minimum_required(VERSION 2.8.12)
 
+set(IS_TOP_LEVEL TRUE)
+if(PROJECT_SOURCE_DIR)
+    set(IS_TOP_LEVEL FALSE)
+endif()
+
 # Set CMAKE_BUILD_TYPE to Release by default.
-if(DEFINED CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING
-        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-        )
-else()
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to 'Release' as none was specified.")
     set(CMAKE_BUILD_TYPE Release CACHE STRING
         "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-        )
+        FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 project(micrortps_itest)
@@ -40,17 +43,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMESSAGE_LOGS")
 # eProsima build options
 ###############################################################################
 option(EPROSIMA_BUILD "Activate internal building" OFF)
-
-###############################################################################
-# Load external eProsima projects.
-###############################################################################
-include(${PROJECT_SOURCE_DIR}/cmake/dev/eprosima_libraries.cmake)
-option(THIRDPARTY "Activate the build of thirdparties" OFF)
-option(UPDATE_SUBMODULES "Update to the latest" OFF)
-
-if(EPROSIMA_BUILD)
-    set(THIRDPARTY ON)
-endif()
 
 ###############################################################################
 # Installation paths
@@ -107,19 +99,23 @@ else()
 endif()
 
 ###############################################################################
-# Subdirectories
+# Load external eProsima projects.
 ###############################################################################
+include(${PROJECT_SOURCE_DIR}/cmake/dev/eprosima_libraries.cmake)
+option(THIRDPARTY "Activate the build of thirdparties" OFF)
+option(UPDATE_SUBMODULES "Update to the latest" OFF)
+
+if(EPROSIMA_BUILD)
+    set(THIRDPARTY ON)
+endif()
+
 set(AGENT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/agent)
 set(CLIENT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/client)
-set(MICROCDR_SOURCE_DIR ${CLIENT_SOURCE_DIR}/thirdparty/micro-CDR)
-set(TRANSPORT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/transport)
 
-add_subdirectory(${TRANSPORT_SOURCE_DIR})
-add_subdirectory(${AGENT_SOURCE_DIR})
-add_subdirectory(${CLIENT_SOURCE_DIR})
+find_eprosima_package(agent)
+find_eprosima_package(client)
 
 get_directory_property(CLIENT_BINARY_DIR DIRECTORY ${CLIENT_SOURCE_DIR} DEFINITION PROJECT_BINARY_DIR)
-get_directory_property(MICROCDR_BINARY_DIR DIRECTORY ${MICROCDR_SOURCE_DIR} DEFINITION PROJECT_BINARY_DIR)
 
 ###############################################################################
 # Testing
