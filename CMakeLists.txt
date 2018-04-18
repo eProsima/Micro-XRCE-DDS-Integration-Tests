@@ -90,8 +90,14 @@ if(MSVC OR MSVC_IDE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
     endif()
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4204 /wd4710")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4204 /wd4710 /wd4996 /wd4820 /wd4255 /wd4668")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4710 /wd4996")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4710 /wd4996 /wd4820 /wd4255 /wd4668")
+    # Disabled warnings:
+    # 4710 - Function printf not inlined.
+    # 4996 - Function sprintf has undefined behavior.
+    # 4820 - Padding in structures.
+    # 4255 - Lack of void parameter in C functions.
+    # 4668 - Not defined preprocessor macro in Windows libraries.
 
     if(EPROSIMA_EXTRA_CMAKE_CXX_FLAGS)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EPROSIMA_EXTRA_CMAKE_CXX_FLAGS}")

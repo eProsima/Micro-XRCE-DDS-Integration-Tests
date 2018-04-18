@@ -74,7 +74,6 @@ class ClientTests : public ::testing::Test
 
         ~ClientTests()
         {
-            close_session_sync(&session);
         }
 
         void checkStatus()
@@ -203,6 +202,7 @@ TEST_F(ClientTests, CreateDeleteParticipant)
     ASSERT_EQ(createParticipant(), true);
     ms_sleep(1000);
     ASSERT_EQ(delete_object(participant_id_), true);
+    ms_sleep(1000);
     ASSERT_EQ(closeSession(), true);
 }
 
@@ -214,6 +214,7 @@ TEST_F(ClientTests, CreateDeleteTopic)
     ms_sleep(1000);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
+    ms_sleep(1000);
     ASSERT_EQ(closeSession(), true);
 }
 
@@ -227,6 +228,7 @@ TEST_F(ClientTests, CreateDeletePublisher)
     ASSERT_EQ(delete_object(publisher_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
+    ms_sleep(1000);
     ASSERT_EQ(closeSession(), true);
 }
 
@@ -240,6 +242,7 @@ TEST_F(ClientTests, CreateDeleteSubscriber)
     ASSERT_EQ(delete_object(subscriber_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
+    ms_sleep(1000);
     ASSERT_EQ(closeSession(), true);
 }
 
@@ -255,6 +258,7 @@ TEST_F(ClientTests, CreateDeleteDataWriter)
     ASSERT_EQ(delete_object(publisher_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
+    ms_sleep(1000);
     ASSERT_EQ(closeSession(), true);
 }
 
@@ -270,5 +274,6 @@ TEST_F(ClientTests, CreateDeleteDataReader)
     ASSERT_EQ(delete_object(subscriber_id_), true);
     ASSERT_EQ(delete_object(topic_id_), true);
     ASSERT_EQ(delete_object(participant_id_), true);
+    ms_sleep(1000);
     ASSERT_EQ(closeSession(), true);
 }

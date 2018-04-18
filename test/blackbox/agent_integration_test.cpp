@@ -412,6 +412,7 @@ TEST_F(AgentTests, ReadMultiData)
     XRCEParticipant* delete_participant =
         dynamic_cast<XRCEParticipant*>(wait_delete_object(client, participant_id));
     ProxyClient* delete_client = wait_delete_client(client_key);
+
     agent_.stop();
     agent_.abort_execution();
     agent_thread.join();
