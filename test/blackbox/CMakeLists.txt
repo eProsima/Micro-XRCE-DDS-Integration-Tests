@@ -52,10 +52,25 @@ if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
     add_executable(agent_itest agent_integration_test.cpp)
     target_include_directories(agent_itest PRIVATE ${GTEST_INCLUDE_DIR}
         ${PROJECT_SOURCE_DIR}/thirdparty/agent/include
-	${PROJECT_SOURCE_DIR}/thirdparty/agent/src/cpp
-	${PROJECT_SOURCE_DIR}/thirdparty/agent/thirdparty/asio/asio/include
+        ${PROJECT_SOURCE_DIR}/thirdparty/agent/src/cpp
+        ${PROJECT_SOURCE_DIR}/thirdparty/agent/thirdparty/asio/asio/include
     )
     target_link_libraries(agent_itest agent transport fastcdr fastrtps ${GTEST_BOTH_LIBRARIES})
+
+
+    ###############################################################################
+    # Agent-Client interaction test
+    ###############################################################################
+    add_executable(InteractionTest interaction_test.cpp)
+    add_gtest(InteractionTest interaction_test.cpp)
+    target_include_directories(InteractionTest
+        PRIVATE
+            ${GETS_INCLUDE_DIR}
+            ${PROJECT_SOURCE_DIR}/thirdparty/agent/include
+            ${PROJECT_SOURCE_DIR}/thirdparty/agent/src/cpp
+            ${PROJECT_SOURCE_DIR}/thirdparty/agent/thirdparty/asio/asio/include
+    )
+    target_link_libraries(InteractionTest agent micrortps-client transport fastcdr fastrtps ${GTEST_BOTH_LIBRARIES})
 
     ###############################################################################
     # Client-Agent integration test

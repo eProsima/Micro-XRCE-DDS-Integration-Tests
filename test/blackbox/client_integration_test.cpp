@@ -136,8 +136,6 @@ class ClientTests : public ::testing::Test
         /* Session config. */
         Session session;
         ClientKey key = {{0xAA, 0xBB, 0xCC, 0xDD}};
-        uint8_t buf[MAX_MESSAGE_SIZE];
-        micrortps_locator_t locator;
 
         /* Object IDs. */
         ObjectId participant_id_ = {{0x00, 0x01}};
