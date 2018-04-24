@@ -16,49 +16,24 @@
 #
 ###############################################################################
 
+#include_directories("/usr/include")
+#include_directories("../../thirdparty/client/include")
+#include_directories("../../thirdparty/client/src/c")
+#include_directories("../../thirdparty/agent/include")
 find_package(fastcdr REQUIRED)
 
 if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
 
-    ###############################################################################
-    # serialization
-    ###############################################################################
+    include(${PROJECT_SOURCE_DIR}/cmake/dev/gtest.cmake)
 
-    set(X_SER_DES_SRC CrossSerDesTest.cpp
-        TestCommon.cpp
-        ${CLIENT_SOURCE_DIR}/src/c/xrce_protocol_serialization.c
-        ${CLIENT_SOURCE_DIR}/src/c/input_message.c
-        ${CLIENT_SOURCE_DIR}/src/c/output_message.c
-        ${CLIENT_SOURCE_DIR}/src/c/log/message.c
-        ${AGENT_SOURCE_DIR}/src/cpp/MessageHeader.cxx
-        ${AGENT_SOURCE_DIR}/src/cpp/XRCETypes.cpp
-        ${AGENT_SOURCE_DIR}/src/cpp/Serializer.cpp
-        ${AGENT_SOURCE_DIR}/src/cpp/SubMessageHeader.cxx
-        ${AGENT_SOURCE_DIR}/src/cpp/XRCEFactory.cpp
-        ${AGENT_SOURCE_DIR}/src/cpp/XRCEParser.cpp
-    )
-
-    add_executable(cross_serialization_test ${X_SER_DES_SRC})
-    add_gtest(cross_serialization_test ${X_SER_DES_SRC})
-
-    target_include_directories(cross_serialization_test PRIVATE ${GTEST_INCLUDE_DIRS}
-        ${CLIENT_SOURCE_DIR}/include
-        ${CLIENT_BINARY_DIR}/include
-        ${CLIENT_SOURCE_DIR}/src/c
-        ${MICROCDR_SOURCE_DIR}/include
-        ${AGENT_SOURCE_DIR}/include
-        ${AGENT_SOURCE_DIR}/src/cpp
-    )
-
-    # TODO Check the really needed libraries.
-    target_link_libraries(cross_serialization_test ${GTEST_BOTH_LIBRARIES}
-        microcdr
+    set(CROSS_SERIALIZATION_SOURCE CrossSerialization.cpp ClientSerialization.cpp AgentSerialization.cpp)
+    add_executable(CrossSerializationTest ${CROSS_SERIALIZATION_SOURCE})
+    add_gtest(CrossSerializationTest ${CROSS_SERIALIZATION_SOURCE})
+    target_include_directories(CrossSerializationTest PRIVATE ${GTEST_INCLUDE_DIRS})
+    target_link_libraries(CrossSerializationTest ${GTEST_BOTH_LIBRARIES}
         micrortps-client
-        fastcdr
-        transport
-        gtest
-        gtest_main
+        agent
         pthread)
 
-
 endif()
+
