@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <agent/Root.h>
-#include <agent/XRCEObject.hpp>
+#include <agent/XRCEObject.h>
 #include <agent/datareader/DataReader.h>
 #include <agent/datawriter/DataWriter.h>
 #include <agent/participant/Participant.h>
