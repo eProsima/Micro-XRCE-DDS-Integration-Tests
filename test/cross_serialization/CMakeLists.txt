@@ -31,9 +31,29 @@ target_link_libraries(cross_serialization_test_exec
     ${GTEST_BOTH_LIBRARIES}
     micrortps-client
     micrortps-agent
-    pthread
     )
 set_target_properties(cross_serialization_test_exec PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
     )
+if(WIN32)
+    set(DEPENDENCIES
+        micrortps-client
+        micrortps-agent
+        transport
+        microcdr
+        fastrtps
+        fastcdr
+        )
+    set(WIN_PATH "$ENV{PATH}")
+    foreach(P ${CMAKE_PREFIX_PATH})
+        set(WIN_PATH "${CMAKE_PREFIX_PATH}/bin;${WIN_PATH}")
+    endforeach()
+    foreach(D ${DEPENDENCIES})
+        if(TARGET ${D})
+            set(WIN_PATH "$<TARGET_FILE_DIR:${D}>;${WIN_PATH}")
+        endif()
+    endforeach()
+    string(REPLACE ";" "\\;" WIN_PATH "${WIN_PATH}")
+    set_tests_properties(cross_serialization_test PROPERTIES ENVIRONMENT "PATH=${WIN_PATH}")
+endif()

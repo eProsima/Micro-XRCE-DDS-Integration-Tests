@@ -6,7 +6,7 @@
 #include "HelloWorld.h"
 
 #define MAX_NUM_ATTEMPTS    100
-#define MAX_TIME_WAIT       100
+#define MAX_TIME_WAIT        10
 #define TOPIC_PREFIX       0x01
 
 namespace eprosima { namespace micrortps { namespace testing {
@@ -27,6 +27,7 @@ public:
     {
         agent_.init(port_);
         thread_ = std::thread(&Agent::run, &agent_);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     void stop()
