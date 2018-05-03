@@ -37,6 +37,16 @@ set_target_properties(agent_itest PROPERTIES
     CXX_STANDARD_REQUIRED YES
     )
 
+# Interaction test
+add_executable(interaction_test_exec interaction_test.cpp)
+add_test(NAME interaction_test COMMAND interaction_test_exec)
+target_include_directories(interaction_test_exec PRIVATE ${GTEST_INCLUDE_DIR})
+target_link_libraries(interaction_test_exec micrortps-agent micrortps-client ${GTEST_BOTH_LIBRARIES})
+set_target_properties(interaction_test_exec PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    )
+
 # Client-Agent integration test
 if(PYTHONINTERP_FOUND)
     set(ITESTS

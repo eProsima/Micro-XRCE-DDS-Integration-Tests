@@ -16,24 +16,24 @@
 #
 ###############################################################################
 
-#include_directories("/usr/include")
-#include_directories("../../thirdparty/client/include")
-#include_directories("../../thirdparty/client/src/c")
-#include_directories("../../thirdparty/agent/include")
-find_package(fastcdr REQUIRED)
-
-if(NOT ((MSVC OR MSVC_IDE) AND EPROSIMA_INSTALLER))
-
-    include(${PROJECT_SOURCE_DIR}/cmake/dev/gtest.cmake)
-
-    set(CROSS_SERIALIZATION_SOURCE CrossSerialization.cpp ClientSerialization.cpp AgentSerialization.cpp)
-    add_executable(CrossSerializationTest ${CROSS_SERIALIZATION_SOURCE})
-    add_gtest(CrossSerializationTest ${CROSS_SERIALIZATION_SOURCE})
-    target_include_directories(CrossSerializationTest PRIVATE ${GTEST_INCLUDE_DIRS})
-    target_link_libraries(CrossSerializationTest ${GTEST_BOTH_LIBRARIES}
-        micrortps-client
-        agent
-        pthread)
-
-endif()
-
+add_executable(cross_serialization_test_exec
+    CrossSerialization.cpp
+    ClientSerialization.cpp
+    AgentSerialization.cpp
+    )
+add_test(NAME cross_serialization_test COMMAND cross_serialization_test_exec)
+target_include_directories(cross_serialization_test_exec
+    PRIVATE
+        ${GTEST_INCLUDE_DIRS}
+        "../../thirdparty/client/src/c"
+        )
+target_link_libraries(cross_serialization_test_exec
+    ${GTEST_BOTH_LIBRARIES}
+    micrortps-client
+    micrortps-agent
+    pthread
+    )
+set_target_properties(cross_serialization_test_exec PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    )
