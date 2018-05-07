@@ -16,21 +16,16 @@
 #
 ###############################################################################
 
-add_executable(cross_serialization_test_exec
-    CrossSerialization.cpp
-    ClientSerialization.cpp
-    AgentSerialization.cpp
-    )
+add_executable(cross_serialization_test_exec CrossSerialization.cpp )
 add_test(NAME cross_serialization_test COMMAND cross_serialization_test_exec)
 target_include_directories(cross_serialization_test_exec
     PRIVATE
         ${GTEST_INCLUDE_DIRS}
-        "../../thirdparty/client/src/c"
         )
 target_link_libraries(cross_serialization_test_exec
     ${GTEST_BOTH_LIBRARIES}
-    micrortps-client
-    micrortps-agent
+    cross-serialization-intest-client
+    cross-serialization-intest-agent
     )
 set_target_properties(cross_serialization_test_exec PROPERTIES
     CXX_STANDARD 11
@@ -38,6 +33,8 @@ set_target_properties(cross_serialization_test_exec PROPERTIES
     )
 if(WIN32)
     set(DEPENDENCIES
+        cross-serialization-intest-client
+        cross-serialization-intest-agent
         micrortps-client
         micrortps-agent
         transport

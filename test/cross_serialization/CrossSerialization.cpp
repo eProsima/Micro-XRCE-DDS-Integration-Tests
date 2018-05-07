@@ -31,8 +31,8 @@
  ****************************************************************************/
 
 #include <gtest/gtest.h>
-#include "ClientSerialization.hpp"
-#include "AgentSerialization.hpp"
+#include <ClientSerialization.hpp>
+#include <AgentSerialization.hpp>
 #include <cstdint>
 
 class CrossSerializationTests : public testing::Test
