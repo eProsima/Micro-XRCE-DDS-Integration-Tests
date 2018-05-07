@@ -16,41 +16,31 @@
 #
 ###############################################################################
 
-add_executable(cross_serialization_test_exec CrossSerialization.cpp )
-add_test(NAME cross_serialization_test COMMAND cross_serialization_test_exec)
-target_include_directories(cross_serialization_test_exec
-    PRIVATE
-        ${GTEST_INCLUDE_DIRS}
-        )
-target_link_libraries(cross_serialization_test_exec
-    ${GTEST_BOTH_LIBRARIES}
-    cross-serialization-intest-client
-    cross-serialization-intest-agent
-    )
-set_target_properties(cross_serialization_test_exec PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED YES
-    )
-if(WIN32)
-    set(DEPENDENCIES
+set(SRCS CrossSerialization.cpp)
+add_executable(cross_serialization_test ${SRCS})
+add_gtest(cross_serialization_test
+    SOURCES
+        ${SRCS}
+    DEPENDENCIES
         cross-serialization-intest-client
         cross-serialization-intest-agent
         micrortps-client
         micrortps-agent
-        transport
+        micrortps-transport
         microcdr
         fastrtps
         fastcdr
-        )
-    set(WIN_PATH "$ENV{PATH}")
-    foreach(P ${CMAKE_PREFIX_PATH})
-        set(WIN_PATH "${CMAKE_PREFIX_PATH}/bin;${WIN_PATH}")
-    endforeach()
-    foreach(D ${DEPENDENCIES})
-        if(TARGET ${D})
-            set(WIN_PATH "$<TARGET_FILE_DIR:${D}>;${WIN_PATH}")
-        endif()
-    endforeach()
-    string(REPLACE ";" "\\;" WIN_PATH "${WIN_PATH}")
-    set_tests_properties(cross_serialization_test PROPERTIES ENVIRONMENT "PATH=${WIN_PATH}")
-endif()
+    )
+target_include_directories(cross_serialization_test
+    PRIVATE
+        ${GTEST_INCLUDE_DIRS}
+    )
+target_link_libraries(cross_serialization_test
+    ${GTEST_BOTH_LIBRARIES}
+        cross-serialization-intest-client
+        cross-serialization-intest-agent
+    )
+set_target_properties(cross_serialization_test PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    )

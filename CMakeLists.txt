@@ -45,20 +45,23 @@ endif()
 # eProsima build options
 ###############################################################################
 option(EPROSIMA_BUILD "Activate internal building" OFF)
-option(EPROSIMA_BUILD_TESTS "Activate internal building" ON)
+option(EPROSIMA_BUILD_TESTS "Activate internal building" OFF)
 option(THIRDPARTY "Activate the build of thirdparties" ON)
-option(VERBOSE "Use verbose output" ON)
+option(VERBOSE "Use verbose output" OFF)
 
 set(THIRDPARTY ON)
-set(EPROSIMA_BUILD_TESTS ON)
-set(VERBOSE ON)
+if(EPROSIMA_BUILD)
+    set(EPROSIMA_BUILD_TESTS ON)
+endif()
 
 ###############################################################################
 # Load external eProsima projects.
 ###############################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/dev/eprosima_libraries.cmake)
-find_eprosima_package(agent REQUIRED)
-find_eprosima_package(client REQUIRED)
+eprosima_find_package(agent REQUIRED)
+eprosima_find_package(fastrtps REQUIRED)
+eprosima_find_package(fastcdr REQUIRED)
+eprosima_find_package(client REQUIRED)
 
 ###############################################################################
 # Testing
