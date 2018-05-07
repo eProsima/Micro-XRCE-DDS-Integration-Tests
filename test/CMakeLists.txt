@@ -16,5 +16,5 @@
 #
 ###############################################################################
 
-add_subdirectory(blackbox)
+add_subdirectory(interaction)
 add_subdirectory(cross_serialization)

@@ -2,7 +2,40 @@
 #include <ClientInteraction.hpp>
 #include <AgentInteraction.hpp>
 
-TEST_F(InteractionTest, ClientToAgent)
+class InteractionTest : public ::testing::Test
+{
+public:
+    InteractionTest()
+        : agent_(port_),
+          client_(client_key_, ip_, port_),
+          publisher_(publisher_key_, ip_, port_),
+          subscriber_(subscriber_key_, ip_, port_)
+    {}
+
+    ~InteractionTest()
+    {
+        agent().stop();
+    }
+
+    AgentT& agent() { return agent_; }
+    Client& client() { return client_; }
+    Publisher& publisher() { return publisher_; }
+    Subscriber& subscriber() { return subscriber_; }
+
+private:
+    const ClientKey client_key_{{0xAA, 0xBB, 0xCC, 0xDD}};
+    const ClientKey publisher_key_{{0xAA, 0xAA, 0xAA, 0xAA}};
+    const ClientKey subscriber_key_{{0xBB, 0xBB, 0xBB, 0xBB}};
+    const uint8_t ip_[4] = {127, 0, 0, 1};
+    const uint16_t port_ = 2019;
+
+    AgentT agent_;
+    Client client_;
+    Publisher publisher_;
+    Subscriber subscriber_;
+};
+
+TEST_F(InteractionTest, ClientToAgentCreates)
 {
     const ClientKey& key = client().get_client_key();
     std::array<uint8_t, 4> client_key = {key.data[0], key.data[1], key.data[2], key.data[3]};
