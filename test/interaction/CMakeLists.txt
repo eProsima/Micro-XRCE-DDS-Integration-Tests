@@ -17,36 +17,23 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
     FILES_MATCHING PATTERN "*.xml"
     )
 
-add_executable(interaction_test_exec Interaction.cpp)
-add_test(NAME interaction_test COMMAND interaction_test_exec)
-target_include_directories(interaction_test_exec PRIVATE ${GTEST_INCLUDE_DIR})
-target_link_libraries(interaction_test_exec interaction-intest-agent interaction-intest-client ${GTEST_BOTH_LIBRARIES})
-set_target_properties(interaction_test_exec PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED YES
-    )
-
-if(WIN32)
-    set(DEPENDENCIES
+add_executable(interaction_test Interaction.cpp)
+add_gtest(interaction_test 
+    SOURCES
+        Interaction.cpp
+    DEPENDENCIES
         interaction-intest-client
         interaction-intest-agent
-        micrortps-agent
-        micrortps-client
-        transport
+        micrortps_agent_static
+        micrortps_client
+        micrortps_transport
         microcdr
         fastrtps
         fastcdr
-        )
-    set(WIN_PATH "$ENV{PATH}")
-    foreach(P ${CMAKE_PREFIX_PATH})
-        set(WIN_PATH "${CMAKE_PREFIX_PATH}/bin;${WIN_PATH}")
-    endforeach()
-    foreach(D ${DEPENDENCIES})
-        if(TARGET ${D})
-            set(WIN_PATH "$<TARGET_FILE_DIR:${D}>;${WIN_PATH}")
-        endif()
-    endforeach()
-    string(REPLACE ";" "\\;" WIN_PATH "${WIN_PATH}")
-    set_tests_properties(interaction_test PROPERTIES ENVIRONMENT "PATH=${WIN_PATH}")
-endif()
-
+    )
+target_include_directories(interaction_test PRIVATE ${GTEST_INCLUDE_DIR})
+target_link_libraries(interaction_test interaction-intest-agent interaction-intest-client ${GTEST_BOTH_LIBRARIES})
+set_target_properties(interaction_test PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    )

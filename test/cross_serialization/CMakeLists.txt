@@ -24,9 +24,9 @@ add_gtest(cross_serialization_test
     DEPENDENCIES
         cross-serialization-intest-client
         cross-serialization-intest-agent
-        micrortps-client
-        micrortps-agent
-        micrortps-transport
+        micrortps_client
+        micrortps_agent_static
+        micrortps_transport
         microcdr
         fastrtps
         fastcdr
