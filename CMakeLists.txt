@@ -46,11 +46,11 @@ endif()
 ###############################################################################
 option(EPROSIMA_BUILD "Activate internal building" OFF)
 option(EPROSIMA_BUILD_TESTS "Activate internal building" OFF)
-option(THIRDPARTY "Activate the build of thirdparties" ON)
+option(THIRDPARTY "Activate the build of thirdparties" OFF)
 option(VERBOSE "Use verbose output" OFF)
 
-set(THIRDPARTY ON)
 if(EPROSIMA_BUILD)
+    set(THIRDPARTY ON)
     set(EPROSIMA_BUILD_TESTS ON)
 endif()
 
@@ -66,10 +66,12 @@ eprosima_find_package(client REQUIRED)
 ###############################################################################
 # Testing
 ###############################################################################
-include(${PROJECT_SOURCE_DIR}/cmake/dev/gtest.cmake)
-check_gtest()
-if(GTEST_FOUND)
-    enable_testing()
-    include(CTest)
-    add_subdirectory(test)
+if(EPROSIMA_BUILD_TESTS)
+    include(${PROJECT_SOURCE_DIR}/cmake/dev/gtest.cmake)
+    check_gtest()
+    if(GTEST_FOUND)
+        enable_testing()
+        include(CTest)
+        add_subdirectory(test)
+    endif()
 endif()
