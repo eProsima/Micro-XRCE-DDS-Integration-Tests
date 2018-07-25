@@ -33,11 +33,12 @@
 #include <gtest/gtest.h>
 #include <ClientSerialization.hpp>
 #include <AgentSerialization.hpp>
-#include <cstdint>
+
+#define AGENT_HEADER_OFFSET 12 //Temporal approach: used for skip the agent header and subheader
 
 class CrossSerializationTests : public testing::Test
 {
-
+    //borrar
 };
 
 /* ############################################## TESTS ##################################################### */
@@ -47,6 +48,7 @@ TEST_F(CrossSerializationTests, CreateClientPayload)
     std::vector<uint8_t> client_ser = ClientSerialization::create_client_payload();
     std::vector<uint8_t> agent_ser = AgentSerialization::create_client_payload();
 
+    agent_ser.erase(agent_ser.begin(), agent_ser.begin() + AGENT_HEADER_OFFSET);
     EXPECT_EQ(client_ser, agent_ser);
 }
 
@@ -55,6 +57,7 @@ TEST_F(CrossSerializationTests, CreatePayload)
     std::vector<uint8_t> client_ser = ClientSerialization::create_payload();
     std::vector<uint8_t> agent_ser = AgentSerialization::create_payload();
 
+    agent_ser.erase(agent_ser.begin(), agent_ser.begin() + AGENT_HEADER_OFFSET);
     EXPECT_EQ(client_ser, agent_ser);
 }
 
@@ -63,6 +66,7 @@ TEST_F(CrossSerializationTests, DeletePayload)
     std::vector<uint8_t> client_ser = ClientSerialization::delete_payload();
     std::vector<uint8_t> agent_ser = AgentSerialization::delete_payload();
 
+    agent_ser.erase(agent_ser.begin(), agent_ser.begin() + AGENT_HEADER_OFFSET);
     EXPECT_EQ(client_ser, agent_ser);
 }
 
@@ -71,6 +75,7 @@ TEST_F(CrossSerializationTests, StatusPayload)
     std::vector<uint8_t> client_ser = ClientSerialization::status_payload();
     std::vector<uint8_t> agent_ser = AgentSerialization::status_payload();
 
+    agent_ser.erase(agent_ser.begin(), agent_ser.begin() + AGENT_HEADER_OFFSET);
     EXPECT_EQ(client_ser, agent_ser);
 }
 
@@ -79,6 +84,7 @@ TEST_F(CrossSerializationTests, ReadDataPayload)
     std::vector<uint8_t> client_ser = ClientSerialization::read_data_payload();
     std::vector<uint8_t> agent_ser = AgentSerialization::read_data_payload();
 
+    agent_ser.erase(agent_ser.begin(), agent_ser.begin() + AGENT_HEADER_OFFSET);
     EXPECT_EQ(client_ser, agent_ser);
 }
 
@@ -87,6 +93,7 @@ TEST_F(CrossSerializationTests, WriteDataPayloadData)
     std::vector<uint8_t> client_ser = ClientSerialization::write_data_payload_data();
     std::vector<uint8_t> agent_ser = AgentSerialization::write_data_payload_data();
 
+    agent_ser.erase(agent_ser.begin(), agent_ser.begin() + AGENT_HEADER_OFFSET);
     EXPECT_EQ(client_ser, agent_ser);
 }
 
@@ -95,6 +102,7 @@ TEST_F(CrossSerializationTests, DataPayloadData)
     std::vector<uint8_t> client_ser = ClientSerialization::data_payload_data();
     std::vector<uint8_t> agent_ser = AgentSerialization::data_payload_data();
 
+    agent_ser.erase(agent_ser.begin(), agent_ser.begin() + AGENT_HEADER_OFFSET);
     EXPECT_EQ(client_ser, agent_ser);
 }
 
@@ -103,6 +111,7 @@ TEST_F(CrossSerializationTests, AcknackPayload)
     std::vector<uint8_t> client_ser = ClientSerialization::acknack_payload();
     std::vector<uint8_t> agent_ser = AgentSerialization::acknack_payload();
 
+    agent_ser.erase(agent_ser.begin(), agent_ser.begin() + AGENT_HEADER_OFFSET);
     EXPECT_EQ(client_ser, agent_ser);
 }
 
@@ -111,5 +120,6 @@ TEST_F(CrossSerializationTests, HeartbeatPayload)
     std::vector<uint8_t> client_ser = ClientSerialization::heartbeat_payload();
     std::vector<uint8_t> agent_ser = AgentSerialization::heartbeat_payload();
 
+    agent_ser.erase(agent_ser.begin(), agent_ser.begin() + AGENT_HEADER_OFFSET);
     EXPECT_EQ(client_ser, agent_ser);
 }

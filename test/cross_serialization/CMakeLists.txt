@@ -24,9 +24,8 @@ add_gtest(cross_serialization_test
     DEPENDENCIES
         cross-serialization-intest-client
         cross-serialization-intest-agent
+        micrortps_agent
         micrortps_client
-        micrortps_agent_static
-        micrortps_transport
         microcdr
         fastrtps
         fastcdr
@@ -36,9 +35,9 @@ target_include_directories(cross_serialization_test
         ${GTEST_INCLUDE_DIRS}
     )
 target_link_libraries(cross_serialization_test
-    ${GTEST_BOTH_LIBRARIES}
         cross-serialization-intest-client
         cross-serialization-intest-agent
+        ${GTEST_BOTH_LIBRARIES}
     )
 set_target_properties(cross_serialization_test PROPERTIES
     CXX_STANDARD 11

@@ -18,22 +18,25 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
     )
 
 add_executable(interaction_test Interaction.cpp)
-add_gtest(interaction_test 
+add_gtest(interaction_test
     SOURCES
         Interaction.cpp
     DEPENDENCIES
         interaction-intest-client
-        interaction-intest-agent
-        micrortps_agent_static
+        micrortps_agent
         micrortps_client
-        micrortps_transport
         microcdr
         fastrtps
         fastcdr
     )
 target_include_directories(interaction_test PRIVATE ${GTEST_INCLUDE_DIR})
-target_link_libraries(interaction_test interaction-intest-agent interaction-intest-client ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(interaction_test
+    interaction-intest-client
+    micrortps_agent
+    ${GTEST_BOTH_LIBRARIES}
+    )
 set_target_properties(interaction_test PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
     )
+

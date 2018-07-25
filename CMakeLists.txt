@@ -64,6 +64,15 @@ eprosima_find_package(fastcdr REQUIRED)
 eprosima_find_package(client REQUIRED)
 
 ###############################################################################
+# Set flags
+###############################################################################
+if(MSVC OR MSVC_IDE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /wd4700 /wd4996 /wd4820 /wd4255 /wd4668")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -fstrict-aliasing -Wall -Wextra -Wcast-align")
+endif()
+
+###############################################################################
 # Testing
 ###############################################################################
 if(EPROSIMA_BUILD_TESTS)
@@ -72,6 +81,9 @@ if(EPROSIMA_BUILD_TESTS)
     if(GTEST_FOUND)
         enable_testing()
         include(CTest)
-        add_subdirectory(test)
+
+        add_subdirectory(test/interaction)
+        add_subdirectory(test/cross_serialization)
+
     endif()
 endif()
