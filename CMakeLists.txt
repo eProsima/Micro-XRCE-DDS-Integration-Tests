@@ -42,48 +42,21 @@ else()
 endif()
 
 ###############################################################################
-# eProsima build options
-###############################################################################
-option(EPROSIMA_BUILD "Activate internal building" OFF)
-option(EPROSIMA_BUILD_TESTS "Activate internal building" OFF)
-option(THIRDPARTY "Activate the build of thirdparties" OFF)
-option(VERBOSE "Use verbose output" OFF)
-
-if(EPROSIMA_BUILD)
-    set(THIRDPARTY ON)
-    set(EPROSIMA_BUILD_TESTS ON)
-endif()
-
-###############################################################################
 # Load external eProsima projects.
 ###############################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/dev/eprosima_libraries.cmake)
-set(CLIENT_BRANCH_ENV_ $ENV{CLIENT_BRANCH})
-if(CLIENT_BRANCH_ENV_)
-    set(CLIENT_BRANCH "BRANCH" "${CLIENT_BRANCH_ENV_}")
-else()
-    set(CLIENT_BRANCH "BRANCH" "develop")
-endif()
-set(CLIENT_URL_ENV_ $ENV{CLIENT_URL})
-if(CLIENT_URL_ENV_)
-    set(CLIENT_URL "REPO_URL" "${CLIENT_URL_ENV_}")
-else()
-    set(CLIENT_URL "REPO_URL" "git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-client.git")
-endif()
-set(AGENT_BRANCH_ENV_ $ENV{AGENT_BRANCH})
-if(AGENT_BRANCH_ENV_)
-    set(AGENT_BRANCH "BRANCH" "${AGENT_BRANCH_ENV_}")
-else()
-    set(AGENT_BRANCH "BRANCH" "develop")
-endif()
-set(AGENT_URL_ENV_ $ENV{AGENT_URL})
-if(AGENT_URL_ENV_)
-    set(AGENT_URL "REPO_URL" "${AGENT_URL_ENV_}")
-else()
-    set(AGENT_URL "REPO_URL" "git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-agent.git")
-endif()
-eprosima_clone_package(agent ${AGENT_URL} ${AGENT_BRANCH} REQUIRED)
-eprosima_clone_package(client ${CLIENT_URL} ${CLIENT_BRANCH} REQUIRED)
+option(CLIENT_URL "url of micrortps-client repository which will be tested." "git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-client.git")
+option(CLIENT_BRANCH "micrortps-client's branch which will be tested." "develop")
+option(AGENT_URL "url of micrortps-agent repository which will be tested." "git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-agent.git")
+option(AGENT_BRANCH "micrortps-agent's branch which will be tested." "develop")
+
+set(CLIENT_URL_ "REPO_URL" "${CLIENT_URL}")
+set(CLIENT_BRANCH_ "BRANCH" "${CLIENT_BRANCH}")
+set(AGENT_BRANCH_ "BRANCH" "${AGENT_BRANCH}")
+set(AGENT_URL_ "REPO_URL" "${AGENT_URL}")
+
+eprosima_clone_package(agent ${AGENT_URL_} ${AGENT_BRANCH_} REQUIRED)
+eprosima_clone_package(client ${CLIENT_URL_} ${CLIENT_BRANCH_} REQUIRED)
 
 ###############################################################################
 # Set flags
@@ -97,18 +70,18 @@ endif()
 ###############################################################################
 # Testing
 ###############################################################################
-if(EPROSIMA_BUILD_TESTS)
-    include(${PROJECT_SOURCE_DIR}/cmake/common/gtest.cmake)
-    check_gtest()
-    if(GTEST_FOUND)
-        enable_testing()
-        include(CTest)
+include(${PROJECT_SOURCE_DIR}/cmake/common/gtest.cmake)
+check_gtest()
+if(GTEST_FOUND)
+    enable_testing()
+    include(CTest)
 
-        add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/interaction)
-        add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
-        add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
-        add_subdirectory(test/interaction)
-        add_subdirectory(test/cross_serialization)
+    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/interaction)
+    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
+    add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
+    add_subdirectory(test/interaction)
+    add_subdirectory(test/cross_serialization)
 
-    endif()
+else()
+    message(FATAL_ERROR "This meta-project needs gtest")
 endif()
