@@ -49,6 +49,13 @@ TEST_F(InteractionTest, ExistantEntitiesCreationReplaceReliable)
     client.create_entities(1, 0x80, MR_STATUS_OK, MR_REPLACE);
 }
 
+TEST_F(InteractionTest, ExistantEntitiesCreationReuseReliable)
+{
+    Client client(AGENT_PORT, 0.0f, 8);
+    client.create_entities(1, 0x80, MR_STATUS_OK, 0);
+    client.create_entities(1, 0x80, MR_STATUS_OK, MR_REUSE);
+}
+
 TEST_F(InteractionTest, ExistantEntitiesCreationNoReplaceReliable)
 {
     Client client(AGENT_PORT, 0.0f, 8);
