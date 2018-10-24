@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ###############################################################################
-# CMake build rules for micro RTPS integration test
+# CMake build rules for micro XRCE-DDS integration test
 ###############################################################################
 cmake_minimum_required(VERSION 2.8.12)
 
@@ -35,25 +35,28 @@ endif()
 # Product information
 ###############################################################################
 if(CMAKE_VERSION VERSION_LESS 3.0)
-    project(micrortps_itest C CXX)
+    project(microxrcedds_itest C CXX)
 else()
     cmake_policy(SET CMP0048 NEW)
-    project(micrortps_itest LANGUAGES C CXX)
+    project(microxrcedds_itest LANGUAGES C CXX)
 endif()
 
 ###############################################################################
 # Load external eProsima projects.
 ###############################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/dev/eprosima_libraries.cmake)
-option(CLIENT_URL "url of micrortps-client repository which will be tested." "git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-client.git")
-option(CLIENT_BRANCH "micrortps-client's branch which will be tested." "develop")
-option(AGENT_URL "url of micrortps-agent repository which will be tested." "git@gitlab.sambaserver.eprosima.com:eProsima/micrortps-agent.git")
-option(AGENT_BRANCH "micrortps-agent's branch which will be tested." "develop")
+set(CLIENT_URL "git@github.com:eProsima/Micro-XRCE-DDS-Client.git" CACHE STRING "URL of micrortps-client repository which will be tested.")
+set(CLIENT_BRANCH "develop" CACHE STRING "micrortps-client's branch which will be tested.")
+set(AGENT_URL "git@github.com:eProsima/Micro-XRCE-DDS-Agent.git" CACHE STRING "url of micrortps-agent repository which will be tested.")
+set(AGENT_BRANCH "develop" CACHE STRING "micrortps-agent's branch which will be tested.")
 
 set(CLIENT_URL_ "REPO_URL" "${CLIENT_URL}")
 set(CLIENT_BRANCH_ "BRANCH" "${CLIENT_BRANCH}")
 set(AGENT_BRANCH_ "BRANCH" "${AGENT_BRANCH}")
 set(AGENT_URL_ "REPO_URL" "${AGENT_URL}")
+
+option(THIRDPARTY "thirdparty" ON)
+option(PACKAGE_UPDATE "update" OFF)
 
 eprosima_clone_package(agent ${AGENT_URL_} ${AGENT_BRANCH_} REQUIRED)
 eprosima_clone_package(client ${CLIENT_URL_} ${CLIENT_BRANCH_} REQUIRED)
@@ -65,6 +68,12 @@ if(MSVC OR MSVC_IDE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /wd4700 /wd4996 /wd4820 /wd4255 /wd4668")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -fstrict-aliasing -Wall -Wextra -Wcast-align")
+endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(PLATFORM_NAME_LINUX ON)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    set(PLATFORM_NAME_WINDOWS ON)
 endif()
 
 ###############################################################################
@@ -80,7 +89,9 @@ if(GTEST_FOUND)
     add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
     add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
     add_subdirectory(test/interaction)
-    add_subdirectory(test/cross_serialization)
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        add_subdirectory(test/cross_serialization)
+    endif()
 
 else()
     message(FATAL_ERROR "This meta-project needs gtest")
