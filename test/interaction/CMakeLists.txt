@@ -1,4 +1,4 @@
-# Copyright 2017 Proyectos y Sistemas de Mantenimiento SL (eProsima).
+# Copyright 2018 Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,18 +23,20 @@ add_gtest(interaction_test
         Interaction.cpp
     DEPENDENCIES
         interaction-intest-client
-        micrortps_agent
-        micrortps_client
+        microxrcedds_agent
+        microxrcedds_client
         microcdr
         fastrtps
         fastcdr
     )
+
 target_include_directories(interaction_test PRIVATE ${GTEST_INCLUDE_DIR})
 target_link_libraries(interaction_test
     interaction-intest-client
-    micrortps_agent
+    microxrcedds_agent
     ${GTEST_BOTH_LIBRARIES}
     )
+
 set_target_properties(interaction_test PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES

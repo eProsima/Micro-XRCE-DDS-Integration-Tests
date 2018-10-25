@@ -1,7 +1,7 @@
 Overview
 ========
 
-Meta-repository used by our Jenkins CI and developers to check the interoperability between micrortps-client and
+Meta-repository used by Jenkins CI and developers to check the interoperability between micrortps-client and
 micrortps-agent is not break.
 
 Usage

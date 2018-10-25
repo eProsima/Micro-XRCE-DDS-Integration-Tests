@@ -18,30 +18,38 @@ macro(eprosima_clone_package package)
 
         # Parse arguments.
         set(options REQUIRED)
-        set(uniValueArgs BRANCH REPO_URL)
+        set(uniValueArgs BRANCH REPO_URL OPTIONS)
         cmake_parse_arguments(FIND "${options}" "${uniValueArgs}" "" ${ARGN})
 
-        if(EXISTS "${PROJECT_BINARY_DIR}/${package}_clone")
+        if(EXISTS "${PROJECT_BINARY_DIR}/${package}_clone" AND ${PACKAGE_UPDATE})
             file(REMOVE_RECURSE "${PROJECT_BINARY_DIR}/${package}_clone")
         endif()
 
-        message(STATUS "${package} is being cloning (${FIND_REPO_URL} --- ${FIND_BRANCH}) ...")
-        execute_process(
-            COMMAND git clone "${FIND_REPO_URL}" "${package}_clone" --branch ${FIND_BRANCH}
-            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-            RESULT_VARIABLE EXECUTE_RESULT
-            )
-        if(EXECUTE_RESULT EQUAL 0)
-            foreach(opt_ ${FIND_OPTIONS})
-                set(${opt_} ON)
-            endforeach()
+        if(NOT EXISTS "${PROJECT_BINARY_DIR}/${package}_clone")
+            message(STATUS "${package} is being cloning (${FIND_REPO_URL} --- ${FIND_BRANCH}) ...")
+            execute_process(
+                COMMAND git clone "${FIND_REPO_URL}" "${package}_clone" --branch ${FIND_BRANCH}
+                WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                RESULT_VARIABLE EXECUTE_RESULT
+                )
+            if(EXECUTE_RESULT EQUAL 0)
+                foreach(opt_ ${FIND_OPTIONS})
+                    set(${opt_} ON)
+                endforeach()
+                add_subdirectory(${PROJECT_BINARY_DIR}/${package}_clone)
+                set(${package}_FOUND TRUE)
+                if(NOT IS_TOP_LEVEL)
+                    set(${package}_FOUND TRUE PARENT_SCOPE)
+                endif()
+            else()
+                message(WARNING "Cannot clone ${package}")
+            endif()
+        else()
             add_subdirectory(${PROJECT_BINARY_DIR}/${package}_clone)
             set(${package}_FOUND TRUE)
             if(NOT IS_TOP_LEVEL)
                 set(${package}_FOUND TRUE PARENT_SCOPE)
             endif()
-        else()
-            message(WARNING "Cannot clone ${package}")
         endif()
 
         if(${package}_FOUND)
