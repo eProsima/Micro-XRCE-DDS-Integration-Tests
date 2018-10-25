@@ -42,6 +42,14 @@ else()
 endif()
 
 ###############################################################################
+# Check MSVC architecture
+###############################################################################
+include(${PROJECT_SOURCE_DIR}/cmake/common/check_configuration.cmake)
+if(MSVC OR MSVC_IDE)
+    check_msvc_arch()
+endif()
+
+###############################################################################
 # Load external eProsima projects.
 ###############################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/dev/eprosima_libraries.cmake)
