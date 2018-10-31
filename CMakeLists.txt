@@ -96,7 +96,7 @@ if(GTEST_FOUND)
     add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/interaction)
     add_subdirectory(test/interaction)
 
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
         add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
         add_subdirectory(test/cross_serialization)
