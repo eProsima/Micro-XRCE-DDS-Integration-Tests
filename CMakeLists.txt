@@ -42,6 +42,14 @@ else()
 endif()
 
 ###############################################################################
+# Check MSVC architecture
+###############################################################################
+include(${PROJECT_SOURCE_DIR}/cmake/common/check_configuration.cmake)
+if(MSVC OR MSVC_IDE)
+    check_msvc_arch()
+endif()
+
+###############################################################################
 # Load external eProsima projects.
 ###############################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/dev/eprosima_libraries.cmake)
@@ -86,10 +94,11 @@ if(GTEST_FOUND)
     include(CTest)
 
     add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/interaction)
-    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
-    add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
     add_subdirectory(test/interaction)
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
+        add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
         add_subdirectory(test/cross_serialization)
     endif()
 
