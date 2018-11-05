@@ -64,6 +64,13 @@ private:
 
 INSTANTIATE_TEST_CASE_P(Transport, InteractionTest, ::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT), ::testing::PrintToStringParamName());
 
+TEST_P(InteractionTest, InitCloseSession)
+{
+    Client client(0.0f, 8);
+    ASSERT_NO_FATAL_FAILURE(client.init_transport(transport_, "127.0.0.1", AGENT_PORT));
+    ASSERT_NO_FATAL_FAILURE(client.close_transport(transport_));
+}
+
 TEST_P(InteractionTest, NewEntitiesCreationXMLBestEffort)
 {
     Client client(0.0f, 8);
