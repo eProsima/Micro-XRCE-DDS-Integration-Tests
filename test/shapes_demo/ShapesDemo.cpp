@@ -58,7 +58,7 @@ public:
     void TearDown() override
     {
         std::string echo = "echo '";
-        std::string executable = "' | build/client_clone/examples/ShapesDemo/ShapeDemoClient ";
+        std::string executable = "' | ../../build/client_clone/examples/ShapesDemo/ShapeDemoClient ";
         std::string args = ((UDP_TRANSPORT == transport_) ? "--udp" : "--tcp") + std::string(" 127.0.0.1 ") + std::to_string(AGENT_PORT);
 
         std::string commands = "";
@@ -68,7 +68,6 @@ public:
         }
 
         std::string execution = echo + commands + executable + args;
-        std::cout << execution << std::endl;
         int shape_demo_app_result = std::system(execution.c_str());
 
         agent_->stop();
@@ -114,3 +113,57 @@ TEST_P(ShapesDemoTest, CreateDeleteSession)
     commands_.push_back("exit");
 }
 
+TEST_P(ShapesDemoTest, CreateEntitiesTree)
+{
+    commands_.push_back("create_session");
+    commands_.push_back("tree 1");
+    commands_.push_back("delete_session");
+    commands_.push_back("exit");
+}
+
+TEST_P(ShapesDemoTest, DeleteEntity)
+{
+    commands_.push_back("create_session");
+    commands_.push_back("tree 1");
+    commands_.push_back("delete 1 1"); //Removed the participant, all associated elements will be removed
+    commands_.push_back("delete_session");
+    commands_.push_back("exit");
+}
+
+TEST_P(ShapesDemoTest, PublishTopicBestEffort)
+{
+    commands_.push_back("create_session");
+    commands_.push_back("tree 1");
+    commands_.push_back("write_data 1 1 50 50 100 BLUE");
+    commands_.push_back("delete_session");
+    commands_.push_back("exit");
+}
+
+TEST_P(ShapesDemoTest, PublishTopicReliable)
+{
+    commands_.push_back("create_session");
+    commands_.push_back("tree 1");
+    commands_.push_back("write_data 1 80 60 70 80 GREEN");
+    commands_.push_back("delete_session");
+    commands_.push_back("exit");
+}
+
+TEST_P(ShapesDemoTest, PublishSubscribeTopicBestEffort)
+{
+    commands_.push_back("create_session");
+    commands_.push_back("tree 1");
+    commands_.push_back("request_data 1 1 1");
+    commands_.push_back("write_data 1 1 60 70 80 GREEN");
+    commands_.push_back("delete_session");
+    commands_.push_back("exit");
+}
+
+TEST_P(ShapesDemoTest, PublishSubscribeTopicReliable)
+{
+    commands_.push_back("create_session");
+    commands_.push_back("tree 1");
+    commands_.push_back("request_data 1 80 1");
+    commands_.push_back("write_data 1 80 60 70 80 GREEN");
+    commands_.push_back("delete_session");
+    commands_.push_back("exit");
+}
