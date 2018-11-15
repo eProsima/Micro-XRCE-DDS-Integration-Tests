@@ -1,0 +1,46 @@
+<profiles>
+    <participant profile_name="default_xrce_participant">
+        <rtps>
+            <builtin>
+                <leaseDuration>
+                    <durationbyname>INFINITE</durationbyname>
+                </leaseDuration>
+                <domainId>0</domainId>
+            </builtin>
+            <name>default_xrce_participant</name>
+        </rtps>
+    </participant>
+    <data_writer profile_name="helloworld_data_writer">
+        <topic>
+            <kind>WITH_KEY</kind>
+            <name>HelloWorld</name>
+            <dataType>HelloWorld</dataType>
+            <historyQos>
+                <kind>KEEP_LAST</kind>
+                <depth>5</depth>
+            </historyQos>
+            <durability>
+                <kind>TRANSIENT_LOCAL</kind>
+            </durability>
+        </topic>
+    </data_writer>
+    <data_reader profile_name="helloworld_data_reader">
+        <topic>
+            <kind>WITH_KEY</kind>
+            <name>HelloWorld</name>
+            <dataType>HelloWorld</dataType>
+            <historyQos>
+                <kind>KEEP_LAST</kind>
+                <depth>5</depth>
+            </historyQos>
+            <durability>
+                <kind>TRANSIENT_LOCAL</kind>
+            </durability>
+        </topic>
+    </data_reader>
+    <topic profile_name="helloworld_topic">
+        <kind>WITH_KEY</kind>
+        <name>HelloWorld</name>
+        <dataType>HelloWorld</dataType>
+    </topic>
+</profiles>
