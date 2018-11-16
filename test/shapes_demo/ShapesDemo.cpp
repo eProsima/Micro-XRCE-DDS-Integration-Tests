@@ -143,7 +143,7 @@ TEST_P(ShapesDemoTest, PublishTopicReliable)
 {
     commands_.push_back("create_session");
     commands_.push_back("tree 1");
-    commands_.push_back("write_data 1 80 60 70 80 GREEN");
+    commands_.push_back("write_data 1 128 60 70 80 GREEN");
     commands_.push_back("delete_session");
     commands_.push_back("exit");
 }
@@ -163,7 +163,27 @@ TEST_P(ShapesDemoTest, PublishSubscribeTopicReliable)
     commands_.push_back("create_session");
     commands_.push_back("tree 1");
     commands_.push_back("request_data 1 80 1");
-    commands_.push_back("write_data 1 80 60 70 80 GREEN");
+    commands_.push_back("write_data 1 128 60 70 80 GREEN");
+    commands_.push_back("delete_session");
+    commands_.push_back("exit");
+}
+
+TEST_P(ShapesDemoTest, Complete)
+{
+    commands_.push_back("create_session");
+    commands_.push_back("create_participant 1");
+    commands_.push_back("create_topic 1 1");
+    commands_.push_back("create_publisher 1 1");
+    commands_.push_back("create_datawriter 1 1");
+    commands_.push_back("create_subscriber 1 1");
+    commands_.push_back("create_datareader 1 1");
+    commands_.push_back("tree 2");
+    commands_.push_back("request_data 1 1 2");
+    commands_.push_back("write_data 1 1 50 0 80 GREEN");
+    commands_.push_back("write_data 1 1 0 50 80 GREEN");
+    commands_.push_back("request_data 1 128 2");
+    commands_.push_back("write_data 1 128 80 0 80 BLUE");
+    commands_.push_back("write_data 1 128 0 80 80 BLUE");
     commands_.push_back("delete_session");
     commands_.push_back("exit");
 }
