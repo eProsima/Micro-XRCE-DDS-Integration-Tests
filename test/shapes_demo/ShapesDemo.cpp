@@ -75,7 +75,7 @@ public:
     }
 
 protected:
-    eprosima::uxr::Server* init_agent(uint16_t port)
+    eprosima::uxr::Server* init_agent(uint16_t port) const
     {
         eprosima::uxr::Server* agent;
         switch(transport_)
