@@ -225,6 +225,48 @@ TEST_P(InteractionTest, PubSub10TopicsReliableLost)
     ASSERT_NO_FATAL_FAILURE(subscriber.close_transport(transport_));
 }
 
+TEST_P(InteractionTest, PubSubFragmentedTopic2Parts)
+{
+    Client publisher(0.0f, 8);
+    ASSERT_NO_FATAL_FAILURE(publisher.init_transport(transport_, "127.0.0.1", AGENT_PORT));
+    ASSERT_NO_FATAL_FAILURE(publisher.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
+
+    Client subscriber(0.0f, 8);
+    ASSERT_NO_FATAL_FAILURE(subscriber.init_transport(transport_, "127.0.0.1", AGENT_PORT));
+    ASSERT_NO_FATAL_FAILURE(subscriber.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
+
+    std::thread subscriber_thread(&Client::subscribe, &subscriber, 1, 0x80, 1);
+    size_t message = std::string(size_t(publisher.get_mtu() * 1.5), 'A');
+    std::thread publisher_thread(&Client::publish, &publisher, 1, 0x80, 1, message);
+
+    publisher_thread.join();
+    subscriber_thread.join();
+
+    ASSERT_NO_FATAL_FAILURE(publisher.close_transport(transport_));
+    ASSERT_NO_FATAL_FAILURE(subscriber.close_transport(transport_));
+}
+
+TEST_P(InteractionTest, PubSubFragmentedTopic5Parts)
+{
+    Client publisher(0.0f, 8);
+    ASSERT_NO_FATAL_FAILURE(publisher.init_transport(transport_, "127.0.0.1", AGENT_PORT));
+    ASSERT_NO_FATAL_FAILURE(publisher.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
+
+    Client subscriber(0.0f, 8);
+    ASSERT_NO_FATAL_FAILURE(subscriber.init_transport(transport_, "127.0.0.1", AGENT_PORT));
+    ASSERT_NO_FATAL_FAILURE(subscriber.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
+
+    std::thread subscriber_thread(&Client::subscribe, &subscriber, 1, 0x80, 1);
+    size_t message = std::string(size_t(publisher.get_mtu() * 4.5), 'A');
+    std::thread publisher_thread(&Client::publish, &publisher, 1, 0x80, 1, message);
+
+    publisher_thread.join();
+    subscriber_thread.join();
+
+    ASSERT_NO_FATAL_FAILURE(publisher.close_transport(transport_));
+    ASSERT_NO_FATAL_FAILURE(subscriber.close_transport(transport_));
+}
+
 #if defined(PLATFORM_NAME_LINUX)
 TEST_P(InteractionTest, DiscoveryUnicast)
 {
