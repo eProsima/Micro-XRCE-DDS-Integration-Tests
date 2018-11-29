@@ -77,7 +77,7 @@ public:
 protected:
     eprosima::uxr::Server* init_agent(uint16_t port) const
     {
-        eprosima::uxr::Server* agent;
+        eprosima::uxr::Server* agent = nullptr;
         switch(transport_)
         {
             case UDP_TRANSPORT:
@@ -85,6 +85,9 @@ protected:
                 break;
             case TCP_TRANSPORT:
                 agent = new eprosima::uxr::TCPServer(port);
+                break;
+            default:
+                std::cerr << "Not supported transport" << std::endl;
                 break;
         }
 
@@ -102,88 +105,88 @@ INSTANTIATE_TEST_CASE_P(Transport, ShapesDemoTest, ::testing::Values(UDP_TRANSPO
 
 TEST_P(ShapesDemoTest, CreateSession)
 {
-    commands_.push_back("create_session");
-    commands_.push_back("exit");
+    commands_.emplace_back("create_session");
+    commands_.emplace_back("exit");
 }
 
 TEST_P(ShapesDemoTest, CreateDeleteSession)
 {
-    commands_.push_back("create_session");
-    commands_.push_back("delete_session");
-    commands_.push_back("exit");
+    commands_.emplace_back("create_session");
+    commands_.emplace_back("delete_session");
+    commands_.emplace_back("exit");
 }
 
 TEST_P(ShapesDemoTest, CreateEntitiesTree)
 {
-    commands_.push_back("create_session");
-    commands_.push_back("tree 1");
-    commands_.push_back("delete_session");
-    commands_.push_back("exit");
+    commands_.emplace_back("create_session");
+    commands_.emplace_back("tree 1");
+    commands_.emplace_back("delete_session");
+    commands_.emplace_back("exit");
 }
 
 TEST_P(ShapesDemoTest, DeleteEntity)
 {
-    commands_.push_back("create_session");
-    commands_.push_back("tree 1");
-    commands_.push_back("delete 1 1"); //Removed the participant, all associated elements will be removed
-    commands_.push_back("delete_session");
-    commands_.push_back("exit");
+    commands_.emplace_back("create_session");
+    commands_.emplace_back("tree 1");
+    commands_.emplace_back("delete 1 1"); //Removed the participant, all associated elements will be removed
+    commands_.emplace_back("delete_session");
+    commands_.emplace_back("exit");
 }
 
 TEST_P(ShapesDemoTest, PublishTopicBestEffort)
 {
-    commands_.push_back("create_session");
-    commands_.push_back("tree 1");
-    commands_.push_back("write_data 1 1 50 50 100 BLUE");
-    commands_.push_back("delete_session");
-    commands_.push_back("exit");
+    commands_.emplace_back("create_session");
+    commands_.emplace_back("tree 1");
+    commands_.emplace_back("write_data 1 1 50 50 100 BLUE");
+    commands_.emplace_back("delete_session");
+    commands_.emplace_back("exit");
 }
 
 TEST_P(ShapesDemoTest, PublishTopicReliable)
 {
-    commands_.push_back("create_session");
-    commands_.push_back("tree 1");
-    commands_.push_back("write_data 1 128 60 70 80 GREEN");
-    commands_.push_back("delete_session");
-    commands_.push_back("exit");
+    commands_.emplace_back("create_session");
+    commands_.emplace_back("tree 1");
+    commands_.emplace_back("write_data 1 128 60 70 80 GREEN");
+    commands_.emplace_back("delete_session");
+    commands_.emplace_back("exit");
 }
 
 TEST_P(ShapesDemoTest, PublishSubscribeTopicBestEffort)
 {
-    commands_.push_back("create_session");
-    commands_.push_back("tree 1");
-    commands_.push_back("request_data 1 1 1");
-    commands_.push_back("write_data 1 1 60 70 80 GREEN");
-    commands_.push_back("delete_session");
-    commands_.push_back("exit");
+    commands_.emplace_back("create_session");
+    commands_.emplace_back("tree 1");
+    commands_.emplace_back("request_data 1 1 1");
+    commands_.emplace_back("write_data 1 1 60 70 80 GREEN");
+    commands_.emplace_back("delete_session");
+    commands_.emplace_back("exit");
 }
 
 TEST_P(ShapesDemoTest, PublishSubscribeTopicReliable)
 {
-    commands_.push_back("create_session");
-    commands_.push_back("tree 1");
-    commands_.push_back("request_data 1 80 1");
-    commands_.push_back("write_data 1 128 60 70 80 GREEN");
-    commands_.push_back("delete_session");
-    commands_.push_back("exit");
+    commands_.emplace_back("create_session");
+    commands_.emplace_back("tree 1");
+    commands_.emplace_back("request_data 1 80 1");
+    commands_.emplace_back("write_data 1 128 60 70 80 GREEN");
+    commands_.emplace_back("delete_session");
+    commands_.emplace_back("exit");
 }
 
 TEST_P(ShapesDemoTest, Complete)
 {
-    commands_.push_back("create_session");
-    commands_.push_back("create_participant 1");
-    commands_.push_back("create_topic 1 1");
-    commands_.push_back("create_publisher 1 1");
-    commands_.push_back("create_datawriter 1 1");
-    commands_.push_back("create_subscriber 1 1");
-    commands_.push_back("create_datareader 1 1");
-    commands_.push_back("tree 2");
-    commands_.push_back("request_data 1 1 2");
-    commands_.push_back("write_data 1 1 50 0 80 GREEN");
-    commands_.push_back("write_data 1 1 0 50 80 GREEN");
-    commands_.push_back("request_data 1 128 2");
-    commands_.push_back("write_data 1 128 80 0 80 BLUE");
-    commands_.push_back("write_data 1 128 0 80 80 BLUE");
-    commands_.push_back("delete_session");
-    commands_.push_back("exit");
+    commands_.emplace_back("create_session");
+    commands_.emplace_back("create_participant 1");
+    commands_.emplace_back("create_topic 1 1");
+    commands_.emplace_back("create_publisher 1 1");
+    commands_.emplace_back("create_datawriter 1 1");
+    commands_.emplace_back("create_subscriber 1 1");
+    commands_.emplace_back("create_datareader 1 1");
+    commands_.emplace_back("tree 2");
+    commands_.emplace_back("request_data 1 1 2");
+    commands_.emplace_back("write_data 1 1 50 0 80 GREEN");
+    commands_.emplace_back("write_data 1 1 0 50 80 GREEN");
+    commands_.emplace_back("request_data 1 128 2");
+    commands_.emplace_back("write_data 1 128 80 0 80 BLUE");
+    commands_.emplace_back("write_data 1 128 0 80 80 BLUE");
+    commands_.emplace_back("delete_session");
+    commands_.emplace_back("exit");
 }
