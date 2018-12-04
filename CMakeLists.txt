@@ -78,12 +78,6 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -fstrict-aliasing -Wall -Wextra -Wcast-align")
 endif()
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    set(PLATFORM_NAME_LINUX ON)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(PLATFORM_NAME_WINDOWS ON)
-endif()
-
 ###############################################################################
 # Testing
 ###############################################################################
@@ -95,6 +89,8 @@ if(GTEST_FOUND)
 
     add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/interaction)
     add_subdirectory(test/interaction)
+    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/examples/ShapesDemo)
+    add_subdirectory(test/shapes_demo)
 
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
