@@ -147,6 +147,15 @@ TEST_P(InteractionTest, ExistantEntitiesCreationReplaceReliable)
     ASSERT_NO_FATAL_FAILURE(client.close_transport(transport_));
 }
 
+TEST_P(InteractionTest, ExistantEntitiesCreationReplaceAndReuseReliable)
+{
+    Client client(0.0f, 8);
+    ASSERT_NO_FATAL_FAILURE(client.init_transport(transport_, "127.0.0.1", AGENT_PORT));
+    ASSERT_NO_FATAL_FAILURE(client.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
+    ASSERT_NO_FATAL_FAILURE(client.create_entities_xml(1, 0x80, UXR_STATUS_OK_MATCHED, UXR_REPLACE | UXR_REUSE));
+    ASSERT_NO_FATAL_FAILURE(client.close_transport(transport_));
+}
+
 TEST_P(InteractionTest, ExistantEntitiesCreationNoReplaceReliable)
 {
     Client client(0.0f, 8);
