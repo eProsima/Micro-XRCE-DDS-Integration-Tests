@@ -17,10 +17,10 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
     FILES_MATCHING PATTERN "*.xml"
     )
 
-add_executable(interaction_test Interaction.cpp)
-add_gtest(interaction_test
+add_executable(publisher_subscriber_interaction_test PublisherSubscriberInteraction.cpp)
+add_gtest(publisher_subscriber_interaction_test
     SOURCES
-        Interaction.cpp
+        TwoClientAgentInteraction.cpp
     DEPENDENCIES
         interaction-intest-client
         microxrcedds_agent
@@ -30,14 +30,14 @@ add_gtest(interaction_test
         fastcdr
     )
 
-target_include_directories(interaction_test PRIVATE ${GTEST_INCLUDE_DIR})
-target_link_libraries(interaction_test
+target_include_directories(publisher_subscriber_interaction_test PRIVATE ${GTEST_INCLUDE_DIR})
+target_link_libraries(publisher_subscriber_interaction_test
     interaction-intest-client
     microxrcedds_agent
     ${GTEST_BOTH_LIBRARIES}
     )
 
-set_target_properties(interaction_test PROPERTIES
+set_target_properties(publisher_subscriber_interaction_test PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
     )
