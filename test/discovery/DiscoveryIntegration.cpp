@@ -1,10 +1,8 @@
 #include <gtest/gtest.h>
 
-#include <ClientInteraction.hpp>
-#if defined(PLATFORM_NAME_LINUX)
+#include <Discovery.hpp>
 #include <uxr/agent/transport/udp/UDPServerLinux.hpp>
 #include <uxr/agent/transport/tcp/TCPServerLinux.hpp>
-#endif
 
 #include <thread>
 
@@ -13,23 +11,40 @@ class DiscoveryIntegration : public ::testing::TestWithParam<int>
 public:
     const uint16_t AGENT_PORT = 2018;
     const uint16_t DISCOVERY_PORT = UXR_DEFAULT_DISCOVERY_PORT;
-    const size_t AGENT_NUMBER = 4;
 
     DiscoveryIntegration()
-        : transport_(GetParam())
+    : transport_(GetParam())
     {
-        for(size_t i = 0; i < AGENT_NUMBER; i++)
-        {
-            create_agent(AGENT_PORT + i, DISCOVERY_PORT + i);
-        }
     }
 
     ~DiscoveryIntegration()
+    {
+    }
+
+    void TearDown() override
     {
         for(size_t i = 0; i < agents_.size(); ++i)
         {
             agents_[i]->stop();
         }
+    }
+
+    std::vector<uint16_t> init_scenario(size_t number)
+    {
+        std::vector<uint16_t> agent_ports;
+        std::vector<uint16_t> discovery_ports;
+        for(size_t i = 0; i < number; i++)
+        {
+            uint16_t agent_port = AGENT_PORT + i;
+            uint16_t discovery_port = DISCOVERY_PORT + i;
+            create_agent(agent_port, discovery_port);
+            agent_ports.push_back(agent_port);
+            discovery_ports.push_back(discovery_port);
+        }
+
+        discovery_.reset(new Discovery(transport_, agent_ports));
+
+        return discovery_ports;
     }
 
     void create_agent(uint16_t port, uint16_t discovery_port)
@@ -50,38 +65,24 @@ public:
 
 protected:
     int transport_;
+    std::unique_ptr<Discovery> discovery_;
 
 private:
     std::vector<std::shared_ptr<eprosima::uxr::Server>> agents_;
 };
 
-INSTANTIATE_TEST_CASE_P(Transport, InteractionTest, ::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT), ::testing::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(Transport, DiscoveryIntegration, ::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT), ::testing::PrintToStringParamName());
 
-TEST_P(InteractionTest, DiscoveryUnicast)
+TEST_P(DiscoveryIntegration, DiscoveryUnicast)
 {
-    std::vector<uint16_t> agent_ports;
-    agent_ports.push_back(AGENT_PORT);
-    agent_ports.push_back(AGENT_PORT + 1);
-    agent_ports.push_back(AGENT_PORT + 2);
-    agent_ports.push_back(AGENT_PORT + 3);
-
-    DiscoveryIntegration discovery(transport_, agent_ports);
-
-    std::thread discovery_thread(&DiscoveryIntegration::unicast, &discovery, UXR_DEFAULT_DISCOVERY_PORT);
-
-    discovery_thread.join();
+    std::vector<uint16_t> discovery_ports = init_scenario(4);
+    discovery_->unicast(discovery_ports);
 }
 
-TEST_P(InteractionTest, DiscoveryMulticast)
+TEST_P(DiscoveryIntegration, DiscoveryMulticast)
 {
-    std::vector<uint16_t> agent_ports;
-    agent_ports.push_back(AGENT_PORT);
-
-    DiscoveryIntegration discovery(transport_, agent_ports);
-
-    std::thread discovery_thread(&DiscoveryIntegration::multicast, &discovery);
-
-    discovery_thread.join();
+    init_scenario(1);
+    discovery_->multicast();
 }
 
 int main(int args, char** argv)

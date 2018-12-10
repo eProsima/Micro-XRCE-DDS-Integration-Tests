@@ -17,10 +17,10 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
     FILES_MATCHING PATTERN "*.xml"
     )
 
-add_executable(discovery_test Discovery.cpp)
+add_executable(discovery_test DiscoveryIntegration.cpp)
 add_gtest(discovery_test
     SOURCES
-        Discovery.cpp
+        DiscoveryIntegration.cpp
     DEPENDENCIES
         interaction-intest-client
         microxrcedds_agent

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <ClientInteraction.hpp>
+#include <Client.hpp>
 #if defined(PLATFORM_NAME_LINUX)
 #include <uxr/agent/transport/udp/UDPServerLinux.hpp>
 #include <uxr/agent/transport/tcp/TCPServerLinux.hpp>

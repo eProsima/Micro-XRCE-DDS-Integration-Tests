@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <ClientInteraction.hpp>
+#include <Client.hpp>
 #if defined(PLATFORM_NAME_LINUX)
 #include <uxr/agent/transport/udp/UDPServerLinux.hpp>
 #include <uxr/agent/transport/tcp/TCPServerLinux.hpp>
@@ -74,23 +74,27 @@ protected:
     Client publisher_;
     Client subscriber_;
     static const std::string SMALL_MESSAGE;
-    static const std::string LARGE_MESSAGE;
 };
 
 const std::string PublisherSubscriberInteraction::SMALL_MESSAGE("Hello DDS world!");
 
-INSTANTIATE_TEST_CASE_P(Transport, PublisherSubscriberInteraction,
-        ::testing::Combine(::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT), ::testing::Values(0.0f, 0.05f, 0.1f)),
-        ::testing::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(TransportAndLost, PublisherSubscriberInteraction,
+        ::testing::Combine(::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT), ::testing::Values(0.0f, 0.05f, 0.1f)));
 
 TEST_P(PublisherSubscriberInteraction, PubSub1TopicsBestEffort)
 {
-    check_messages(SMALL_MESSAGE, 1, 0x01);
+    if(0.0f == std::get<1>(GetParam())) //only without lost
+    {
+        check_messages(SMALL_MESSAGE, 1, 0x01);
+    }
 }
 
 TEST_P(PublisherSubscriberInteraction, PubSub10TopicsBestEffort)
 {
-    check_messages(SMALL_MESSAGE, 10, 0x01);
+    if(0.0f == std::get<1>(GetParam())) //only without lost
+    {
+        check_messages(SMALL_MESSAGE, 10, 0x01);
+    }
 }
 
 TEST_P(PublisherSubscriberInteraction, PubSub1TopicsReliable)
@@ -103,7 +107,14 @@ TEST_P(PublisherSubscriberInteraction, PubSub10TopicsReliable)
     check_messages(SMALL_MESSAGE, 10, 0x80);
 }
 
-TEST_P(PublisherSubscriberInteraction, PubSub1FragmentedTopic2Parts)
+/*
+TEST_P(PublisherSubscriberInteraction, PubSub30TopicsReliable)
+{
+    check_messages(SMALL_MESSAGE, 30, 0x80);
+}
+*/
+
+/*TEST_P(PublisherSubscriberInteraction, PubSub1FragmentedTopic2Parts)
 {
     std::string message(size_t(publisher_.get_mtu() * 1.5), 'A');
     check_messages(message, 1, 0x80);
@@ -125,7 +136,7 @@ TEST_P(PublisherSubscriberInteraction, PubSub10FragmentedTopic4Parts)
 {
     std::string message(size_t(publisher_.get_mtu() * 3.5), 'A');
     check_messages(message, 10, 0x80);
-}
+}*/
 
 int main(int args, char** argv)
 {

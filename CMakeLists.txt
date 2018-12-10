@@ -98,6 +98,7 @@ if(GTEST_FOUND)
         add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
         add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
         add_subdirectory(test/cross_serialization)
+        add_subdirectory(test/discovery)
     endif()
 
 else()
