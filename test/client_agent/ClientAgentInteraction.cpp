@@ -92,11 +92,13 @@ TEST_P(ClientAgentInteraction, ExistantEntitiesCreationReuseXMLXMLReliable)
     ASSERT_NO_FATAL_FAILURE(client_.create_entities_xml(1, 0x80, UXR_STATUS_OK_MATCHED, UXR_REUSE));
 }
 
-//TEST_P(ClientAgentInteraction, ExistantEntitiesCreationReuseXMLREFReliable)
-//{
-//    ASSERT_NO_FATAL_FAILURE(client_.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
-//    ASSERT_NO_FATAL_FAILURE(client_.create_entities_ref(1, 0x80, UXR_STATUS_OK_MATCHED, UXR_REUSE));
-//}
+/* Fix XML and REF reference issue to enable this test
+TEST_P(ClientAgentInteraction, ExistantEntitiesCreationReuseXMLREFReliable)
+{
+    ASSERT_NO_FATAL_FAILURE(client_.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
+    ASSERT_NO_FATAL_FAILURE(client_.create_entities_ref(1, 0x80, UXR_STATUS_OK_MATCHED, UXR_REUSE));
+}
+*/
 
 TEST_P(ClientAgentInteraction, ExistantEntitiesCreationReuseREFREFReliable)
 {

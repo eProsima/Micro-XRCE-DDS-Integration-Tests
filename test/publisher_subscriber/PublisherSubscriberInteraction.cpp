@@ -107,36 +107,38 @@ TEST_P(PublisherSubscriberInteraction, PubSub10TopicsReliable)
     check_messages(SMALL_MESSAGE, 10, 0x80);
 }
 
-/*
+/* Fix the non-reliable behavior when messages is higher than the agent history to enable this
 TEST_P(PublisherSubscriberInteraction, PubSub30TopicsReliable)
 {
     check_messages(SMALL_MESSAGE, 30, 0x80);
 }
 */
 
-/*TEST_P(PublisherSubscriberInteraction, PubSub1FragmentedTopic2Parts)
+TEST_P(PublisherSubscriberInteraction, PubSub1FragmentedTopic2Parts)
 {
     std::string message(size_t(publisher_.get_mtu() * 1.5), 'A');
     check_messages(message, 1, 0x80);
 }
 
-TEST_P(PublisherSubscriberInteraction, PubSub10FragmentedTopic2Parts)
+TEST_P(PublisherSubscriberInteraction, PubSub3FragmentedTopic2Parts)
 {
     std::string message(size_t(publisher_.get_mtu() * 1.5), 'A');
-    check_messages(message, 10, 0x80);
+    check_messages(message, 3, 0x80);
 }
 
+/* Fix this fragmentation to enable this
 TEST_P(PublisherSubscriberInteraction, PubSub1FragmentedTopic4Parts)
 {
     std::string message(size_t(publisher_.get_mtu() * 3.5), 'A');
     check_messages(message, 1, 0x80);
 }
 
-TEST_P(PublisherSubscriberInteraction, PubSub10FragmentedTopic4Parts)
+TEST_P(PublisherSubscriberInteraction, PubSub3FragmentedTopic4Parts)
 {
     std::string message(size_t(publisher_.get_mtu() * 3.5), 'A');
-    check_messages(message, 10, 0x80);
-}*/
+    check_messages(message, 3, 0x80);
+}
+*/
 
 int main(int args, char** argv)
 {
