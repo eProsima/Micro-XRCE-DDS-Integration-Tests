@@ -36,7 +36,6 @@ public:
 
         ASSERT_NO_FATAL_FAILURE(publisher_.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
         ASSERT_NO_FATAL_FAILURE(subscriber_.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
-
     }
 
     void TearDown() override
@@ -114,11 +113,13 @@ TEST_P(PublisherSubscriberInteraction, PubSub30TopicsReliable)
 }
 */
 
+
 TEST_P(PublisherSubscriberInteraction, PubSub1FragmentedTopic2Parts)
 {
     std::string message(size_t(publisher_.get_mtu() * 1.5), 'A');
     check_messages(message, 1, 0x80);
 }
+
 
 TEST_P(PublisherSubscriberInteraction, PubSub3FragmentedTopic2Parts)
 {

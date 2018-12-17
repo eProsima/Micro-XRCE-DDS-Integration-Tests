@@ -118,6 +118,12 @@ TEST_P(ClientAgentInteraction, ExistantEntitiesCreationNoReplaceReliable)
     ASSERT_NO_FATAL_FAILURE(client_.create_entities_xml(1, 0x80, UXR_STATUS_ERR_ALREADY_EXISTS, 0));
 }
 
+TEST_P(ClientAgentInteraction, ExistantEntitiesCreationReplaceReuseReliable)
+{
+    ASSERT_NO_FATAL_FAILURE(client_.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
+    ASSERT_NO_FATAL_FAILURE(client_.create_entities_xml(1, 0x80, UXR_STATUS_OK_MATCHED, UXR_REPLACE | UXR_REUSE));
+}
+
 int main(int args, char** argv)
 {
     ::testing::InitGoogleTest(&args, argv);
