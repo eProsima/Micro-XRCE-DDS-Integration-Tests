@@ -113,13 +113,11 @@ TEST_P(PublisherSubscriberInteraction, PubSub30TopicsReliable)
 }
 */
 
-
 TEST_P(PublisherSubscriberInteraction, PubSub1FragmentedTopic2Parts)
 {
     std::string message(size_t(publisher_.get_mtu() * 1.5), 'A');
     check_messages(message, 1, 0x80);
 }
-
 
 TEST_P(PublisherSubscriberInteraction, PubSub3FragmentedTopic2Parts)
 {
@@ -127,7 +125,6 @@ TEST_P(PublisherSubscriberInteraction, PubSub3FragmentedTopic2Parts)
     check_messages(message, 3, 0x80);
 }
 
-/* Fix this fragmentation to enable this
 TEST_P(PublisherSubscriberInteraction, PubSub1FragmentedTopic4Parts)
 {
     std::string message(size_t(publisher_.get_mtu() * 3.5), 'A');
@@ -139,7 +136,6 @@ TEST_P(PublisherSubscriberInteraction, PubSub3FragmentedTopic4Parts)
     std::string message(size_t(publisher_.get_mtu() * 3.5), 'A');
     check_messages(message, 3, 0x80);
 }
-*/
 
 int main(int args, char** argv)
 {
