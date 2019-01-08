@@ -101,7 +101,10 @@ if(GTEST_FOUND)
         add_subdirectory(test/discovery)
     endif()
 
-    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/examples/ShapesDemo)
+    if(NOT EPROSIMA_BUILD_EXAMPLES)
+        add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/examples/ShapesDemo)
+    endif()
+
     add_subdirectory(test/shapes_demo)
 else()
     message(FATAL_ERROR "This meta-project needs gtest")
