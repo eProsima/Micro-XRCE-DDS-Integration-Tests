@@ -20,7 +20,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
 add_executable(publisher_subscriber_interaction_test PublisherSubscriberInteraction.cpp)
 add_gtest(publisher_subscriber_interaction_test
     SOURCES
-        TwoClientAgentInteraction.cpp
+        PublisherSubscriberInteraction.cpp
     DEPENDENCIES
         interaction-intest-client
         microxrcedds_agent
