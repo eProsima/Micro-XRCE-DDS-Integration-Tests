@@ -87,17 +87,23 @@ if(GTEST_FOUND)
     enable_testing()
     include(CTest)
 
-    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/interaction)
-    add_subdirectory(test/interaction)
-    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/examples/ShapesDemo)
-    add_subdirectory(test/shapes_demo)
-
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
         add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
         add_subdirectory(test/cross_serialization)
     endif()
 
+    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/interaction)
+    add_subdirectory(test/client_agent)
+    add_subdirectory(test/publisher_subscriber)
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_subdirectory(test/discovery)
+    endif()
+
+    if(EPROSIMA_BUILD)
+        add_subdirectory(test/shapes_demo)
+    endif()
 else()
     message(FATAL_ERROR "This meta-project needs gtest")
 endif()

@@ -17,10 +17,10 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
     FILES_MATCHING PATTERN "*.xml"
     )
 
-add_executable(interaction_test Interaction.cpp)
-add_gtest(interaction_test
+add_executable(discovery_test DiscoveryIntegration.cpp)
+add_gtest(discovery_test
     SOURCES
-        Interaction.cpp
+        DiscoveryIntegration.cpp
     DEPENDENCIES
         interaction-intest-client
         microxrcedds_agent
@@ -30,14 +30,14 @@ add_gtest(interaction_test
         fastcdr
     )
 
-target_include_directories(interaction_test PRIVATE ${GTEST_INCLUDE_DIR})
-target_link_libraries(interaction_test
+target_include_directories(discovery_test PRIVATE ${GTEST_INCLUDE_DIR})
+target_link_libraries(discovery_test
     interaction-intest-client
     microxrcedds_agent
     ${GTEST_BOTH_LIBRARIES}
     )
 
-set_target_properties(interaction_test PROPERTIES
+set_target_properties(discovery_test PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
     )

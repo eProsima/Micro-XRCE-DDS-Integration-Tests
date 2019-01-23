@@ -10,11 +10,11 @@
             <name>default_xrce_participant</name>
         </rtps>
     </participant>
-    <data_writer profile_name="helloworld_data_writer">
+    <data_writer profile_name="bighelloworld_data_writer">
         <topic>
             <kind>WITH_KEY</kind>
-            <name>HelloWorld</name>
-            <dataType>HelloWorld</dataType>
+            <name>BigHelloWorld</name>
+            <dataType>BigHelloWorld</dataType>
             <historyQos>
                 <kind>KEEP_LAST</kind>
                 <depth>5</depth>
@@ -24,11 +24,11 @@
             </durability>
         </topic>
     </data_writer>
-    <data_reader profile_name="helloworld_data_reader">
+    <data_reader profile_name="bighelloworld_data_reader">
         <topic>
             <kind>WITH_KEY</kind>
-            <name>HelloWorld</name>
-            <dataType>HelloWorld</dataType>
+            <name>BigHelloWorld</name>
+            <dataType>BigHelloWorld</dataType>
             <historyQos>
                 <kind>KEEP_LAST</kind>
                 <depth>5</depth>
@@ -38,9 +38,9 @@
             </durability>
         </topic>
     </data_reader>
-    <topic profile_name="helloworld_topic">
+    <topic profile_name="bighelloworld_topic">
         <kind>WITH_KEY</kind>
-        <name>HelloWorld</name>
-        <dataType>HelloWorld</dataType>
+        <name>BigHelloWorld</name>
+        <dataType>BigHelloWorld</dataType>
     </topic>
 </profiles>
