@@ -16,30 +16,47 @@
 #
 ###############################################################################
 
-set(SRCS CrossSerialization.cpp)
+set(SRCS
+    CrossSerialization.cpp
+    AgentSerialization.cpp
+    ClientSerialization.cpp
+    )
 add_executable(cross_serialization_test ${SRCS})
 add_gtest(cross_serialization_test
     SOURCES
         ${SRCS}
-    DEPENDENCIES
-        cross-serialization-intest-client
-        cross-serialization-intest-agent
-        microxrcedds_agent
-        microxrcedds_client
-        microcdr
-        fastrtps
-        fastcdr
+    ENVIRONMENTS
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib/>
+        $<$<PLATFORM_ID:Windows>:"PATH=%PATH%;${AGENT_INSTALL_DIR}/lib">
     )
 target_include_directories(cross_serialization_test
     PRIVATE
+        ${CLIENT_INSTALL_DIR}/include
+        ${CLIENT_SOURCE_DIR}/src/c
+        ${AGENT_INSTALL_DIR}/include
         ${GTEST_INCLUDE_DIRS}
     )
 target_link_libraries(cross_serialization_test
-        cross-serialization-intest-client
-        cross-serialization-intest-agent
+    PRIVATE
+        ${CLIENT_INSTALL_DIR}/lib/${CLIENT_LIBRARY}
+        ${CLIENT_INSTALL_DIR}/lib/libmicrocdr.so
+        ${AGENT_INSTALL_DIR}/lib/${AGENT_LIBRARY}
+        ${AGENT_INSTALL_DIR}/lib/libfastcdr.so
         ${GTEST_BOTH_LIBRARIES}
     )
 set_target_properties(cross_serialization_test PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
     )
+#add_test(NAME cross_serialization
+#    COMMAND
+#        cross_serialization_test
+#        "export LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib"
+#    )
+#set_tests_properties(cross_serialization PROPERTIES
+#    ENVIRONMENT
+#        LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib
+#    )
+#set_property(TEST cross_serialization APPEND PROPERTY ENVIRONMENT "PATH=${AGENT_INSTALL_DIR}/")
+#get_property(TEST_PATH TEST cross_serialization PROPERTY ENVIRONMENT)
+#message("${TEST_PATH}")

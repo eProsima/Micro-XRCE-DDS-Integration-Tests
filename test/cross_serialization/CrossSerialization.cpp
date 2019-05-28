@@ -31,8 +31,8 @@
  ****************************************************************************/
 
 #include <gtest/gtest.h>
-#include <ClientSerialization.hpp>
-#include <AgentSerialization.hpp>
+#include "ClientSerialization.hpp"
+#include "AgentSerialization.hpp"
 
 #define AGENT_HEADER_OFFSET 12 //Used for skip the agent header and subheader
 

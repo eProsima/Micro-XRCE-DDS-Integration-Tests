@@ -50,7 +50,9 @@ ExternalProject_Add(microxrcedds_client
     )
 
 ExternalProject_Get_Property(microxrcedds_client INSTALL_DIR)
+ExternalProject_Get_Property(microxrcedds_client SOURCE_DIR)
 set(CLIENT_INSTALL_DIR ${INSTALL_DIR})
+set(CLIENT_SOURCE_DIR ${SOURCE_DIR})
 set(CLIENT_LIBRARY ${CMAKE_SHARED_LIBRARY_PREFIX}microxrcedds_client${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 ExternalProject_Get_Property(microxrcedds_agent INSTALL_DIR)
@@ -71,20 +73,20 @@ target_include_directories(${PROJECT_NAME}
         ${AGENT_INSTALL_DIR}/include
     )
 
-################################################################################
-## Testing
-################################################################################
-#include(${PROJECT_SOURCE_DIR}/cmake/common/gtest.cmake)
-#check_gtest()
-#if(GTEST_FOUND)
-#    enable_testing()
-#    include(CTest)
+###############################################################################
+# Testing
+###############################################################################
+include(${PROJECT_SOURCE_DIR}/cmake/common/gtest.cmake)
+check_gtest()
+if(GTEST_FOUND)
+    enable_testing()
+    include(CTest)
 #
-#    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 #        add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
 #        add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
-#        add_subdirectory(test/cross_serialization)
-#    endif()
+        add_subdirectory(test/cross_serialization)
+    endif()
 #
 #    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/interaction)
 #    add_subdirectory(test/client_agent)
@@ -97,9 +99,9 @@ target_include_directories(${PROJECT_NAME}
 #    if(EPROSIMA_BUILD)
 #        add_subdirectory(test/shapes_demo)
 #    endif()
-#else()
-#    message(FATAL_ERROR "This meta-project needs gtest")
-#endif()
+else()
+    message(FATAL_ERROR "This meta-project needs gtest")
+endif()
 
 
 #ExternalProject_Add(microxrcedds_agent
