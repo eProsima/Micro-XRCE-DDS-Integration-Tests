@@ -27,16 +27,15 @@ if(SUPERBUILD)
     return()
 else()
     project(microxrcedds_itest LANGUAGES C CXX)
-#    set(SUPERBUILD ON CACHE BOOL "" FORCE)
 endif()
 
- set(CMAKE_PREFIX_PATH "${CLIENT_INSTALL_DIR}")
- find_package(microxrcedds_client REQUIRED)
- find_package(microcdr REQUIRED)
+set(CMAKE_PREFIX_PATH "${CLIENT_INSTALL_DIR}")
+find_package(microcdr REQUIRED)
+find_package(microxrcedds_client REQUIRED)
 
- set(CMAKE_PREFIX_PATH "${AGENT_INSTALL_DIR}")
- find_package(microxrcedds_agent REQUIRED)
- find_package(fastcdr REQUIRED)
+set(CMAKE_PREFIX_PATH "${AGENT_INSTALL_DIR}")
+find_package(fastcdr REQUIRED)
+find_package(microxrcedds_agent REQUIRED)
 
 ###############################################################################
 # Testing

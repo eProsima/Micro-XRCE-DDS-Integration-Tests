@@ -17,28 +17,26 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
     FILES_MATCHING PATTERN "*.xml"
     )
 
-add_executable(client_agent_test ClientAgentInteraction.cpp)
-add_gtest(client_agent_test
+add_executable(client-agent-test ClientAgentInteraction.cpp)
+add_gtest(client-agent-test
     SOURCES
         ClientAgentInteraction.cpp
-    DEPENDENCIES
+    ENVIRONMENTS
+        $<$<PLATFORM_ID:Windows>:PATH=${AGENT_INSTALL_DIR}/bin;${CLIENT_INSTALL_DIR}/bin;${CMAKE_BINARY_DIR}>
+    )
+target_include_directories(client-agent-test
+    PRIVATE
+        ${GTEST_INCLUDE_DIR}
+    )
+target_link_libraries(client-agent-test
+    PRIVATE
         interaction_client
         microxrcedds_agent
-        microxrcedds_client
-        microcdr
-        fastrtps
-        fastcdr
+        ${GTEST_BOTH_LIBRARIES}
     )
-
-target_include_directories(client_agent_test PRIVATE ${GTEST_INCLUDE_DIR})
-target_link_libraries(client_agent_test
-    interaction_client
-    microxrcedds_agent
-    ${GTEST_BOTH_LIBRARIES}
-    )
-
-set_target_properties(client_agent_test PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED YES
+set_target_properties(client-agent-test
+    PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED YES
     )
 
