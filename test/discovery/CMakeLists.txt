@@ -1,4 +1,4 @@
-# Copyright 2018 Proyectos y Sistemas de Mantenimiento SL (eProsima).
+# Copyright 2019 Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,23 +22,26 @@ add_gtest(discovery_test
     SOURCES
         DiscoveryIntegration.cpp
     DEPENDENCIES
-        interaction-intest-client
+        interaction_client
         microxrcedds_agent
         microxrcedds_client
         microcdr
         fastrtps
         fastcdr
     )
-
-target_include_directories(discovery_test PRIVATE ${GTEST_INCLUDE_DIR})
-target_link_libraries(discovery_test
-    interaction-intest-client
-    microxrcedds_agent
-    ${GTEST_BOTH_LIBRARIES}
+target_include_directories(discovery_test
+    PRIVATE
+        ${GTEST_INCLUDE_DIR}
     )
-
-set_target_properties(discovery_test PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED YES
+target_link_libraries(discovery_test
+    PRIVATE
+        interaction_client
+        microxrcedds_agent
+        ${GTEST_BOTH_LIBRARIES}
+    )
+set_target_properties(discovery_test
+    PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED YES
     )
 

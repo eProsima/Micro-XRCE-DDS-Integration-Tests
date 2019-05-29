@@ -19,13 +19,15 @@ set(AGENT_BRANCH "develop" CACHE STRING "uAgent's branch to be tested.")
 
 option(SUPERBUILD "Active super build" ON)
 
+#project(microxrcedds_itest LANGUAGES C CXX)
+
 if(SUPERBUILD)
     project(superbuild NONE)
     include(cmake/SuperBuild.cmake)
     return()
 else()
     project(microxrcedds_itest LANGUAGES C CXX)
-    set(SUPERBUILD ON CACHE BOOL "" FORCE)
+#    set(SUPERBUILD ON CACHE BOOL "" FORCE)
 endif()
 
  set(CMAKE_PREFIX_PATH "${CLIENT_INSTALL_DIR}")
@@ -48,22 +50,21 @@ if(GTEST_FOUND)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         add_subdirectory(test/cross_serialization)
     endif()
-#
-#    add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/interaction)
-#    add_subdirectory(test/client_agent)
-#    add_subdirectory(test/publisher_subscriber)
-#
-#    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-#        add_subdirectory(test/discovery)
-#    endif()
-#
-#    if(EPROSIMA_BUILD)
-#        add_subdirectory(test/shapes_demo)
-#    endif()
+
+    add_subdirectory(test/interaction_client)
+    add_subdirectory(test/client_agent)
+    add_subdirectory(test/publisher_subscriber)
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_subdirectory(test/discovery)
+    endif()
+
+    if(EPROSIMA_BUILD)
+        add_subdirectory(test/shapes_demo)
+    endif()
 else()
     message(FATAL_ERROR "This meta-project needs gtest")
 endif()
-
 
 #ExternalProject_Add(microxrcedds_agent
 #    PREFIX ${PROJECT_BINARY_DIR}/microxrcedds_agent

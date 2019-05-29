@@ -22,7 +22,7 @@ add_gtest(client_agent_test
     SOURCES
         ClientAgentInteraction.cpp
     DEPENDENCIES
-        interaction-intest-client
+        interaction_client
         microxrcedds_agent
         microxrcedds_client
         microcdr
@@ -32,7 +32,7 @@ add_gtest(client_agent_test
 
 target_include_directories(client_agent_test PRIVATE ${GTEST_INCLUDE_DIR})
 target_link_libraries(client_agent_test
-    interaction-intest-client
+    interaction_client
     microxrcedds_agent
     ${GTEST_BOTH_LIBRARIES}
     )

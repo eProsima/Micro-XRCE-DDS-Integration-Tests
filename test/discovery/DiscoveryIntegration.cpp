@@ -10,7 +10,7 @@ class DiscoveryIntegration : public ::testing::TestWithParam<int>
 {
 public:
     const uint16_t AGENT_PORT = 2018;
-    const uint16_t DISCOVERY_PORT = UXR_DEFAULT_DISCOVERY_PORT;
+    const uint16_t DISCOVERY_PORT = eprosima::uxr::DISCOVERY_PORT;
 
     DiscoveryIntegration()
     : transport_(GetParam())
@@ -53,13 +53,14 @@ public:
         switch(transport_)
         {
             case UDP_TRANSPORT:
-                agent.reset(new eprosima::uxr::UDPServer(port, discovery_port));
+                agent.reset(new eprosima::uxr::UDPServer(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
             case TCP_TRANSPORT:
-                agent.reset(new eprosima::uxr::TCPServer(port, discovery_port));
+                agent.reset(new eprosima::uxr::TCPServer(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
         }
         agent->run();
+        agent->enable_discovery(discovery_port);
         agents_.push_back(agent);
     }
 
