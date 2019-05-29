@@ -17,29 +17,24 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
     FILES_MATCHING PATTERN "*.xml"
     )
 
-add_executable(discovery_test DiscoveryIntegration.cpp)
-add_gtest(discovery_test
+add_executable(discovery-test DiscoveryIntegration.cpp)
+add_gtest(discovery-test
     SOURCES
         DiscoveryIntegration.cpp
-    DEPENDENCIES
-        interaction_client
-        microxrcedds_agent
-        microxrcedds_client
-        microcdr
-        fastrtps
-        fastcdr
+    ENVIRONMENTS
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
     )
-target_include_directories(discovery_test
+target_include_directories(discovery-test
     PRIVATE
         ${GTEST_INCLUDE_DIR}
     )
-target_link_libraries(discovery_test
+target_link_libraries(discovery-test
     PRIVATE
         interaction_client
         microxrcedds_agent
         ${GTEST_BOTH_LIBRARIES}
     )
-set_target_properties(discovery_test
+set_target_properties(discovery-test
     PROPERTIES
         CXX_STANDARD 11
         CXX_STANDARD_REQUIRED YES
