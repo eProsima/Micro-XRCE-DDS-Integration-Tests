@@ -26,22 +26,20 @@ add_gtest(cross_serialization_test
     SOURCES
         ${SRCS}
     ENVIRONMENTS
-        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib/>
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}/microxrcedds_agent/lib/>
         $<$<PLATFORM_ID:Windows>:"PATH=%PATH%;${AGENT_INSTALL_DIR}/lib">
     )
 target_include_directories(cross_serialization_test
     PRIVATE
-        ${CLIENT_INSTALL_DIR}/include
+#        ${PROJECT_BINARY_DIR}/microxrcedds_client/src/microxrcedds_client/src/c
         ${CLIENT_SOURCE_DIR}/src/c
-        ${AGENT_INSTALL_DIR}/include
-        ${GTEST_INCLUDE_DIRS}
     )
 target_link_libraries(cross_serialization_test
     PRIVATE
-        ${CLIENT_INSTALL_DIR}/lib/${CLIENT_LIBRARY}
-        ${CLIENT_INSTALL_DIR}/lib/libmicrocdr.so
-        ${AGENT_INSTALL_DIR}/lib/${AGENT_LIBRARY}
-        ${AGENT_INSTALL_DIR}/lib/libfastcdr.so
+        microxrcedds_client
+        microxrcedds_agent
+        microcdr
+        fastcdr
         ${GTEST_BOTH_LIBRARIES}
     )
 set_target_properties(cross_serialization_test PROPERTIES

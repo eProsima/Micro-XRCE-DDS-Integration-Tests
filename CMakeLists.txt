@@ -1,4 +1,4 @@
-# Copyright 2017 Proyectos y Sistemas de Mantenimiento SL (eProsima).
+# Copyright 2019 Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,64 +14,27 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-project(microxrcedds_itest LANGUAGES C CXX)
-
 set(CLIENT_BRANCH "develop" CACHE STRING "uClient's branch to be tested.")
 set(AGENT_BRANCH "develop" CACHE STRING "uAgent's branch to be tested.")
 
-include(ExternalProject)
+option(SUPERBUILD "Active super build" ON)
 
-ExternalProject_Add(microxrcedds_agent
-    PREFIX
-        ${PROJECT_BINARY_DIR}/microxrcedds_agent
-    GIT_REPOSITORY
-        https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
-    GIT_TAG
-        origin/${AGENT_BRANCH}
-    CMAKE_ARGS
-        -DTHIRDPARTY=ON
-        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-        -DEPROSIMA_BUILD_TESTS=ON
-        -DBUILD_SHARED_LIBS=ON
-    )
+if(SUPERBUILD)
+    project(superbuild NONE)
+    include(cmake/SuperBuild.cmake)
+    return()
+else()
+    project(microxrcedds_itest LANGUAGES C CXX)
+    set(SUPERBUILD ON CACHE BOOL "" FORCE)
+endif()
 
-ExternalProject_Add(microxrcedds_client
-    PREFIX
-        ${PROJECT_BINARY_DIR}/microxrcedds_client
-    GIT_REPOSITORY
-        https://github.com/eProsima/Micro-XRCE-DDS-Client.git
-    GIT_TAG
-        origin/${CLIENT_BRANCH}
-    CMAKE_ARGS
-        -DTHIRDPARTY=ON
-        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-        -DEPROSIMA_BUILD_TESTS=ON
-        -DBUILD_SHARED_LIBS=ON
-    )
+ set(CMAKE_PREFIX_PATH "${CLIENT_INSTALL_DIR}")
+ find_package(microxrcedds_client REQUIRED)
+ find_package(microcdr REQUIRED)
 
-ExternalProject_Get_Property(microxrcedds_client INSTALL_DIR)
-ExternalProject_Get_Property(microxrcedds_client SOURCE_DIR)
-set(CLIENT_INSTALL_DIR ${INSTALL_DIR})
-set(CLIENT_SOURCE_DIR ${SOURCE_DIR})
-set(CLIENT_LIBRARY ${CMAKE_SHARED_LIBRARY_PREFIX}microxrcedds_client${CMAKE_SHARED_LIBRARY_SUFFIX})
-
-ExternalProject_Get_Property(microxrcedds_agent INSTALL_DIR)
-set(AGENT_INSTALL_DIR ${INSTALL_DIR})
-set(AGENT_LIBRARY ${CMAKE_SHARED_LIBRARY_PREFIX}microxrcedds_agent${CMAKE_SHARED_LIBRARY_SUFFIX})
-
-add_executable(${PROJECT_NAME} main.cpp)
-add_dependencies(${PROJECT_NAME} microxrcedds_client microxrcedds_agent)
-
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-        ${CLIENT_INSTALL_DIR}/lib/${CLIENT_LIBRARY}
-        ${AGENT_INSTALL_DIR}/lib/${AGENT_LIBRARY}
-    )
-target_include_directories(${PROJECT_NAME}
-    PRIVATE
-        ${CLIENT_INSTALL_DIR}/include
-        ${AGENT_INSTALL_DIR}/include
-    )
+ set(CMAKE_PREFIX_PATH "${AGENT_INSTALL_DIR}")
+ find_package(microxrcedds_agent REQUIRED)
+ find_package(fastcdr REQUIRED)
 
 ###############################################################################
 # Testing
@@ -81,10 +44,8 @@ check_gtest()
 if(GTEST_FOUND)
     enable_testing()
     include(CTest)
-#
+
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-#        add_subdirectory(${PROJECT_BINARY_DIR}/client_clone/test/integration/cross_serialization)
-#        add_subdirectory(${PROJECT_BINARY_DIR}/agent_clone/test/integration/cross_serialization)
         add_subdirectory(test/cross_serialization)
     endif()
 #
