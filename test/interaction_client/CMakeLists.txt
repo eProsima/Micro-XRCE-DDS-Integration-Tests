@@ -12,32 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-    FILES_MATCHING PATTERN "*.xml"
+include(${PROJECT_SOURCE_DIR}/cmake/common/check_configuration.cmake)
+
+set(SRCS
+    Discovery.cpp
+    Client.cpp
+    Gateway.cpp
+    BigHelloWorld.c
     )
 
-add_executable(client-agent-test ClientAgentInteraction.cpp)
-add_gtest(client-agent-test
-    SOURCES
-        ClientAgentInteraction.cpp
-    ENVIRONMENTS
-        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
-        $<$<PLATFORM_ID:Windows>:PATH=${AGENT_INSTALL_DIR}/bin;${CLIENT_INSTALL_DIR}/bin;${CMAKE_BINARY_DIR}>
-    )
-target_include_directories(client-agent-test
+add_library(interaction_client STATIC ${SRCS})
+set_common_compile_options(interaction_client)
+if(MSVC OR MSVC_IDE)
+    target_compile_options(interaction_client
+        PRIVATE
+            /wd4996
+        )
+endif()
+
+target_include_directories(interaction_client
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE
-        ${GTEST_INCLUDE_DIR}
+        ${GTEST_INCLUDE_DIRS}
     )
-target_link_libraries(client-agent-test
+target_link_libraries(interaction_client
+    PUBLIC
+        microxrcedds_client
     PRIVATE
-        interaction_client
-        microxrcedds_agent
         ${GTEST_BOTH_LIBRARIES}
     )
-set_target_properties(client-agent-test
+target_include_directories(interaction_client
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    )
+set_target_properties(interaction_client
     PROPERTIES
         CXX_STANDARD 11
         CXX_STANDARD_REQUIRED YES
     )
-

@@ -16,30 +16,32 @@
 #
 ###############################################################################
 
-set(SRCS CrossSerialization.cpp)
+set(SRCS
+    CrossSerialization.cpp
+    AgentSerialization.cpp
+    ClientSerialization.cpp
+    )
 add_executable(cross_serialization_test ${SRCS})
 add_gtest(cross_serialization_test
     SOURCES
         ${SRCS}
-    DEPENDENCIES
-        cross-serialization-intest-client
-        cross-serialization-intest-agent
-        microxrcedds_agent
-        microxrcedds_client
-        microcdr
-        fastrtps
-        fastcdr
+    ENVIRONMENTS
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
     )
 target_include_directories(cross_serialization_test
     PRIVATE
-        ${GTEST_INCLUDE_DIRS}
+        ${CLIENT_SOURCE_DIR}/src/c
     )
 target_link_libraries(cross_serialization_test
-        cross-serialization-intest-client
-        cross-serialization-intest-agent
+    PRIVATE
+        microxrcedds_client
+        microxrcedds_agent
+        microcdr
+        fastcdr
         ${GTEST_BOTH_LIBRARIES}
     )
-set_target_properties(cross_serialization_test PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED YES
+set_target_properties(cross_serialization_test
+    PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED YES
     )

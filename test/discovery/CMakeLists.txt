@@ -1,4 +1,4 @@
-# Copyright 2018 Proyectos y Sistemas de Mantenimiento SL (eProsima).
+# Copyright 2019 Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,28 +17,26 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
     FILES_MATCHING PATTERN "*.xml"
     )
 
-add_executable(discovery_test DiscoveryIntegration.cpp)
-add_gtest(discovery_test
+add_executable(discovery-test DiscoveryIntegration.cpp)
+add_gtest(discovery-test
     SOURCES
         DiscoveryIntegration.cpp
-    DEPENDENCIES
-        interaction-intest-client
+    ENVIRONMENTS
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
+    )
+target_include_directories(discovery-test
+    PRIVATE
+        ${GTEST_INCLUDE_DIR}
+    )
+target_link_libraries(discovery-test
+    PRIVATE
+        interaction_client
         microxrcedds_agent
-        microxrcedds_client
-        microcdr
-        fastrtps
-        fastcdr
+        ${GTEST_BOTH_LIBRARIES}
     )
-
-target_include_directories(discovery_test PRIVATE ${GTEST_INCLUDE_DIR})
-target_link_libraries(discovery_test
-    interaction-intest-client
-    microxrcedds_agent
-    ${GTEST_BOTH_LIBRARIES}
-    )
-
-set_target_properties(discovery_test PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED YES
+set_target_properties(discovery-test
+    PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED YES
     )
 
