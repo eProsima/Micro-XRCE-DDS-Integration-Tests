@@ -41,15 +41,13 @@ public:
     }
 
 private:
-    static void on_agent_found(const uxrAgentAddress* address, int64_t timestamp, void* args)
+    static void on_agent_found(const uxrAgentAddress* address, void* args)
     {
-        static_cast<Discovery*>(args)->on_agent_found_member(address, timestamp);
+        static_cast<Discovery*>(args)->on_agent_found_member(address);
     }
 
-    void on_agent_found_member(const uxrAgentAddress* address, int64_t timestamp)
+    void on_agent_found_member(const uxrAgentAddress* address)
     {
-        (void) timestamp;
-
         std::cout << "Agent found on port: " << address->port << std::endl;
 
 

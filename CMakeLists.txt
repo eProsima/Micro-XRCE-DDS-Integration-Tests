@@ -17,10 +17,10 @@ cmake_minimum_required(VERSION 3.5)
 set(CLIENT_BRANCH "develop" CACHE STRING "uClient's branch to be tested.")
 set(AGENT_BRANCH "develop" CACHE STRING "uAgent's branch to be tested.")
 
-option(SUPERBUILD "Active super build" ON)
+option(UTEST_SUPERBUILD "Active super build" ON)
 
-if(SUPERBUILD)
-    project(superbuild NONE)
+if(UTEST_SUPERBUILD)
+    project(utest_superbuild NONE)
     include(cmake/SuperBuild.cmake)
     return()
 else()

@@ -22,7 +22,9 @@ set(SRCS
     )
 
 add_library(interaction_client STATIC ${SRCS})
+
 set_common_compile_options(interaction_client)
+
 if(MSVC OR MSVC_IDE)
     target_compile_options(interaction_client
         PRIVATE
@@ -36,18 +38,17 @@ target_include_directories(interaction_client
     PRIVATE
         ${GTEST_INCLUDE_DIRS}
     )
+
 target_link_libraries(interaction_client
     PUBLIC
         microxrcedds_client
     PRIVATE
         ${GTEST_BOTH_LIBRARIES}
     )
-target_include_directories(interaction_client
-    PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
-    )
-set_target_properties(interaction_client
-    PROPERTIES
-        CXX_STANDARD 11
-        CXX_STANDARD_REQUIRED YES
+
+set_target_properties(interaction_client PROPERTIES
+    CXX_STANDARD
+        11
+    CXX_STANDARD_REQUIRED
+        YES
     )
