@@ -30,6 +30,9 @@
  *
  ****************************************************************************/
 
+#include <shapesdemo/config.hpp>
+
+#include <uxr/agent/Agent.hpp>
 #if defined(PLATFORM_NAME_LINUX)
 #include <uxr/agent/transport/udp/UDPServerLinux.hpp>
 #include <uxr/agent/transport/tcp/TCPServerLinux.hpp>
@@ -53,18 +56,19 @@ public:
         , agent_(init_agent(AGENT_PORT))
     {
         agent_->run();
+        eprosima::uxr::Agent::load_config_file(UTEST_SHAPESDEMO_REFS);
     }
 
     void TearDown() override
     {
         std::string echo = "echo '";
-        std::string executable = "' | ../../build/client_clone/examples/ShapesDemo/ShapeDemoClient ";
+        std::string executable = UTEST_SHAPESDEMO_COMMAND;
         std::string args = ((UDP_TRANSPORT == transport_) ? "--udp" : "--tcp") + std::string(" 127.0.0.1 ") + std::to_string(AGENT_PORT);
 
         std::string commands = "";
         for(std::vector<std::string>::iterator it = commands_.begin() ; it != commands_.end(); ++it)
         {
-            commands.append(*it + "\n ");
+            commands.append(*it + " \n ");
         }
 
         std::string execution = echo + commands + executable + args;
@@ -81,10 +85,10 @@ protected:
         switch(transport_)
         {
             case UDP_TRANSPORT:
-                agent = new eprosima::uxr::UDPServer(port);
+                agent = new eprosima::uxr::UDPServer(port, eprosima::uxr::Middleware::Kind::FAST);
                 break;
             case TCP_TRANSPORT:
-                agent = new eprosima::uxr::TCPServer(port);
+                agent = new eprosima::uxr::TCPServer(port, eprosima::uxr::Middleware::Kind::FAST);
                 break;
             default:
                 std::cerr << "Not supported transport" << std::endl;

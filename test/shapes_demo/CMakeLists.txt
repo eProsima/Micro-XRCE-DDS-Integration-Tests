@@ -22,29 +22,26 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(PLATFORM_NAME_WINDOWS ON)
 endif()
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-    FILES_MATCHING PATTERN "*.xml"
-    )
-
 set(SRCS ShapesDemo.cpp)
+
 add_executable(shapes_demo_test ${SRCS})
 add_gtest(shapes_demo_test
     SOURCES
         ${SRCS}
-    DEPENDENCIES
-        microxrcedds_agent
-        fastrtps
-        fastcdr
+    ENVIRONMENTS
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
     )
+
 target_include_directories(shapes_demo_test
     PRIVATE
+        ${PROJECT_BINARY_DIR}/include
         ${GTEST_INCLUDE_DIRS}
     )
 
 target_link_libraries(shapes_demo_test
-    microxrcedds_agent
-    ${GTEST_BOTH_LIBRARIES}
+    PRIVATE
+        microxrcedds_agent
+        ${GTEST_BOTH_LIBRARIES}
     )
 
 target_compile_definitions(shapes_demo_test
@@ -54,6 +51,15 @@ target_compile_definitions(shapes_demo_test
     )
 
 set_target_properties(shapes_demo_test PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED YES
+    CXX_STANDARD
+        11
+    CXX_STANDARD_REQUIRED
+        YES
+    )
+
+set(UTEST_SHAPESDEMO_DIR "${CLIENT_INSTALL_DIR}/examples/uxr/client/ShapeDemoClient/bin/ShapeDemoClient")
+set(UTEST_SHAPESDEMO_REFS "${AGENT_SOURCE_DIR}/agent.refs")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in
+    ${PROJECT_BINARY_DIR}/include/shapesdemo/config.hpp
     )
