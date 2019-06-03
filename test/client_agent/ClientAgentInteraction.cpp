@@ -25,9 +25,7 @@ public:
     }
 
     ~ClientAgentInteraction()
-    {
-        agent_->stop();
-    }
+    {}
 
     void SetUp() override
     {

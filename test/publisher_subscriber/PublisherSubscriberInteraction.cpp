@@ -25,9 +25,7 @@ public:
     }
 
     ~PublisherSubscriberInteraction()
-    {
-        agent_->stop();
-    }
+    {}
 
     void SetUp() override
     {
