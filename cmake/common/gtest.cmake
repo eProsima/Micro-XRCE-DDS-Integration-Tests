@@ -127,6 +127,10 @@ macro(add_gtest test)
                         if(WIN32)
                             set_property(TEST ${GTEST_INSTATATION_NAME}.${GTEST_GROUP_NAME}.${GTEST_NAME} APPEND PROPERTY ENVIRONMENT "PATH=${WIN_PATH}")
                         endif()
+
+                        foreach(property ${GTEST_ENVIRONMENTS})
+                            set_property(TEST ${GTEST_INSTATATION_NAME}.${GTEST_GROUP_NAME}.${GTEST_NAME} APPEND PROPERTY ENVIRONMENT "${property}")
+                        endforeach()
                     endforeach()
 
                 else()
@@ -137,12 +141,11 @@ macro(add_gtest test)
                     if(WIN32)
                         set_property(TEST ${GTEST_GROUP_NAME}.${GTEST_NAME} APPEND PROPERTY ENVIRONMENT "PATH=${WIN_PATH}")
                     endif()
+
+                    foreach(property ${GTEST_ENVIRONMENTS})
+                        set_property(TEST ${GTEST_GROUP_NAME}.${GTEST_NAME} APPEND PROPERTY ENVIRONMENT "${property}")
+                    endforeach()
                 endif()
-
-
-                foreach(property ${GTEST_ENVIRONMENTS})
-                    set_property(TEST ${GTEST_GROUP_NAME}.${GTEST_NAME} APPEND PROPERTY ENVIRONMENT "${property}")
-                endforeach()
             endforeach()
         endforeach()
     else()
