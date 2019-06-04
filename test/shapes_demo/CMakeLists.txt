@@ -57,8 +57,8 @@ set_target_properties(shapes_demo_test PROPERTIES
         YES
     )
 
-set(UTEST_SHAPESDEMO_DIR "${CLIENT_INSTALL_DIR}/examples/uxr/client/ShapeDemoClient/bin/ShapeDemoClient")
-set(UTEST_SHAPESDEMO_REFS "${AGENT_SOURCE_DIR}/agent.refs")
+string(REPLACE " " "' '" UTEST_SHAPESDEMO_DIR "${CLIENT_INSTALL_DIR}/examples/uxr/client/ShapeDemoClient/bin/ShapeDemoClient")
+file(TO_CMAKE_PATH "${AGENT_SOURCE_DIR}/agent.refs" UTEST_SHAPESDEMO_REFS)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in
     ${PROJECT_BINARY_DIR}/include/shapesdemo/config.hpp
