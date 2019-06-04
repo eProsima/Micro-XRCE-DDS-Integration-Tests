@@ -22,6 +22,10 @@ ExternalProject_Add(uagent
         https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
     GIT_TAG
         origin/${AGENT_BRANCH}
+    GIT_SHALLOW
+        TRUE
+    GIT_SUBMODULES
+        "thirdparty/uxrclient"
     CMAKE_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -40,6 +44,10 @@ ExternalProject_Add(uclient
         https://github.com/eProsima/Micro-XRCE-DDS-Client.git
     GIT_TAG
         origin/${CLIENT_BRANCH}
+    GIT_SHALLOW
+        TRUE
+    GIT_SUBMODULES
+        "thirdparty/microcdr" 
     CMAKE_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
