@@ -25,7 +25,6 @@ ExternalProject_Add(uagent
     CMAKE_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-        -DUAGENT_BUILD_TESTS:BOOL=ON
         -DBUILD_SHARED_LIBS:BOOL=ON
     )
 ExternalProject_Get_Property(uagent INSTALL_DIR)
@@ -44,9 +43,8 @@ ExternalProject_Add(uclient
     CMAKE_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-        -DUCLIENT_BUILD_TESTS:BOOL=ON
-        -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUCLIENT_BUILD_EXAMPLES:BOOL=ON
+        -DBUILD_SHARED_LIBS:BOOL=OFF
     )
 ExternalProject_Get_Property(uclient INSTALL_DIR)
 ExternalProject_Get_Property(uclient SOURCE_DIR)
