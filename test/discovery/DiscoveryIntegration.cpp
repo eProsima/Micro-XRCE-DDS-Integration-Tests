@@ -21,14 +21,6 @@ public:
     {
     }
 
-    void TearDown() override
-    {
-        for(size_t i = 0; i < agents_.size(); ++i)
-        {
-            agents_[i]->stop();
-        }
-    }
-
     std::vector<uint16_t> init_scenario(size_t number)
     {
         std::vector<uint16_t> agent_ports;
@@ -49,7 +41,7 @@ public:
 
     void create_agent(uint16_t port, uint16_t discovery_port)
     {
-        std::shared_ptr<eprosima::uxr::Server> agent;
+        std::unique_ptr<eprosima::uxr::Server> agent;
         switch(transport_)
         {
             case UDP_TRANSPORT:
@@ -61,7 +53,7 @@ public:
         }
         agent->run();
         agent->enable_discovery(discovery_port);
-        agents_.push_back(agent);
+        agents_.push_back(std::move(agent));
     }
 
 protected:
@@ -69,7 +61,7 @@ protected:
     std::unique_ptr<Discovery> discovery_;
 
 private:
-    std::vector<std::shared_ptr<eprosima::uxr::Server>> agents_;
+    std::vector<std::unique_ptr<eprosima::uxr::Server>> agents_;
 };
 
 INSTANTIATE_TEST_CASE_P(Transport, DiscoveryIntegration, ::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT), ::testing::PrintToStringParamName());

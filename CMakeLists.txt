@@ -27,13 +27,11 @@ else()
     project(microxrcedds_itest LANGUAGES C CXX)
 endif()
 
-set(CMAKE_PREFIX_PATH "${CLIENT_INSTALL_DIR}")
-find_package(microcdr REQUIRED)
-find_package(microxrcedds_client REQUIRED)
+find_package(microcdr REQUIRED PATHS "${CMAKE_PREFIX_PATH}" "${CLIENT_INSTALL_DIR}")
+find_package(microxrcedds_client REQUIRED PATHS "${CLIENT_INSTALL_DIR}")
 
-set(CMAKE_PREFIX_PATH "${AGENT_INSTALL_DIR}")
-find_package(fastcdr REQUIRED)
-find_package(microxrcedds_agent REQUIRED)
+find_package(fastcdr REQUIRED PATHS "${CMAKE_PREFIX_PATH}" "${AGENT_INSTALL_DIR}")
+find_package(microxrcedds_agent REQUIRED PATHS "${AGENT_INSTALL_DIR}")
 
 ###############################################################################
 # Testing

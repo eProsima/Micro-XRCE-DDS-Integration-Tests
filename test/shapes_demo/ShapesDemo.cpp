@@ -74,7 +74,6 @@ public:
         std::string execution = echo + commands + executable + args;
         int shape_demo_app_result = std::system(execution.c_str());
 
-        agent_->stop();
         ASSERT_EQ(0, shape_demo_app_result);
     }
 
