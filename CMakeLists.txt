@@ -37,24 +37,22 @@ find_package(microxrcedds_agent REQUIRED PATHS "${AGENT_INSTALL_DIR}")
 # Testing
 ###############################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/common/gtest.cmake)
-check_gtest()
-if(GTEST_FOUND)
-    enable_testing()
-    include(CTest)
 
-    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        add_subdirectory(test/cross_serialization)
-    endif()
+find_package(GTest REQUIRED)
+find_package(Threads REQUIRED)
 
-    add_subdirectory(test/interaction_client)
-    add_subdirectory(test/client_agent)
-    add_subdirectory(test/publisher_subscriber)
-    add_subdirectory(test/shapes_demo)
+enable_testing()
+include(CTest)
 
-    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        add_subdirectory(test/discovery)
-    endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_subdirectory(test/cross_serialization)
+endif()
 
-else()
-    message(FATAL_ERROR "This meta-project needs gtest")
+add_subdirectory(test/interaction_client)
+add_subdirectory(test/client_agent)
+add_subdirectory(test/publisher_subscriber)
+add_subdirectory(test/shapes_demo)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_subdirectory(test/discovery)
 endif()

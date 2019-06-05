@@ -39,6 +39,7 @@ target_link_libraries(cross_serialization_test
         microcdr
         fastcdr
         ${GTEST_BOTH_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
     )
 set_target_properties(cross_serialization_test
     PROPERTIES

@@ -37,6 +37,7 @@ target_link_libraries(client-agent-test
         interaction_client
         microxrcedds_agent
         ${GTEST_BOTH_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
     )
 
 set_target_properties(client-agent-test PROPERTIES

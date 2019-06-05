@@ -42,6 +42,7 @@ target_link_libraries(shapes_demo_test
     PRIVATE
         microxrcedds_agent
         ${GTEST_BOTH_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
     )
 
 target_compile_definitions(shapes_demo_test

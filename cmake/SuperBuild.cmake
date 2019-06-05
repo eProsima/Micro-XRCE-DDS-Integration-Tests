@@ -14,6 +14,8 @@
 
 include(ExternalProject)
 
+unset(_deps)
+
 # Agent project.
 ExternalProject_Add(uagent
     PREFIX
@@ -32,6 +34,7 @@ ExternalProject_Add(uagent
         -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
         -DBUILD_SHARED_LIBS:BOOL=ON
     )
+list(APPEND _deps uagent)
 ExternalProject_Get_Property(uagent INSTALL_DIR)
 ExternalProject_Get_Property(uagent SOURCE_DIR)
 set(AGENT_INSTALL_DIR ${INSTALL_DIR})
@@ -56,10 +59,40 @@ ExternalProject_Add(uclient
         -DUCLIENT_BUILD_EXAMPLES:BOOL=ON
         -DBUILD_SHARED_LIBS:BOOL=OFF
     )
+list(APPEND _deps uclient)
 ExternalProject_Get_Property(uclient INSTALL_DIR)
 ExternalProject_Get_Property(uclient SOURCE_DIR)
 set(CLIENT_INSTALL_DIR ${INSTALL_DIR})
 set(CLIENT_SOURCE_DIR ${SOURCE_DIR})
+
+enable_language(CXX)
+find_package(GTest QUIET)
+if(NOT GTest_FOUND)
+    unset(GTEST_ROOT CACHE)
+    ExternalProject_Add(googletest
+        GIT_REPOSITORY
+            https://github.com/google/googletest.git
+        GIT_TAG
+            release-1.8.1
+        GIT_SHALLOW
+            TRUE
+        PREFIX
+            ${PROJECT_BINARY_DIR}/googletest
+        INSTALL_DIR
+            ${PROJECT_BINARY_DIR}/temp_install
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            $<$<PLATFORM_ID:Windows>:-Dgtest_force_shared_crt:BOOL=ON>
+        BUILD_COMMAND
+            COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config Release --target install
+            COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config Debug   --target install
+        INSTALL_COMMAND
+            ""
+        )
+    set(GTEST_ROOT ${PROJECT_BINARY_DIR}/temp_install CACHE PATH "" FORCE)
+    list(APPEND _deps googletest)
+endif()
 
 # Integration test project.
 ExternalProject_Add(itest
@@ -75,8 +108,7 @@ ExternalProject_Add(itest
     CMAKE_CACHE_ARGS
         -DUTEST_SUPERBUILD:BOOL=OFF
     DEPENDS
-        uagent
-        uclient
+        ${_deps}
     INSTALL_COMMAND
         ""
     )
