@@ -1,8 +1,13 @@
 #include <gtest/gtest.h>
 
 #include <Discovery.hpp>
+#ifdef _WIN32
+#include <uxr/agent/transport/udp/UDPServerWindows.hpp>
+#include <uxr/agent/transport/tcp/TCPServerWindows.hpp>
+#else
 #include <uxr/agent/transport/udp/UDPServerLinux.hpp>
 #include <uxr/agent/transport/tcp/TCPServerLinux.hpp>
+#endif
 
 #include <thread>
 
