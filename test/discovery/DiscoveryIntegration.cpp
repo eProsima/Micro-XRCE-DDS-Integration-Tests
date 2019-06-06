@@ -69,7 +69,7 @@ private:
     std::vector<std::unique_ptr<eprosima::uxr::Server>> agents_;
 };
 
-INSTANTIATE_TEST_CASE_P(Transport, DiscoveryIntegration, ::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT), ::testing::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(Transport, DiscoveryIntegration, ::testing::Values(TCP_TRANSPORT, UDP_TRANSPORT), ::testing::PrintToStringParamName());
 
 TEST_P(DiscoveryIntegration, DiscoveryUnicast)
 {

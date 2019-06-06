@@ -30,7 +30,7 @@ public:
             agent_list.emplace_back(uxrAgentAddress{ip_.c_str(), it});
         }
 
-        uxr_discovery_agents(1, 1000, on_agent_found, this, agent_list.data(), agent_list.size());
+        uxr_discovery_agents(1, 5000, on_agent_found, this, agent_list.data(), agent_list.size());
         ASSERT_TRUE(agent_ports_.empty());
     }
 
