@@ -14,6 +14,8 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
+
 set(CLIENT_BRANCH "develop" CACHE STRING "uClient's branch to be tested.")
 set(AGENT_BRANCH "develop" CACHE STRING "uAgent's branch to be tested.")
 

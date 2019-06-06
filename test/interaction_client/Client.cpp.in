@@ -11,7 +11,7 @@ const char* Client::participant_xml_ = "<dds>"
 
 const char* Client::topic_xml_ = "<dds>"
                                      "<topic>"
-                                         "<name>BigHelloWorldTopic</name>"
+                                         "<name>BigHelloWorldTopic_@HOSTNAME_SUFFIX@</name>"
                                          "<dataType>BigHelloWorld</dataType>"
                                      "</topic>"
                                  "</dds>";
@@ -23,7 +23,7 @@ const char* Client::datawriter_xml_ = "<dds>"
                                               "<historyMemoryPolicy>PREALLOCATED_WITH_REALLOC</historyMemoryPolicy>"
                                               "<topic>"
                                                   "<kind>NO_KEY</kind>"
-                                                  "<name>BigHelloWorldTopic</name>"
+                                                  "<name>BigHelloWorldTopic_@HOSTNAME_SUFFIX@</name>"
                                                   "<dataType>BigHelloWorld</dataType>"
                                                   "<historyQos>"
                                                       "<kind>KEEP_LAST</kind>"
@@ -45,7 +45,7 @@ const char* Client::datareader_xml_ = "<dds>"
                                               "<historyMemoryPolicy>PREALLOCATED_WITH_REALLOC</historyMemoryPolicy>"
                                               "<topic>"
                                                   "<kind>NO_KEY</kind>"
-                                                  "<name>BigHelloWorldTopic</name>"
+                                                  "<name>BigHelloWorldTopic_@HOSTNAME_SUFFIX@</name>"
                                                   "<dataType>BigHelloWorld</dataType>"
                                                   "<historyQos>"
                                                       "<kind>KEEP_LAST</kind>"
@@ -62,5 +62,3 @@ const char* Client::datareader_xml_ = "<dds>"
 
 
 uint32_t Client::next_client_key_ = 0;
-
-

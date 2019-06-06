@@ -14,8 +14,15 @@
 
 include(${PROJECT_SOURCE_DIR}/cmake/common/check_configuration.cmake)
 
+cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Client.cpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Client.cpp
+    @ONLY
+    )
+
 set(SRCS
-    Client.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/Client.cpp
     Gateway.cpp
     BigHelloWorld.c
     Discovery.cpp
