@@ -56,7 +56,7 @@ public:
         , agent_(init_agent(AGENT_PORT))
     {
         agent_->run();
-        eprosima::uxr::Agent::load_config_file(UTEST_SHAPESDEMO_REFS);
+        agent_->load_config_file(UTEST_SHAPESDEMO_REFS);
     }
 
     void TearDown() override
