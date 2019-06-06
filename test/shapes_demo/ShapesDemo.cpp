@@ -84,10 +84,10 @@ protected:
         switch(transport_)
         {
             case UDP_TRANSPORT:
-                agent = new eprosima::uxr::UDPServer(port, eprosima::uxr::Middleware::Kind::FAST);
+                agent = new eprosima::uxr::UDPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST);
                 break;
             case TCP_TRANSPORT:
-                agent = new eprosima::uxr::TCPServer(port, eprosima::uxr::Middleware::Kind::FAST);
+                agent = new eprosima::uxr::TCPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST);
                 break;
             default:
                 std::cerr << "Not supported transport" << std::endl;

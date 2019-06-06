@@ -50,10 +50,10 @@ public:
         switch(transport_)
         {
             case UDP_TRANSPORT:
-                agent.reset(new eprosima::uxr::UDPServer(port, eprosima::uxr::Middleware::Kind::FAST));
+                agent.reset(new eprosima::uxr::UDPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
             case TCP_TRANSPORT:
-                agent.reset(new eprosima::uxr::TCPServer(port, eprosima::uxr::Middleware::Kind::FAST));
+                agent.reset(new eprosima::uxr::TCPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
         }
         agent->run();

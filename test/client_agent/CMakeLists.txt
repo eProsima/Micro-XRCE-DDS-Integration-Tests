@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-    FILES_MATCHING PATTERN "*.xml"
+cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DEFAULT_FASTRTPS_PROFILES.xml.in
+    ${CMAKE_CURRENT_BINARY_DIR}/DEFAULT_FASTRTPS_PROFILES.xml
+    @ONLY
     )
 
 add_executable(client-agent-test ClientAgentInteraction.cpp)
