@@ -32,8 +32,8 @@ public:
         std::vector<uint16_t> discovery_ports;
         for(size_t i = 0; i < number; i++)
         {
-            uint16_t agent_port = AGENT_PORT + i;
-            uint16_t discovery_port = DISCOVERY_PORT + i;
+            uint16_t agent_port = uint16_t(AGENT_PORT + i);
+            uint16_t discovery_port = uint16_t(DISCOVERY_PORT + i);
             create_agent(agent_port, discovery_port);
             agent_ports.push_back(agent_port);
             discovery_ports.push_back(discovery_port);

@@ -15,10 +15,10 @@
 include(${PROJECT_SOURCE_DIR}/cmake/common/check_configuration.cmake)
 
 set(SRCS
-    Discovery.cpp
     Client.cpp
     Gateway.cpp
     BigHelloWorld.c
+    Discovery.cpp
     )
 
 add_library(interaction_client STATIC ${SRCS})
@@ -29,6 +29,8 @@ if(MSVC OR MSVC_IDE)
     target_compile_options(interaction_client
         PRIVATE
             /wd4996
+        PUBLIC
+            -D_CRT_SECURE_NO_WARNINGS
         )
 endif()
 
