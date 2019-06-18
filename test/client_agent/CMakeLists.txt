@@ -1,6 +1,4 @@
-###############################################################################
-#
-# Copyright 2017 Proyectos y Sistemas de Mantenimiento SL (eProsima).
+# Copyright 2019 Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,36 +11,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-###############################################################################
 
-set(SRCS
-    CrossSerialization.cpp
-    AgentSerialization.cpp
-    ClientSerialization.cpp
+cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DEFAULT_FASTRTPS_PROFILES.xml.in
+    ${CMAKE_CURRENT_BINARY_DIR}/DEFAULT_FASTRTPS_PROFILES.xml
+    @ONLY
     )
-add_executable(cross_serialization_test ${SRCS})
-add_gtest(cross_serialization_test
+
+add_executable(client-agent-test ClientAgentInteraction.cpp)
+
+add_gtest(client-agent-test
     SOURCES
-        ${SRCS}
+        ClientAgentInteraction.cpp
     ENVIRONMENTS
         $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
+        $<$<PLATFORM_ID:Windows>:PATH=${AGENT_INSTALL_DIR}/bin;${CLIENT_INSTALL_DIR}/bin;${CMAKE_BINARY_DIR}>
     )
-target_include_directories(cross_serialization_test
+
+target_include_directories(client-agent-test
     PRIVATE
-        ${CLIENT_SOURCE_DIR}/src/c
+        ${GTEST_INCLUDE_DIR}
     )
-target_link_libraries(cross_serialization_test
+
+target_link_libraries(client-agent-test
     PRIVATE
-        microxrcedds_client
+        interaction_client
         microxrcedds_agent
-        microcdr
-        fastcdr
         ${GTEST_BOTH_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
     )
-set_target_properties(cross_serialization_test
-    PROPERTIES
-        CXX_STANDARD 11
-        CXX_STANDARD_REQUIRED YES
+
+set_target_properties(client-agent-test PROPERTIES
+    CXX_STANDARD
+        11
+    CXX_STANDARD_REQUIRED
+        YES
     )
+
