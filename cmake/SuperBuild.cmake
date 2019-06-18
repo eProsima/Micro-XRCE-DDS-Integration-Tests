@@ -73,9 +73,7 @@ if(NOT GTest_FOUND)
         GIT_REPOSITORY
             https://github.com/google/googletest.git
         GIT_TAG
-            release-1.8.1
-        GIT_SHALLOW
-            TRUE
+            2fe3bd994b3189899d93f1d5a881e725e046fdc2
         PREFIX
             ${PROJECT_BINARY_DIR}/googletest
         INSTALL_DIR
