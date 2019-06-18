@@ -12,31 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-    FILES_MATCHING PATTERN "*.xml"
+cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DEFAULT_FASTRTPS_PROFILES.xml.in
+    ${CMAKE_CURRENT_BINARY_DIR}/DEFAULT_FASTRTPS_PROFILES.xml
+    @ONLY
     )
 
 add_executable(discovery-test DiscoveryIntegration.cpp)
+
 add_gtest(discovery-test
     SOURCES
         DiscoveryIntegration.cpp
     ENVIRONMENTS
         $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
+        $<$<PLATFORM_ID:Windows>:PATH=${AGENT_INSTALL_DIR}/bin;${CLIENT_INSTALL_DIR}/bin;${CMAKE_BINARY_DIR}>
     )
+
 target_include_directories(discovery-test
     PRIVATE
         ${GTEST_INCLUDE_DIR}
     )
+
 target_link_libraries(discovery-test
     PRIVATE
         interaction_client
         microxrcedds_agent
         ${GTEST_BOTH_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
     )
-set_target_properties(discovery-test
-    PROPERTIES
-        CXX_STANDARD 11
-        CXX_STANDARD_REQUIRED YES
+
+set_target_properties(discovery-test PROPERTIES
+    CXX_STANDARD
+        11
+    CXX_STANDARD_REQUIRED
+        YES
     )
 

@@ -14,43 +14,83 @@
 
 include(ExternalProject)
 
+unset(_deps)
+
 # Agent project.
-ExternalProject_Add(microxrcedds_agent
+ExternalProject_Add(uagent
     PREFIX
-        ${PROJECT_BINARY_DIR}/microxrcedds_agent
+        ${PROJECT_BINARY_DIR}/uagent
     GIT_REPOSITORY
         https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
     GIT_TAG
         origin/${AGENT_BRANCH}
+    GIT_SHALLOW
+        TRUE
+    GIT_SUBMODULES
+        "thirdparty/uxrclient"
     CMAKE_ARGS
-        -DTHIRDPARTY=ON
-        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-        -DEPROSIMA_BUILD_TESTS=ON
-        -DBUILD_SHARED_LIBS=ON
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+        -DBUILD_SHARED_LIBS:BOOL=ON
     )
-ExternalProject_Get_Property(microxrcedds_agent INSTALL_DIR)
-ExternalProject_Get_Property(microxrcedds_agent SOURCE_DIR)
+list(APPEND _deps uagent)
+ExternalProject_Get_Property(uagent INSTALL_DIR)
+ExternalProject_Get_Property(uagent SOURCE_DIR)
 set(AGENT_INSTALL_DIR ${INSTALL_DIR})
 set(AGENT_SOURCE_DIR ${SOURCE_DIR})
 
 # Client project.
-ExternalProject_Add(microxrcedds_client
+ExternalProject_Add(uclient
     PREFIX
-        ${PROJECT_BINARY_DIR}/microxrcedds_client
+        ${PROJECT_BINARY_DIR}/uclient
     GIT_REPOSITORY
         https://github.com/eProsima/Micro-XRCE-DDS-Client.git
     GIT_TAG
         origin/${CLIENT_BRANCH}
+    GIT_SHALLOW
+        TRUE
+    GIT_SUBMODULES
+        "thirdparty/microcdr" 
     CMAKE_ARGS
-        -DTHIRDPARTY=ON
-        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-        -DEPROSIMA_BUILD_TESTS=ON
-        -DBUILD_SHARED_LIBS=ON
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+        -DUCLIENT_BUILD_EXAMPLES:BOOL=ON
+        -DBUILD_SHARED_LIBS:BOOL=OFF
     )
-ExternalProject_Get_Property(microxrcedds_client INSTALL_DIR)
-ExternalProject_Get_Property(microxrcedds_client SOURCE_DIR)
+list(APPEND _deps uclient)
+ExternalProject_Get_Property(uclient INSTALL_DIR)
+ExternalProject_Get_Property(uclient SOURCE_DIR)
 set(CLIENT_INSTALL_DIR ${INSTALL_DIR})
 set(CLIENT_SOURCE_DIR ${SOURCE_DIR})
+
+enable_language(CXX)
+find_package(GTest QUIET)
+if(NOT GTest_FOUND)
+    unset(GTEST_ROOT CACHE)
+    ExternalProject_Add(googletest
+        GIT_REPOSITORY
+            https://github.com/google/googletest.git
+        GIT_TAG
+            2fe3bd994b3189899d93f1d5a881e725e046fdc2
+        PREFIX
+            ${PROJECT_BINARY_DIR}/googletest
+        INSTALL_DIR
+            ${PROJECT_BINARY_DIR}/temp_install
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            $<$<PLATFORM_ID:Windows>:-Dgtest_force_shared_crt:BOOL=ON>
+        BUILD_COMMAND
+            COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config Release --target install
+            COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config Debug   --target install
+        INSTALL_COMMAND
+            ""
+        )
+    set(GTEST_ROOT ${PROJECT_BINARY_DIR}/temp_install CACHE PATH "" FORCE)
+    list(APPEND _deps googletest)
+endif()
 
 # Integration test project.
 ExternalProject_Add(itest
@@ -59,14 +99,14 @@ ExternalProject_Add(itest
     BINARY_DIR
         ${CMAKE_CURRENT_BINARY_DIR}
     CMAKE_ARGS
-        -DSUPERBUILD=OFF
         -DAGENT_INSTALL_DIR=${AGENT_INSTALL_DIR}
         -DAGENT_SOURCE_DIR=${AGENT_SOURCE_DIR}
         -DCLIENT_INSTALL_DIR=${CLIENT_INSTALL_DIR}
         -DCLIENT_SOURCE_DIR=${CLIENT_SOURCE_DIR}
+    CMAKE_CACHE_ARGS
+        -DUTEST_SUPERBUILD:BOOL=OFF
     DEPENDS
-        microxrcedds_client
-        microxrcedds_agent
+        ${_deps}
     INSTALL_COMMAND
         ""
     )

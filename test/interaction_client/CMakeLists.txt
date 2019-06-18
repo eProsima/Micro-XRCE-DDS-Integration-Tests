@@ -14,19 +14,30 @@
 
 include(${PROJECT_SOURCE_DIR}/cmake/common/check_configuration.cmake)
 
+cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Client.cpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Client.cpp
+    @ONLY
+    )
+
 set(SRCS
-    Discovery.cpp
-    Client.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/Client.cpp
     Gateway.cpp
     BigHelloWorld.c
+    Discovery.cpp
     )
 
 add_library(interaction_client STATIC ${SRCS})
+
 set_common_compile_options(interaction_client)
+
 if(MSVC OR MSVC_IDE)
     target_compile_options(interaction_client
         PRIVATE
             /wd4996
+        PUBLIC
+            -D_CRT_SECURE_NO_WARNINGS
         )
 endif()
 
@@ -36,18 +47,17 @@ target_include_directories(interaction_client
     PRIVATE
         ${GTEST_INCLUDE_DIRS}
     )
+
 target_link_libraries(interaction_client
     PUBLIC
         microxrcedds_client
     PRIVATE
         ${GTEST_BOTH_LIBRARIES}
     )
-target_include_directories(interaction_client
-    PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
-    )
-set_target_properties(interaction_client
-    PROPERTIES
-        CXX_STANDARD 11
-        CXX_STANDARD_REQUIRED YES
+
+set_target_properties(interaction_client PROPERTIES
+    CXX_STANDARD
+        11
+    CXX_STANDARD_REQUIRED
+        YES
     )

@@ -25,9 +25,7 @@ public:
     }
 
     ~PublisherSubscriberInteraction()
-    {
-        agent_->stop();
-    }
+    {}
 
     void SetUp() override
     {
@@ -49,10 +47,10 @@ public:
         switch(transport_)
         {
             case UDP_TRANSPORT:
-                agent_.reset(new eprosima::uxr::UDPServer(port, eprosima::uxr::Middleware::Kind::FAST));
+                agent_.reset(new eprosima::uxr::UDPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
             case TCP_TRANSPORT:
-                agent_.reset(new eprosima::uxr::TCPServer(port, eprosima::uxr::Middleware::Kind::FAST));
+                agent_.reset(new eprosima::uxr::TCPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
         }
         agent_->run();
@@ -106,8 +104,8 @@ TEST_P(PublisherSubscriberInteraction, PubSub10TopicsReliable)
     check_messages(SMALL_MESSAGE, 10, 0x80);
 }
 
-/* TODO (#4423) Fix the non-reliable behavior when messages is higher than the agent history to enable this
-TEST_P(PublisherSubscriberInteraction, PubSub30TopicsReliable)
+// TODO (#4423) Fix the non-reliable behavior when messages is higher than the agent history to enable this
+/*TEST_P(PublisherSubscriberInteraction, PubSub30TopicsReliable)
 {
     check_messages(SMALL_MESSAGE, 30, 0x80);
 }

@@ -1,8 +1,13 @@
 #include <gtest/gtest.h>
 
 #include <Discovery.hpp>
+#ifdef _WIN32
+#include <uxr/agent/transport/udp/UDPServerWindows.hpp>
+#include <uxr/agent/transport/tcp/TCPServerWindows.hpp>
+#else
 #include <uxr/agent/transport/udp/UDPServerLinux.hpp>
 #include <uxr/agent/transport/tcp/TCPServerLinux.hpp>
+#endif
 
 #include <thread>
 
@@ -21,22 +26,14 @@ public:
     {
     }
 
-    void TearDown() override
-    {
-        for(size_t i = 0; i < agents_.size(); ++i)
-        {
-            agents_[i]->stop();
-        }
-    }
-
     std::vector<uint16_t> init_scenario(size_t number)
     {
         std::vector<uint16_t> agent_ports;
         std::vector<uint16_t> discovery_ports;
         for(size_t i = 0; i < number; i++)
         {
-            uint16_t agent_port = AGENT_PORT + i;
-            uint16_t discovery_port = DISCOVERY_PORT + i;
+            uint16_t agent_port = uint16_t(AGENT_PORT + i);
+            uint16_t discovery_port = uint16_t(DISCOVERY_PORT + i);
             create_agent(agent_port, discovery_port);
             agent_ports.push_back(agent_port);
             discovery_ports.push_back(discovery_port);
@@ -49,19 +46,19 @@ public:
 
     void create_agent(uint16_t port, uint16_t discovery_port)
     {
-        std::shared_ptr<eprosima::uxr::Server> agent;
+        std::unique_ptr<eprosima::uxr::Server> agent;
         switch(transport_)
         {
             case UDP_TRANSPORT:
-                agent.reset(new eprosima::uxr::UDPServer(port, eprosima::uxr::Middleware::Kind::FAST));
+                agent.reset(new eprosima::uxr::UDPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
             case TCP_TRANSPORT:
-                agent.reset(new eprosima::uxr::TCPServer(port, eprosima::uxr::Middleware::Kind::FAST));
+                agent.reset(new eprosima::uxr::TCPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
         }
         agent->run();
         agent->enable_discovery(discovery_port);
-        agents_.push_back(agent);
+        agents_.push_back(std::move(agent));
     }
 
 protected:
@@ -69,10 +66,10 @@ protected:
     std::unique_ptr<Discovery> discovery_;
 
 private:
-    std::vector<std::shared_ptr<eprosima::uxr::Server>> agents_;
+    std::vector<std::unique_ptr<eprosima::uxr::Server>> agents_;
 };
 
-INSTANTIATE_TEST_CASE_P(Transport, DiscoveryIntegration, ::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT), ::testing::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(Transport, DiscoveryIntegration, ::testing::Values(TCP_TRANSPORT, UDP_TRANSPORT), ::testing::PrintToStringParamName());
 
 TEST_P(DiscoveryIntegration, DiscoveryUnicast)
 {

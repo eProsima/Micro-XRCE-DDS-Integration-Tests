@@ -14,51 +14,44 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
+
 set(CLIENT_BRANCH "develop" CACHE STRING "uClient's branch to be tested.")
 set(AGENT_BRANCH "develop" CACHE STRING "uAgent's branch to be tested.")
 
-option(SUPERBUILD "Active super build" ON)
+option(UTEST_SUPERBUILD "Active super build" ON)
 
-if(SUPERBUILD)
-    project(superbuild NONE)
+if(UTEST_SUPERBUILD)
+    project(utest_superbuild NONE)
     include(cmake/SuperBuild.cmake)
     return()
 else()
     project(microxrcedds_itest LANGUAGES C CXX)
 endif()
 
-set(CMAKE_PREFIX_PATH "${CLIENT_INSTALL_DIR}")
-find_package(microcdr REQUIRED)
-find_package(microxrcedds_client REQUIRED)
+find_package(microcdr REQUIRED PATHS "${CMAKE_PREFIX_PATH}" "${CLIENT_INSTALL_DIR}")
+find_package(microxrcedds_client REQUIRED PATHS "${CLIENT_INSTALL_DIR}")
 
-set(CMAKE_PREFIX_PATH "${AGENT_INSTALL_DIR}")
-find_package(fastcdr REQUIRED)
-find_package(microxrcedds_agent REQUIRED)
+find_package(fastcdr REQUIRED PATHS "${CMAKE_PREFIX_PATH}" "${AGENT_INSTALL_DIR}")
+find_package(microxrcedds_agent REQUIRED PATHS "${AGENT_INSTALL_DIR}")
 
 ###############################################################################
 # Testing
 ###############################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/common/gtest.cmake)
-check_gtest()
-if(GTEST_FOUND)
-    enable_testing()
-    include(CTest)
 
-    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        add_subdirectory(test/cross_serialization)
-    endif()
+find_package(GTest REQUIRED)
+find_package(Threads REQUIRED)
 
-    add_subdirectory(test/interaction_client)
-    add_subdirectory(test/client_agent)
-    add_subdirectory(test/publisher_subscriber)
+enable_testing()
+include(CTest)
 
-    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        add_subdirectory(test/discovery)
-    endif()
-
-    if(EPROSIMA_BUILD)
-        add_subdirectory(test/shapes_demo)
-    endif()
-else()
-    message(FATAL_ERROR "This meta-project needs gtest")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_subdirectory(test/cross_serialization)
 endif()
+
+add_subdirectory(test/interaction_client)
+add_subdirectory(test/client_agent)
+add_subdirectory(test/publisher_subscriber)
+add_subdirectory(test/discovery)
+add_subdirectory(test/shapes_demo)

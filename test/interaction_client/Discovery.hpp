@@ -30,7 +30,7 @@ public:
             agent_list.emplace_back(uxrAgentAddress{ip_.c_str(), it});
         }
 
-        uxr_discovery_agents(1, 1000, on_agent_found, this, agent_list.data(), agent_list.size());
+        uxr_discovery_agents(1, 5000, on_agent_found, this, agent_list.data(), agent_list.size());
         ASSERT_TRUE(agent_ports_.empty());
     }
 
@@ -41,15 +41,13 @@ public:
     }
 
 private:
-    static void on_agent_found(const uxrAgentAddress* address, int64_t timestamp, void* args)
+    static void on_agent_found(const uxrAgentAddress* address, void* args)
     {
-        static_cast<Discovery*>(args)->on_agent_found_member(address, timestamp);
+        static_cast<Discovery*>(args)->on_agent_found_member(address);
     }
 
-    void on_agent_found_member(const uxrAgentAddress* address, int64_t timestamp)
+    void on_agent_found_member(const uxrAgentAddress* address)
     {
-        (void) timestamp;
-
         std::cout << "Agent found on port: " << address->port << std::endl;
 
 
