@@ -61,4 +61,4 @@ const char* Client::datareader_xml_ = "<dds>"
                                       "</dds>";
 
 
-uint32_t Client::next_client_key_ = 0;
+//uint32_t Client::next_client_key_ = 0;
