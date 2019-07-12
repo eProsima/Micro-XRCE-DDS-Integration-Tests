@@ -11,7 +11,7 @@
 
 #include <thread>
 
-class PublisherSubscriberInteraction : public ::testing::TestWithParam<std::tuple<int, float>>
+class PublisherSubscriberInteraction : public ::testing::TestWithParam<std::tuple<int, float, MiddlewareKind>>
 {
 public:
     const uint16_t AGENT_PORT = 2018;
@@ -24,7 +24,7 @@ public:
         init_agent(AGENT_PORT);
     }
 
-    ~PublisherSubscriberInteraction()
+    ~PublisherSubscriberInteraction() override
     {}
 
     void SetUp() override
@@ -32,8 +32,19 @@ public:
         ASSERT_NO_FATAL_FAILURE(publisher_.init_transport(transport_, "127.0.0.1", AGENT_PORT));
         ASSERT_NO_FATAL_FAILURE(subscriber_.init_transport(transport_, "127.0.0.1", AGENT_PORT));
 
-        ASSERT_NO_FATAL_FAILURE(publisher_.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
-        ASSERT_NO_FATAL_FAILURE(subscriber_.create_entities_xml(1, 0x80, UXR_STATUS_OK, 0));
+        switch (std::get<2>(GetParam()))
+        {
+            case MiddlewareKind::FAST:
+                ASSERT_NO_FATAL_FAILURE(publisher_.create_entities_xml<MiddlewareKind::FAST>(1, 0x80, UXR_STATUS_OK, 0));
+                ASSERT_NO_FATAL_FAILURE(subscriber_.create_entities_xml<MiddlewareKind::FAST>(1, 0x80, UXR_STATUS_OK, 0));
+                break;
+            case MiddlewareKind::CED:
+                ASSERT_NO_FATAL_FAILURE(publisher_.create_entities_xml<MiddlewareKind::CED>(1, 0x80, UXR_STATUS_OK, 0));
+                ASSERT_NO_FATAL_FAILURE(subscriber_.create_entities_xml<MiddlewareKind::CED>(1, 0x80, UXR_STATUS_OK, 0));
+                break;
+            case MiddlewareKind::NONE:
+                std::exit(EXIT_FAILURE);
+        }
     }
 
     void TearDown() override
@@ -47,10 +58,10 @@ public:
         switch(transport_)
         {
             case UDP_TRANSPORT:
-                agent_.reset(new eprosima::uxr::UDPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
+                agent_.reset(new eprosima::uxr::UDPv4Agent(port, std::get<2>(GetParam())));
                 break;
             case TCP_TRANSPORT:
-                agent_.reset(new eprosima::uxr::TCPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
+                agent_.reset(new eprosima::uxr::TCPv4Agent(port, std::get<2>(GetParam())));
                 break;
         }
         agent_->run();
@@ -75,8 +86,13 @@ protected:
 
 const std::string PublisherSubscriberInteraction::SMALL_MESSAGE("Hello DDS world!");
 
-INSTANTIATE_TEST_CASE_P(TransportAndLost, PublisherSubscriberInteraction,
-        ::testing::Combine(::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT), ::testing::Values(0.0f, 0.05f, 0.1f)));
+INSTANTIATE_TEST_CASE_P(
+        TransportAndLost,
+        PublisherSubscriberInteraction,
+        ::testing::Combine(
+            ::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT),
+            ::testing::Values(0.0f, 0.05f, 0.1f),
+            ::testing::Values(MiddlewareKind::FAST, MiddlewareKind::CED)));
 
 TEST_P(PublisherSubscriberInteraction, PubSub1TopicsBestEffort)
 {
