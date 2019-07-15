@@ -51,7 +51,6 @@ target_include_directories(interaction_client
 target_link_libraries(interaction_client
     PUBLIC
         microxrcedds_client
-        microxrcedds_agent
     PRIVATE
         ${GTEST_BOTH_LIBRARIES}
     )

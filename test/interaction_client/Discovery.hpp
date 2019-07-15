@@ -58,7 +58,25 @@ private:
         {
             Client client(0.0f, 1);
             std::cout << "Client connecting to " << address->port << std::endl;
-            client.init_transport(transport_, address->ip, address->port);
+            switch (transport_)
+            {
+                case UDP_TRANSPORT:
+                {
+                    UDPTransportInfo transport_info;
+                    transport_info.ip = address->ip;
+                    transport_info.port = address->port;
+                    client.init_transport<UDPTransportInfo>(transport_info);
+                    break;
+                }
+                case TCP_TRANSPORT:
+                {
+                    TCPTransportInfo transport_info;
+                    transport_info.ip = address->ip;
+                    transport_info.port = address->port;
+                    client.init_transport<TCPTransportInfo>(transport_info);
+                    break;
+                }
+            }
             client.close_transport(transport_);
 
             agent_ports_.erase(it);
