@@ -11,9 +11,31 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <thread>
+#ifndef _WIN32
+#include <stdio.h>
+#include <fcntl.h>
+#endif
 
 #define UDP_TRANSPORT 1
 #define TCP_TRANSPORT 2
+#define SERIAL_TRANSPORT 3
+
+struct IPTransportInfo
+{
+    const char* ip;
+    uint16_t port;
+};
+
+struct UDPTransportInfo : public IPTransportInfo {};
+
+struct TCPTransportInfo : public IPTransportInfo {};
+
+struct SerialTransportInfo
+{
+    const char* dev;
+    uint8_t remote_addr;
+    uint8_t local_addr;
+};
 
 inline bool operator == (const uxrObjectId& obj1, const uxrObjectId& obj2)
 {
@@ -225,24 +247,8 @@ public:
         }
     }
 
-    void init_transport(int transport, const char* ip, uint16_t port)
-    {
-        switch(transport)
-        {
-            case UDP_TRANSPORT:
-                mtu_ = UXR_CONFIG_UDP_TRANSPORT_MTU;
-                ASSERT_TRUE(uxr_init_udp_transport(&udp_transport_, &udp_platform_, ip, port));
-                uxr_init_session(&session_, gateway_.monitorize(&udp_transport_.comm), client_key_);
-                break;
-            case TCP_TRANSPORT:
-                mtu_ = UXR_CONFIG_TCP_TRANSPORT_MTU;
-                ASSERT_TRUE(uxr_init_tcp_transport(&tcp_transport_, &tcp_platform_, ip, port));
-                uxr_init_session(&session_, gateway_.monitorize(&tcp_transport_.comm), client_key_);
-                break;
-        }
-
-        init_common();
-    }
+    template<typename T>
+    void init_transport(const T& transport_info);
 
     void close_transport(int transport)
     {
@@ -362,6 +368,8 @@ private:
     uxrUDPPlatform udp_platform_;
     uxrTCPTransport tcp_transport_;
     uxrTCPPlatform tcp_platform_;
+    uxrSerialTransport serial_transport_;
+    uxrSerialPlatform serial_platform_;
 
     size_t mtu_;
     uxrSession session_;
@@ -381,6 +389,36 @@ private:
     uint16_t last_topic_request_id_;
     size_t expected_topic_index_;
 };
+
+template<>
+inline void Client::init_transport<UDPTransportInfo>(const UDPTransportInfo& transport_info)
+{
+    mtu_ = UXR_CONFIG_UDP_TRANSPORT_MTU;
+    ASSERT_TRUE(uxr_init_udp_transport(&udp_transport_, &udp_platform_, transport_info.ip, transport_info.port));
+    uxr_init_session(&session_, gateway_.monitorize(&udp_transport_.comm), client_key_);
+    init_common();
+}
+
+template<>
+inline void Client::init_transport<TCPTransportInfo>(const TCPTransportInfo& transport_info)
+{
+    mtu_ = UXR_CONFIG_TCP_TRANSPORT_MTU;
+    ASSERT_TRUE(uxr_init_tcp_transport(&tcp_transport_, &tcp_platform_, transport_info.ip, transport_info.port));
+    uxr_init_session(&session_, gateway_.monitorize(&tcp_transport_.comm), client_key_);
+    init_common();
+}
+
+#ifndef _WIN32
+template<>
+inline void Client::init_transport<SerialTransportInfo>(const SerialTransportInfo& transport_info)
+{
+    mtu_ = UXR_CONFIG_SERIAL_TRANSPORT_MTU;
+    int fd = open(transport_info.dev, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    ASSERT_TRUE(uxr_init_serial_transport(&serial_transport_, &serial_platform_, fd, transport_info.remote_addr, transport_info.local_addr));
+    uxr_init_session(&session_, gateway_.monitorize(&serial_transport_.comm), client_key_);
+    init_common();
+}
+#endif
 
 uint32_t Client::next_client_key_ = 0;
 

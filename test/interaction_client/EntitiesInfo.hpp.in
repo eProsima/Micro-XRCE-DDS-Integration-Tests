@@ -1,7 +1,7 @@
 #ifndef IN_TEST_ENTITIESINFO_HPP
 #define IN_TEST_ENTITIESINFO_HPP
 
-#include <uxr/agent/middleware/Middleware.hpp>
+#include <cstdint>
 
 const char fast_participant_xml[] = "<dds>"
                                         "<participant>"
@@ -63,7 +63,11 @@ const char fast_datareader_xml[] = "<dds>"
                                    "</dds>";
 
 
-using MiddlewareKind = eprosima::uxr::Middleware::Kind;
+enum class MiddlewareKind : uint8_t
+{
+    FAST,
+    CED
+};
 
 template<MiddlewareKind Kind>
 struct EntitiesInfo
