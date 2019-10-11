@@ -27,6 +27,12 @@ target_link_libraries(${_test_name}
         microxrcedds_client
     )
 
+target_include_directories(${_test_name}
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common
+    )
+
 set_target_properties(${_test_name} PROPERTIES
     CXX_STANDARD
         11
