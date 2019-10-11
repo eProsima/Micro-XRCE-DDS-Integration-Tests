@@ -16,7 +16,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/common/check_configuration.cmake)
 
 cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EntitiesInfo.hpp.in
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../common/EntitiesInfo.hpp.in
     ${CMAKE_CURRENT_BINARY_DIR}/EntitiesInfo.hpp
     @ONLY
     )
