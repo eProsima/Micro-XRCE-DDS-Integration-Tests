@@ -4,6 +4,7 @@
 #include "BigHelloWorld.h"
 #include "Gateway.hpp"
 #include <EntitiesInfo.hpp>
+#include <TransportInfo.hpp>
 
 #include <uxr/client/client.h>
 #include <ucdr/microcdr.h>
@@ -15,27 +16,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #endif
-
-#define UDP_TRANSPORT 1
-#define TCP_TRANSPORT 2
-#define SERIAL_TRANSPORT 3
-
-struct IPTransportInfo
-{
-    const char* ip;
-    uint16_t port;
-};
-
-struct UDPTransportInfo : public IPTransportInfo {};
-
-struct TCPTransportInfo : public IPTransportInfo {};
-
-struct SerialTransportInfo
-{
-    const char* dev;
-    uint8_t remote_addr;
-    uint8_t local_addr;
-};
 
 inline bool operator == (const uxrObjectId& obj1, const uxrObjectId& obj2)
 {

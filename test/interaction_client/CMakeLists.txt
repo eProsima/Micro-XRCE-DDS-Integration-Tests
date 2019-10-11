@@ -43,6 +43,7 @@ endif()
 target_include_directories(interaction_client
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common
         ${CMAKE_CURRENT_BINARY_DIR}
     PRIVATE
         ${GTEST_INCLUDE_DIRS}
