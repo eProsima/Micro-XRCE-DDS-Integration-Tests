@@ -1,10 +1,24 @@
+#ifndef IN_TEST_PERFORMANCECLIENT_HPP
+#define IN_TEST_PERFORMANCECLIENT_HPP
+
 #include <TransportInfo.hpp>
 
 #include <uxr/client/client.h>
 
 #include <memory>
+#include <chrono>
 
 #define PERFORMANCE_HISTORY 16
+
+inline bool operator == (const uxrObjectId& lhs, const uxrObjectId& rhs)
+{
+    return (lhs.id == rhs.id) && (lhs.type == rhs.type);
+}
+
+inline bool operator != (const uxrObjectId& lhs, const uxrObjectId& rhs)
+{
+    return !(lhs == rhs);
+}
 
 class PerformanceClient
 {
@@ -22,14 +36,14 @@ public:
 
     bool fini();
 
+private:
     virtual bool create_entities() = 0;
 
-private:
     bool init_common(
-        size_t mtu);
+            size_t mtu);
 
     void setup_streams(
-        size_t mtu);
+            size_t mtu);
 
     static void topic_callback_dispatcher(
             uxrSession* session,
@@ -47,20 +61,24 @@ private:
             void* args);
 
     virtual void topic_callback(
-            uxrSession* session_,
+            uxrSession* session,
             uxrObjectId object_id,
             uint16_t request_id,
             uxrStreamId stream_id,
-            ucdrBuffer* serialization) = 0;
+            ucdrBuffer* serialization);
 
     virtual void status_callback(
             uxrSession* session,
             uxrObjectId object_id,
             uint16_t request_id,
-            uint8_t status) = 0;
+            uint8_t status);
 
 protected:
     uxrSession session_;
+
+    uint8_t last_status_;
+    uxrObjectId last_object_id_;
+    uint16_t last_request_id_;
 
 private:
     static uint32_t next_client_key_;
@@ -143,7 +161,7 @@ inline void PerformanceClient::setup_streams(
     }
 }
 
-void PerformanceClient::topic_callback_dispatcher(
+inline void PerformanceClient::topic_callback_dispatcher(
         uxrSession* session,
         uxrObjectId object_id,
         uint16_t request_id,
@@ -154,7 +172,7 @@ void PerformanceClient::topic_callback_dispatcher(
     static_cast<PerformanceClient*>(args)->topic_callback(session, object_id, request_id, stream_id, serialization);
 }
 
-void PerformanceClient::status_callback_dispatcher(
+inline void PerformanceClient::status_callback_dispatcher(
         uxrSession* session,
         uxrObjectId object_id,
         uint16_t request_id,
@@ -163,3 +181,35 @@ void PerformanceClient::status_callback_dispatcher(
 {
     static_cast<PerformanceClient*>(args)->status_callback(session, object_id, request_id, status);
 }
+
+inline void PerformanceClient::topic_callback(
+        uxrSession *session,
+        uxrObjectId object_id,
+        uint16_t request_id,
+        uxrStreamId stream_id,
+        ucdrBuffer *serialization)
+{
+    (void) session;
+    (void) object_id,
+    (void) request_id;
+    (void) stream_id;
+    (void) serialization;
+    return;
+}
+
+inline void PerformanceClient::status_callback(
+        uxrSession *session,
+        uxrObjectId object_id,
+        uint16_t request_id,
+        uint8_t status)
+{
+    (void) session;
+    last_status_ = status;
+    last_object_id_ = object_id;
+    last_request_id_ = request_id;
+    return;
+}
+
+uint32_t PerformanceClient::next_client_key_ = 0;
+
+#endif // IN_TEST_PERFORMANCECLIENT_HPP

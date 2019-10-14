@@ -31,6 +31,7 @@ target_include_directories(${_test_name}
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/../common
+        ${CMAKE_CURRENT_BINARY_DIR}
     )
 
 set_target_properties(${_test_name} PROPERTIES
