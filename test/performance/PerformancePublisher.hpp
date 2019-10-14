@@ -15,7 +15,7 @@ public:
     ~PerformancePublisher() override = default;
 
     template<size_t Size, typename D>
-    bool publish(
+    void publish(
             D duration);
 
 private:
@@ -26,7 +26,7 @@ private:
 };
 
 template<size_t Size, typename D>
-inline bool PerformancePublisher::publish(
+inline void PerformancePublisher::publish(
         D duration)
 {
     uxrStreamId output_stream_id = uxr_stream_id_from_raw(0x01, UXR_OUTPUT_STREAM);

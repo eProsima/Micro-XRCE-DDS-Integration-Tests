@@ -25,6 +25,7 @@ target_link_libraries(${_test_name}
     PRIVATE
         microxrcedds_agent
         microxrcedds_client
+        ${CMAKE_THREAD_LIBS_INIT}
     )
 
 target_include_directories(${_test_name}
