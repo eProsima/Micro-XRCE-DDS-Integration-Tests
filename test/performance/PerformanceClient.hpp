@@ -45,27 +45,12 @@ private:
     void setup_streams(
             size_t mtu);
 
-    static void topic_callback_dispatcher(
-            uxrSession* session,
-            uxrObjectId object_id,
-            uint16_t request_id,
-            uxrStreamId stream_id,
-            ucdrBuffer* serialization,
-            void* args);
-
     static void status_callback_dispatcher(
             uxrSession* session,
             uxrObjectId object_id,
             uint16_t request_id,
             uint8_t status,
             void* args);
-
-    virtual void topic_callback(
-            uxrSession* session,
-            uxrObjectId object_id,
-            uint16_t request_id,
-            uxrStreamId stream_id,
-            ucdrBuffer* serialization);
 
     virtual void status_callback(
             uxrSession* session,
@@ -128,7 +113,6 @@ inline bool PerformanceClient::fini()
 inline bool PerformanceClient::init_common(
         size_t mtu)
 {
-    uxr_set_topic_callback(&session_, topic_callback_dispatcher, this);
     uxr_set_status_callback(&session_, status_callback_dispatcher, this);
     setup_streams(mtu);
     return uxr_create_session(&session_);
@@ -161,17 +145,6 @@ inline void PerformanceClient::setup_streams(
     }
 }
 
-inline void PerformanceClient::topic_callback_dispatcher(
-        uxrSession* session,
-        uxrObjectId object_id,
-        uint16_t request_id,
-        uxrStreamId stream_id,
-        ucdrBuffer* serialization,
-        void* args)
-{
-    static_cast<PerformanceClient*>(args)->topic_callback(session, object_id, request_id, stream_id, serialization);
-}
-
 inline void PerformanceClient::status_callback_dispatcher(
         uxrSession* session,
         uxrObjectId object_id,
@@ -180,21 +153,6 @@ inline void PerformanceClient::status_callback_dispatcher(
         void* args)
 {
     static_cast<PerformanceClient*>(args)->status_callback(session, object_id, request_id, status);
-}
-
-inline void PerformanceClient::topic_callback(
-        uxrSession *session,
-        uxrObjectId object_id,
-        uint16_t request_id,
-        uxrStreamId stream_id,
-        ucdrBuffer *serialization)
-{
-    (void) session;
-    (void) object_id,
-    (void) request_id;
-    (void) stream_id;
-    (void) serialization;
-    return;
 }
 
 inline void PerformanceClient::status_callback(

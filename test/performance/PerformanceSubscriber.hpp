@@ -23,12 +23,22 @@ public:
 private:
     bool create_entities() final;
 
+    template<size_t Size>
+    static void topic_callback_dispatcher(
+            uxrSession* session,
+            uxrObjectId object_id,
+            uint16_t request_id,
+            uxrStreamId stream_id,
+            ucdrBuffer* serialization,
+            void* args);
+
+    template<size_t Size>
     void topic_callback(
             uxrSession* session,
             uxrObjectId object_id,
             uint16_t request_id,
             uxrStreamId stream_id,
-            ucdrBuffer* serialization) final;
+            ucdrBuffer* serialization);
 
 private:
     static uint16_t entities_prefix_;
@@ -39,6 +49,8 @@ template<size_t Size, typename D>
 inline void PerformanceSubscriber<MK>::subscribe(
         D duration)
 {
+    uxr_set_topic_callback(&session_, topic_callback_dispatcher<Size>, this);
+
     uxrStreamId output_stream_id = uxr_stream_id(0, UXR_RELIABLE_STREAM, UXR_OUTPUT_STREAM);
     uxrStreamId input_stream_id = uxr_stream_id_from_raw(0x01, UXR_INPUT_STREAM);
     uxrObjectId datareader_id = uxr_object_id(entities_prefix_, UXR_DATAREADER_ID);
@@ -109,6 +121,20 @@ inline bool PerformanceSubscriber<MK>::create_entities()
 }
 
 template<MiddlewareKind MK>
+template<size_t Size>
+inline void PerformanceSubscriber<MK>::topic_callback_dispatcher(
+        uxrSession* session,
+        uxrObjectId object_id,
+        uint16_t request_id,
+        uxrStreamId stream_id,
+        ucdrBuffer* serialization,
+        void* args)
+{
+    static_cast<PerformanceSubscriber*>(args)->topic_callback<Size>(session, object_id, request_id, stream_id, serialization);
+}
+
+template<MiddlewareKind MK>
+template<size_t Size>
 inline void PerformanceSubscriber<MK>::topic_callback(
         uxrSession* session,
         uxrObjectId object_id,
@@ -121,7 +147,7 @@ inline void PerformanceSubscriber<MK>::topic_callback(
     (void) request_id;
     (void) stream_id;
 
-    PerformanceTopic<16> topic;
+    PerformanceTopic<Size> topic;
     topic.deserialize(*serialization);
     uint64_t timestamp = (uint64_t(topic.timestamp[0]) << 32) + topic.timestamp[1];
 
