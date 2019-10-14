@@ -8,6 +8,7 @@
 #include <thread>
 #include <iostream>
 
+template<MiddlewareKind MK>
 class PerformanceSubscriber : public PerformanceClient
 {
 public:
@@ -33,8 +34,9 @@ private:
     static uint16_t entities_prefix_;
 };
 
+template<MiddlewareKind MK>
 template<size_t Size, typename D>
-inline void PerformanceSubscriber::subscribe(
+inline void PerformanceSubscriber<MK>::subscribe(
         D duration)
 {
     uxrStreamId output_stream_id = uxr_stream_id(0, UXR_RELIABLE_STREAM, UXR_OUTPUT_STREAM);
@@ -58,9 +60,10 @@ inline void PerformanceSubscriber::subscribe(
     }
 }
 
-inline bool PerformanceSubscriber::create_entities()
+template<MiddlewareKind MK>
+inline bool PerformanceSubscriber<MK>::create_entities()
 {
-    using EInfo = EntitiesInfo<MiddlewareKind::FAST>;
+    using EInfo = EntitiesInfo<MK>;
 
     uint8_t flags = 0x00;
     uxrStreamId output_stream_id = uxr_stream_id_from_raw(0x01, UXR_OUTPUT_STREAM);
@@ -105,7 +108,8 @@ inline bool PerformanceSubscriber::create_entities()
     return true;
 }
 
-inline void PerformanceSubscriber::topic_callback(
+template<MiddlewareKind MK>
+inline void PerformanceSubscriber<MK>::topic_callback(
         uxrSession* session,
         uxrObjectId object_id,
         uint16_t request_id,
@@ -125,6 +129,7 @@ inline void PerformanceSubscriber::topic_callback(
     std::cout << epoch_time.count() - timestamp << std::endl;
 }
 
-uint16_t PerformanceSubscriber::entities_prefix_ = 0x0000;
+template<MiddlewareKind MK>
+uint16_t PerformanceSubscriber<MK>::entities_prefix_ = 0x0000;
 
 #endif // IN_TEST_PERFORMANCESUBSCRIBER_HPP

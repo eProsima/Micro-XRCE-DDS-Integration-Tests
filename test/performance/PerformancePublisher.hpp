@@ -7,6 +7,7 @@
 
 #include <thread>
 
+template<MiddlewareKind MK>
 class PerformancePublisher : public PerformanceClient
 {
 public:
@@ -25,8 +26,9 @@ private:
     static uint16_t entities_prefix_;
 };
 
+template<MiddlewareKind MK>
 template<size_t Size, typename D>
-inline void PerformancePublisher::publish(
+inline void PerformancePublisher<MK>::publish(
         D duration)
 {
     uxrStreamId output_stream_id = uxr_stream_id_from_raw(0x01, UXR_OUTPUT_STREAM);
@@ -51,15 +53,16 @@ inline void PerformancePublisher::publish(
             (void) uxr_run_session_time(&session_, 0);
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
         current_time = std::chrono::high_resolution_clock::now();
         elapsed_time = std::chrono::duration_cast<D>(current_time - init_time);
     }
 }
 
-inline bool PerformancePublisher::create_entities()
+template<MiddlewareKind MK>
+inline bool PerformancePublisher<MK>::create_entities()
 {
-    using EInfo = EntitiesInfo<MiddlewareKind::FAST>;
+    using EInfo = EntitiesInfo<MK>;
 
     uint8_t flags = 0x00;
     uxrStreamId output_stream_id = uxr_stream_id_from_raw(0x01, UXR_OUTPUT_STREAM);
@@ -104,6 +107,7 @@ inline bool PerformancePublisher::create_entities()
     return true;
 }
 
-uint16_t PerformancePublisher::entities_prefix_ = 0x0000;
+template<MiddlewareKind MK>
+uint16_t PerformancePublisher<MK>::entities_prefix_ = 0x0000;
 
 #endif // IN_TEST_PERFORMANCEPUBLISHER_HPP
