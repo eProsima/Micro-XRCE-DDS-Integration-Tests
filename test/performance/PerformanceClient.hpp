@@ -7,6 +7,10 @@
 
 #include <memory>
 #include <chrono>
+#ifndef _WIN32
+#include <stdio.h>
+#include <fcntl.h>
+#endif // _WIN32
 
 #define PERFORMANCE_HISTORY 16
 
@@ -72,6 +76,10 @@ private:
     uint8_t transport_kind_;
     uxrUDPTransport udp_transport_;
     uxrUDPPlatform udp_platform_;
+    uxrTCPTransport tcp_transport_;
+    uxrTCPPlatform tcp_platform_;
+    uxrSerialTransport serial_transport_;
+    uxrSerialPlatform serial_platform_;
 
     std::unique_ptr<uint8_t[]> output_best_effort_stream_buffer_;
     std::unique_ptr<uint8_t[]> output_reliable_stream_buffer_;
@@ -95,6 +103,43 @@ inline bool PerformanceClient::init<UDPTransportInfo>(
     return rv;
 }
 
+template<>
+inline bool PerformanceClient::init<TCPTransportInfo>(
+        const TCPTransportInfo& transport_info)
+{
+    bool rv = false;
+    transport_kind_ = TCP_TRANSPORT;
+    if (uxr_init_tcp_transport(&tcp_transport_, &tcp_platform_, transport_info.ip, transport_info.port))
+    {
+        uxr_init_session(&session_, &tcp_transport_.comm, client_key_);
+        if (init_common(UXR_CONFIG_TCP_TRANSPORT_MTU))
+        {
+            rv = create_entities();
+        }
+    }
+    return rv;
+}
+
+#ifndef _WIN32
+template<>
+inline bool PerformanceClient::init<SerialTransportInfo>(
+        const SerialTransportInfo& transport_info)
+{
+    bool rv = false;
+    transport_kind_ = SERIAL_TRANSPORT;
+    int fd = open(transport_info.dev, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    if (uxr_init_serial_transport(&serial_transport_, &serial_platform_, fd, transport_info.remote_addr, transport_info.local_addr))
+    {
+        uxr_init_session(&session_, &serial_transport_.comm, client_key_);
+        if (init_common(UXR_CONFIG_SERIAL_TRANSPORT_MTU))
+        {
+            rv = create_entities();
+        }
+    }
+    return rv;
+}
+#endif // _WIN32
+
 inline bool PerformanceClient::fini()
 {
     bool rv = false;
@@ -105,6 +150,14 @@ inline bool PerformanceClient::fini()
             case UDP_TRANSPORT:
                 rv = uxr_close_udp_transport(&udp_transport_);
                 break;
+            case TCP_TRANSPORT:
+                rv = uxr_close_tcp_transport(&tcp_transport_);
+                break;
+#ifndef _WIN32
+            case SERIAL_TRANSPORT:
+                rv = uxr_close_serial_transport(&serial_transport_);
+                break;
+#endif // _WIN32
         }
     }
     return rv;
