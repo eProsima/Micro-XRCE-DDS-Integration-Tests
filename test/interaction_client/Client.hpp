@@ -244,6 +244,11 @@ public:
             case TCP_TRANSPORT:
                 ASSERT_TRUE(uxr_close_tcp_transport(&tcp_transport_));
                 break;
+#ifndef _WIN32
+            case SERIAL_TRANSPORT:
+                ASSERT_TRUE(uxr_close_serial_transport(&serial_transport_));
+                break;
+#endif // _WIN32
         }
     }
 
