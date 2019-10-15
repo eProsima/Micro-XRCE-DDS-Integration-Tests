@@ -325,12 +325,6 @@ private:
     }
 
     static uint32_t next_client_key_;
-    static const char* participant_xml_;
-    static const char* topic_xml_;
-    static const char* publisher_xml_;
-    static const char* subscriber_xml_;
-    static const char* datawriter_xml_;
-    static const char* datareader_xml_;
 
     Gateway gateway_;
 
