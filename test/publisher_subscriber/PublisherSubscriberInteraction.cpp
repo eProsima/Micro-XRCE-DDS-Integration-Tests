@@ -15,7 +15,7 @@
 
 #include <thread>
 
-class PublisherSubscriberInteraction : public ::testing::TestWithParam<std::tuple<int, float, MiddlewareKind>>
+class PublisherSubscriberInteraction : public ::testing::TestWithParam<std::tuple<TransportKind, float, MiddlewareKind>>
 {
 public:
     const uint16_t AGENT_PORT = 2018;
@@ -46,7 +46,11 @@ public:
     {
         switch(transport_)
         {
-            case UDP_TRANSPORT:
+            case TransportKind::none:
+            {
+                exit(EXIT_FAILURE);
+            }
+            case TransportKind::udp:
             {
                 UDPTransportInfo transport_info;
                 transport_info.ip = "127.0.0.1";
@@ -55,7 +59,7 @@ public:
                 ASSERT_NO_FATAL_FAILURE(subscriber_.init_transport<UDPTransportInfo>(transport_info));
                 break;
             }
-            case TCP_TRANSPORT:
+            case TransportKind::tcp:
             {
                 TCPTransportInfo transport_info;
                 transport_info.ip = "127.0.0.1";
@@ -65,7 +69,7 @@ public:
                 break;
             }
 #ifndef _WIN32
-            case SERIAL_TRANSPORT:
+            case TransportKind::serial:
             {
                 SerialTransportInfo transport_info;
                 transport_info.dev = ptsname(fd_);
@@ -102,14 +106,16 @@ public:
     {
         switch(transport_)
         {
-            case UDP_TRANSPORT:
+            case TransportKind::none:
+                exit(EXIT_FAILURE);
+            case TransportKind::udp:
                 agent_.reset(new eprosima::uxr::UDPv4Agent(port, middleware_));
                 break;
-            case TCP_TRANSPORT:
+            case TransportKind::tcp:
                 agent_.reset(new eprosima::uxr::TCPv4Agent(port, middleware_));
                 break;
 #ifndef _WIN32
-            case SERIAL_TRANSPORT:
+            case TransportKind::serial:
                 char* dev = nullptr;
                 fd_ = posix_openpt(O_RDWR | O_NOCTTY);
                 if (-1 != fd_)
@@ -154,7 +160,7 @@ public:
     }
 
 protected:
-    int transport_;
+    TransportKind transport_;
     int fd_;
     eprosima::uxr::Middleware::Kind middleware_;
     std::unique_ptr<eprosima::uxr::Server> agent_;
@@ -170,7 +176,7 @@ INSTANTIATE_TEST_CASE_P(
         TransportAndLost,
         PublisherSubscriberInteraction,
         ::testing::Combine(
-            ::testing::Values(UDP_TRANSPORT, TCP_TRANSPORT, SERIAL_TRANSPORT),
+            ::testing::Values(TransportKind::udp, TransportKind::tcp, TransportKind::serial),
             ::testing::Values(0.0f, 0.05f, 0.1f),
             ::testing::Values(MiddlewareKind::FAST, MiddlewareKind::CED)));
 #else

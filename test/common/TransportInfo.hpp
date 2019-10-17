@@ -3,9 +3,13 @@
 
 #include <stdint.h>
 
-#define UDP_TRANSPORT 1
-#define TCP_TRANSPORT 2
-#define SERIAL_TRANSPORT 3
+enum class TransportKind : uint8_t
+{
+    none,
+    udp,
+    tcp,
+    serial
+};
 
 struct IPTransportInfo
 {

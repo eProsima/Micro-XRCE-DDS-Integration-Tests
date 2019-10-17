@@ -29,7 +29,7 @@ class PerformanceClient
 public:
     PerformanceClient()
         : client_key_{++next_client_key_}
-        , transport_kind_{0}
+        , transport_kind_{TransportKind::none}
     {}
 
     virtual ~PerformanceClient() = default;
@@ -73,7 +73,7 @@ private:
     static uint32_t next_client_key_;
     uint32_t client_key_;
 
-    uint8_t transport_kind_;
+    TransportKind transport_kind_;
     uxrUDPTransport udp_transport_;
     uxrUDPPlatform udp_platform_;
     uxrTCPTransport tcp_transport_;
@@ -91,7 +91,7 @@ inline bool PerformanceClient::init<UDPTransportInfo>(
         const UDPTransportInfo& transport_info)
 {
     bool rv = false;
-    transport_kind_ = UDP_TRANSPORT;
+    transport_kind_ = TransportKind::udp;
     if (uxr_init_udp_transport(&udp_transport_, &udp_platform_, transport_info.ip, transport_info.port))
     {
         uxr_init_session(&session_, &udp_transport_.comm, client_key_);
@@ -108,7 +108,7 @@ inline bool PerformanceClient::init<TCPTransportInfo>(
         const TCPTransportInfo& transport_info)
 {
     bool rv = false;
-    transport_kind_ = TCP_TRANSPORT;
+    transport_kind_ = TransportKind::tcp;
     if (uxr_init_tcp_transport(&tcp_transport_, &tcp_platform_, transport_info.ip, transport_info.port))
     {
         uxr_init_session(&session_, &tcp_transport_.comm, client_key_);
@@ -126,7 +126,7 @@ inline bool PerformanceClient::init<SerialTransportInfo>(
         const SerialTransportInfo& transport_info)
 {
     bool rv = false;
-    transport_kind_ = SERIAL_TRANSPORT;
+    transport_kind_ = TransportKind::serial;
     int fd = open(transport_info.dev, O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (uxr_init_serial_transport(&serial_transport_, &serial_platform_, fd, transport_info.remote_addr, transport_info.local_addr))
     {
@@ -143,18 +143,20 @@ inline bool PerformanceClient::init<SerialTransportInfo>(
 inline bool PerformanceClient::fini()
 {
     bool rv = false;
-    if (0 != transport_kind_ && uxr_delete_session(&session_))
+    if (TransportKind::none != transport_kind_ && uxr_delete_session(&session_))
     {
         switch (transport_kind_)
         {
-            case UDP_TRANSPORT:
+            case TransportKind::none:
+                break;
+            case TransportKind::udp:
                 rv = uxr_close_udp_transport(&udp_transport_);
                 break;
-            case TCP_TRANSPORT:
+            case TransportKind::tcp:
                 rv = uxr_close_tcp_transport(&tcp_transport_);
                 break;
 #ifndef _WIN32
-            case SERIAL_TRANSPORT:
+            case TransportKind::serial:
                 rv = uxr_close_serial_transport(&serial_transport_);
                 break;
 #endif // _WIN32

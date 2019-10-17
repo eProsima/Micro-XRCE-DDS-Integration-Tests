@@ -224,9 +224,11 @@ public:
     }
 
     template<typename T>
-    void init_transport(const T& transport_info);
+    void init_transport(
+            const T& transport_info);
 
-    void close_transport(int transport)
+    void close_transport(
+            TransportKind transport_kind)
     {
         bool deleted = uxr_delete_session(&session_);
 
@@ -236,16 +238,18 @@ public:
             EXPECT_EQ(UXR_STATUS_OK, session_.info.last_requested_status);
         }
 
-        switch(transport)
+        switch(transport_kind)
         {
-            case UDP_TRANSPORT:
+            case TransportKind::none:
+                exit(EXIT_FAILURE);
+            case TransportKind::udp:
                 ASSERT_TRUE(uxr_close_udp_transport(&udp_transport_));
                 break;
-            case TCP_TRANSPORT:
+            case TransportKind::tcp:
                 ASSERT_TRUE(uxr_close_tcp_transport(&tcp_transport_));
                 break;
 #ifndef _WIN32
-            case SERIAL_TRANSPORT:
+            case TransportKind::serial:
                 ASSERT_TRUE(uxr_close_serial_transport(&serial_transport_));
                 break;
 #endif // _WIN32
