@@ -53,7 +53,6 @@ inline void PerformancePublisher<MK>::publish(
             (void) uxr_run_session_time(&session_, 0);
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
         current_time = std::chrono::high_resolution_clock::now();
         elapsed_time = std::chrono::duration_cast<D>(current_time - init_time);
     }
@@ -70,7 +69,7 @@ inline bool PerformancePublisher<MK>::create_entities()
 
     uxrObjectId participant_id = uxr_object_id(entities_prefix_, UXR_PARTICIPANT_ID);
     request_id = uxr_buffer_create_participant_xml(
-        &session_, output_stream_id, participant_id, 0, EInfo::participant_xml, flags);
+        &session_, output_stream_id, participant_id, 11, EInfo::participant_xml, flags);
     uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
     if ((UXR_STATUS_OK != status) || (last_object_id_ != participant_id) || (last_request_id_ != request_id))
     {
