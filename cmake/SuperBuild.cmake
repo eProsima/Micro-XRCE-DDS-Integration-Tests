@@ -57,6 +57,7 @@ ExternalProject_Add(uclient
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
         -DUCLIENT_BUILD_EXAMPLES:BOOL=ON
+        -DUCLIENT_CONFIG:PATH=${PROJECT_SOURCE_DIR}/test/client.config
         -DBUILD_SHARED_LIBS:BOOL=OFF
     )
 list(APPEND _deps uclient)
