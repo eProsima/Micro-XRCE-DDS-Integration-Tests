@@ -19,11 +19,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../common/EntitiesInfo.hpp.in
     @ONLY
     )
 
+find_package(CLI11 REQUIRED PATHS ${AGENT_INSTALL_DIR})
+
 add_executable(${_test_name} performance-test.cpp)
 
 target_link_libraries(${_test_name}
     PRIVATE
         microxrcedds_client
+        CLI11::CLI11
         ${CMAKE_THREAD_LIBS_INIT}
     )
 

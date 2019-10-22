@@ -1,32 +1,15 @@
-#include "PerformanceTest.hpp"
+#include "CLI.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
-    MiddlewareKind mk = MiddlewareKind::FAST;
-    TransportKind transport_kind = TransportKind::tcp;
-    std::chrono::seconds duration{1};
+    CLI::App app("Micro XRCE-DDS Performance Tets");
+    app.require_subcommand(1, 1);
+    app.get_formatter()->column_width(42);
 
-    switch (transport_kind)
-    {
-        case TransportKind::udp:
-        {
-            UDPTransportInfo transport_info;
-            transport_info.ip = "127.0.0.1";
-            transport_info.port = 2000;
-            run_test(mk, transport_info, duration);
-            break;
-        }
-        case TransportKind::tcp:
-        {
-            TCPTransportInfo transport_info;
-            transport_info.ip = "127.0.0.1";
-            transport_info.port = 2000;
-            run_test(mk, transport_info, duration);
-            break;
-        }
-        default:
-            break;
-    }
+    UDPSubcommand udp_subcommand(app);
+    TCPSubcommand tcp_subcommand(app);
+
+    app.parse(argc, argv);
 
     return 0;
 }
