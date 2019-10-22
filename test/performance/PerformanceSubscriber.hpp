@@ -1,5 +1,5 @@
-#ifndef IN_TEST_PERFORMANCESUBSCRIBER_HPP
-#define IN_TEST_PERFORMANCESUBSCRIBER_HPP
+#ifndef IN_TEST_PERFORMANCE_PERFORMANCESUBSCRIBER_HPP
+#define IN_TEST_PERFORMANCE_PERFORMANCESUBSCRIBER_HPP
 
 #include "PerformanceClient.hpp"
 #include "PerformanceTopic.hpp"
@@ -225,4 +225,4 @@ inline void PerformanceSubscriber<MK>::fini_subscription(
 template<MiddlewareKind MK>
 uint16_t PerformanceSubscriber<MK>::entities_prefix_ = 0x0000;
 
-#endif // IN_TEST_PERFORMANCESUBSCRIBER_HPP
+#endif // IN_TEST_PERFORMANCE_PERFORMANCESUBSCRIBER_HPP

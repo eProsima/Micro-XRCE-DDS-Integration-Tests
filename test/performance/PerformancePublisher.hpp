@@ -1,5 +1,5 @@
-#ifndef IN_TEST_PERFORMANCEPUBLISHER_HPP
-#define IN_TEST_PERFORMANCEPUBLISHER_HPP
+#ifndef IN_TEST_PERFORMANCE_PERFORMANCEPUBLISHER_HPP
+#define IN_TEST_PERFORMANCE_PERFORMANCEPUBLISHER_HPP
 
 #include "PerformanceClient.hpp"
 #include "PerformanceTopic.hpp"
@@ -154,4 +154,4 @@ inline void PerformancePublisher<MK>::fini_publication(
 template<MiddlewareKind MK>
 uint16_t PerformancePublisher<MK>::entities_prefix_ = 0x0000;
 
-#endif // IN_TEST_PERFORMANCEPUBLISHER_HPP
+#endif // IN_TEST_PERFORMANCE_PERFORMANCEPUBLISHER_HPP
