@@ -17,24 +17,35 @@ public:
 
     template<size_t Size, typename D>
     void publish(
-            D duration);
+            D duration,
+            uint64_t throughput);
+
+    uint64_t get_msg_count() { return msg_count_; }
 
 private:
     bool create_entities() final;
 
+    template<size_t Size>
+    std::chrono::milliseconds sleep_time(
+            std::chrono::milliseconds elapsed_time,
+            uint64_t throughput);
+
 private:
     static uint16_t entities_prefix_;
+    uint64_t msg_count_;
 };
 
 template<MiddlewareKind MK>
 template<size_t Size, typename D>
 inline void PerformancePublisher<MK>::publish(
-        D duration)
+        D duration,
+        uint64_t throughput)
 {
     uxrStreamId output_stream_id = uxr_stream_id_from_raw(0x01, UXR_OUTPUT_STREAM);
     uxrObjectId datawriter_id = uxr_object_id(entities_prefix_, UXR_DATAWRITER_ID);
 
-    D elapsed_time{};
+    std::chrono::milliseconds duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    std::chrono::milliseconds elapsed_time{};
     std::chrono::time_point<std::chrono::high_resolution_clock> init_time;
     std::chrono::time_point<std::chrono::high_resolution_clock> current_time;
 
@@ -42,7 +53,8 @@ inline void PerformancePublisher<MK>::publish(
     PerformanceTopic<Size> topic = {0};
 
     init_time = std::chrono::high_resolution_clock::now();
-    while (elapsed_time.count() < duration.count())
+    msg_count_ = 0;
+    while (elapsed_time < duration_ms)
     {
         std::chrono::nanoseconds epoch_time = std::chrono::high_resolution_clock::now().time_since_epoch();
         topic.timestamp[0] = epoch_time.count() >> 32;
@@ -50,7 +62,9 @@ inline void PerformancePublisher<MK>::publish(
 
         if (uxr_prepare_output_stream(&session_, output_stream_id, datawriter_id, &ub, Size) && topic.serialize(ub))
         {
-            (void) uxr_run_session_time(&session_, 0);
+            (void) uxr_flash_output_streams(&session_);
+            ++msg_count_;
+            std::this_thread::sleep_for(sleep_time<Size>(elapsed_time, throughput));
         }
 
         current_time = std::chrono::high_resolution_clock::now();
@@ -105,6 +119,20 @@ inline bool PerformancePublisher<MK>::create_entities()
 
     return true;
 }
+
+template<MiddlewareKind MK>
+template<size_t Size>
+inline std::chrono::milliseconds PerformancePublisher<MK>::sleep_time(
+        std::chrono::milliseconds elapsed_time,
+        uint64_t throughput)
+{
+    std::chrono::milliseconds expected_time =
+            std::chrono::milliseconds((8 * msg_count_ * Size / throughput) * std::milli::den);
+    return (expected_time.count() > elapsed_time.count())
+            ? (expected_time - elapsed_time)
+            : std::chrono::milliseconds(0);
+}
+
 
 template<MiddlewareKind MK>
 uint16_t PerformancePublisher<MK>::entities_prefix_ = 0x0000;

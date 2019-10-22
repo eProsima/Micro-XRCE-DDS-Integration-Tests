@@ -23,6 +23,7 @@ public:
     double get_latency_avg() { return latency_avg_; }
     double get_latency_std() { return latency_std_; }
     double get_throughput() { return throughput_; }
+    uint64_t get_msg_count() { return msg_count_; }
 
 private:
     bool create_entities() final;
@@ -62,7 +63,7 @@ private:
     double latency_sum_2_;
     double latency_std_;
     double latency_ref_;
-    double throughput_;
+    uint64_t throughput_;
     uint64_t msg_count_;
 };
 
@@ -88,9 +89,9 @@ inline void PerformanceSubscriber<MK>::subscribe(
     std::chrono::time_point<std::chrono::high_resolution_clock> current_time;
 
     init_time = std::chrono::high_resolution_clock::now();
-    while (elapsed_time.count() < duration.count())
+    while (elapsed_time < duration)
     {
-        uxr_run_session_until_timeout(&session_, 100);
+        uxr_run_session_until_timeout(&session_, 0);
         current_time = std::chrono::high_resolution_clock::now();
         elapsed_time = std::chrono::duration_cast<D>(current_time - init_time);
     }
@@ -180,7 +181,7 @@ inline void PerformanceSubscriber<MK>::topic_callback(
     std::chrono::nanoseconds epoch_time = std::chrono::high_resolution_clock::now().time_since_epoch();
 
     ++msg_count_;
-    processing_latency(epoch_time.count() - timestamp);
+    processing_latency((epoch_time.count() - timestamp) / 2);
 }
 
 template<MiddlewareKind MK>
@@ -218,8 +219,7 @@ inline void PerformanceSubscriber<MK>::fini_subscription(
         size_t msg_size)
 {
     latency_std_ = std::sqrt((latency_sum_2_ - (latency_sum_ * latency_sum_) / msg_count_) / (msg_count_ - 1));
-    throughput_ = double(msg_count_) / double(std::chrono::duration_cast<std::chrono::nanoseconds>(real_duration).count());
-    throughput_ *= std::nano::den * msg_size * 8;
+    throughput_ = std::milli::den * msg_size * 8 * msg_count_ / std::chrono::duration_cast<std::chrono::milliseconds>(real_duration).count();
 }
 
 template<MiddlewareKind MK>

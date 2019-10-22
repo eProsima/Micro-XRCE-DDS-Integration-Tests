@@ -179,21 +179,21 @@ inline void PerformanceClient::setup_streams(
     output_best_effort_stream_buffer_.reset(new uint8_t[mtu * UXR_CONFIG_MAX_OUTPUT_BEST_EFFORT_STREAMS]{0});
     output_reliable_stream_buffer_.reset(new uint8_t[mtu * PERFORMANCE_HISTORY * UXR_CONFIG_MAX_OUTPUT_RELIABLE_STREAMS]{0});
     input_reliable_stream_buffer_.reset(new uint8_t[mtu * PERFORMANCE_HISTORY * UXR_CONFIG_MAX_INPUT_RELIABLE_STREAMS]{0});
-    for(size_t i = 0; i < UXR_CONFIG_MAX_OUTPUT_BEST_EFFORT_STREAMS; ++i)
+    for(size_t i = 0; i < 1; ++i)
     {
         uint8_t* buffer = output_best_effort_stream_buffer_.get() + mtu * i;
         (void) uxr_create_output_best_effort_stream(&session_, buffer, mtu);
     }
-    for(size_t i = 0; i < UXR_CONFIG_MAX_INPUT_BEST_EFFORT_STREAMS; ++i)
+    for(size_t i = 0; i < 1; ++i)
     {
         (void) uxr_create_input_best_effort_stream(&session_);
     }
-    for(size_t i = 0; i < UXR_CONFIG_MAX_OUTPUT_RELIABLE_STREAMS; ++i)
+    for(size_t i = 0; i < 1; ++i)
     {
         uint8_t* buffer = output_reliable_stream_buffer_.get() + mtu * PERFORMANCE_HISTORY * i;
         (void) uxr_create_output_reliable_stream(&session_, buffer , mtu * PERFORMANCE_HISTORY, PERFORMANCE_HISTORY);
     }
-    for(size_t i = 0; i < UXR_CONFIG_MAX_INPUT_RELIABLE_STREAMS; ++i)
+    for(size_t i = 0; i < 1; ++i)
     {
         uint8_t* buffer = input_reliable_stream_buffer_.get() + mtu * PERFORMANCE_HISTORY * i;
         (void) uxr_create_input_reliable_stream(&session_, buffer, mtu * PERFORMANCE_HISTORY, PERFORMANCE_HISTORY);
