@@ -1,8 +1,6 @@
 #include "PerformancePublisher.hpp"
 #include "PerformanceSubscriber.hpp"
 
-//#include <uxr/agent/transport/udp/UDPServerLinux.hpp>
-
 #include <iostream>
 #include <iomanip>
 
@@ -15,6 +13,12 @@ void launch_test(
         D duration,
         uint64_t throughput)
 {
+    uint64_t ns = uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
+    if (0 == throughput * ns / (std::nano::den * 8 * S))
+    {
+        return;
+    }
+
     std::thread publisher_thread(
             &PerformancePublisher<MK>:: template publish<S, D>,
             &publisher,
@@ -63,13 +67,6 @@ for_each_launch_test(
 
 int main()
 {
-//    constexpr eprosima::uxr::Middleware::Kind agent_middleware_kind = eprosima::uxr::Middleware::Kind::FAST;
-
-//    std::unique_ptr<eprosima::uxr::Server> agent;
-//    agent.reset(new eprosima::uxr::UDPv4Agent(port, agent_middleware_kind));
-//    agent->set_verbose_level(0);
-//    agent->run();
-
     constexpr MiddlewareKind clients_middleware_kind = MiddlewareKind::CED;
 
     UDPTransportInfo transport_info;
@@ -101,8 +98,8 @@ int main()
 
     for (auto t : throughput)
     {
-        for_each_launch_test<clients_middleware_kind, 16, 32, 64, 128, 256>
-            (publisher, subscriber, std::chrono::seconds(10), t);
+        for_each_launch_test<clients_middleware_kind, 2<<3, 2<<4, 2<<5, 2<<6, 2<<7, 2<<8, 2<<9, 2<<10, 2<<11, 2<<12, 2<<13, 2<<14, 63000>
+            (publisher, subscriber, std::chrono::seconds(1), t);
     }
 
     return 0;

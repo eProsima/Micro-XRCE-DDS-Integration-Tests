@@ -23,7 +23,6 @@ add_executable(${_test_name} performance-test.cpp)
 
 target_link_libraries(${_test_name}
     PRIVATE
-        microxrcedds_agent
         microxrcedds_client
         ${CMAKE_THREAD_LIBS_INIT}
     )
