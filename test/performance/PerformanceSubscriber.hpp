@@ -22,7 +22,7 @@ public:
 
     double get_latency_avg() { return latency_avg_; }
     double get_latency_std() { return latency_std_; }
-    double get_throughput() { return throughput_; }
+    uint64_t get_throughput() { return throughput_; }
     uint64_t get_msg_count() { return msg_count_; }
 
 private:

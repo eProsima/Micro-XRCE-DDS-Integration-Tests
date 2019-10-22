@@ -21,6 +21,7 @@ public:
             uint64_t throughput);
 
     uint64_t get_msg_count() { return msg_count_; }
+    uint64_t get_throughput() { return throughput_; }
 
 private:
     bool create_entities() final;
@@ -30,9 +31,15 @@ private:
             std::chrono::milliseconds elapsed_time,
             uint64_t throughput);
 
+    template<typename D>
+    void fini_publication(
+            D real_duration,
+            size_t msg_size);
+
 private:
     static uint16_t entities_prefix_;
     uint64_t msg_count_;
+    uint64_t throughput_;
 };
 
 template<MiddlewareKind MK>
@@ -70,6 +77,8 @@ inline void PerformancePublisher<MK>::publish(
         current_time = std::chrono::high_resolution_clock::now();
         elapsed_time = std::chrono::duration_cast<D>(current_time - init_time);
     }
+
+    fini_publication(elapsed_time, Size);
 }
 
 template<MiddlewareKind MK>
@@ -133,6 +142,14 @@ inline std::chrono::milliseconds PerformancePublisher<MK>::sleep_time(
             : std::chrono::milliseconds(0);
 }
 
+template<MiddlewareKind MK>
+template<typename D>
+inline void PerformancePublisher<MK>::fini_publication(
+        D real_duration,
+        size_t msg_size)
+{
+    throughput_ = std::milli::den * msg_size * 8 * msg_count_ / std::chrono::duration_cast<std::chrono::milliseconds>(real_duration).count();
+}
 
 template<MiddlewareKind MK>
 uint16_t PerformancePublisher<MK>::entities_prefix_ = 0x0000;
