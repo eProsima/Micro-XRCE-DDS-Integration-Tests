@@ -6,6 +6,33 @@
 
 constexpr size_t sep_width = 30;
 
+constexpr uint64_t throughput[] = {
+    100,
+    1   * std::kilo::num,
+    10  * std::kilo::num,
+    100 * std::kilo::num,
+    1   * std::mega::num,
+    10  * std::mega::num,
+    100 * std::mega::num,
+    1   * std::giga::num};
+
+template<MiddlewareKind MK, typename TF>
+void init_test(
+        PerformancePublisher<MK>& publisher,
+        PerformanceSubscriber<MK>& subscriber,
+        const TF& transport_info)
+{
+    publisher. template init<TF>(transport_info);
+    subscriber. template init<TF>(transport_info);
+
+    std::cout << std::setw(sep_width) << "message_size(B)";
+    std::cout << std::setw(sep_width) << "throughput_pub(b/s)";
+    std::cout << std::setw(sep_width) << "throughput_sub(b/s)";
+    std::cout << std::setw(sep_width) << "latency(us)";
+    std::cout << std::setw(sep_width) << "jitter(us)";
+    std::cout << std::endl;
+}
+
 template<MiddlewareKind MK, size_t S, typename D>
 void launch_test(
         PerformancePublisher<MK>& publisher,
@@ -65,41 +92,70 @@ for_each_launch_test(
     for_each_launch_test<MK, R...>(publisher, subscriber, duration, throughput);
 }
 
-int main()
+template<MiddlewareKind MK, typename TF, typename D>
+void run_test_middleware(
+        const TF& transport_info,
+        D duration)
 {
-    constexpr MiddlewareKind clients_middleware_kind = MiddlewareKind::CED;
+    PerformancePublisher<MK> publisher;
+    PerformanceSubscriber<MK> subscriber;
 
-    UDPTransportInfo transport_info;
-    transport_info.ip = "127.0.0.1";
-    transport_info.port = 2000;
-
-    PerformancePublisher<clients_middleware_kind> publisher;
-    publisher.init<UDPTransportInfo>(transport_info);
-
-    PerformanceSubscriber<clients_middleware_kind> subscriber;
-    subscriber.init<UDPTransportInfo>(transport_info);
-
-    uint64_t throughput[] = {
-        100,
-        1   * std::kilo::num,
-        10  * std::kilo::num,
-        100 * std::kilo::num,
-        1   * std::mega::num,
-        10  * std::mega::num,
-        100 * std::mega::num,
-        1   * std::giga::num};
-
-    std::cout << std::setw(sep_width) << "message_size(B)";
-    std::cout << std::setw(sep_width) << "throughput_pub(b/s)";
-    std::cout << std::setw(sep_width) << "throughput_sub(b/s)";
-    std::cout << std::setw(sep_width) << "latency(us)";
-    std::cout << std::setw(sep_width) << "jitter(us)";
-    std::cout << std::endl;
+    init_test<MK>(publisher, subscriber, transport_info);
 
     for (auto t : throughput)
     {
-        for_each_launch_test<clients_middleware_kind, 2<<3, 2<<4, 2<<5, 2<<6, 2<<7, 2<<8, 2<<9, 2<<10, 2<<11, 2<<12, 2<<13, 2<<14, 63000>
-            (publisher, subscriber, std::chrono::seconds(1), t);
+        for_each_launch_test<MK, 2<<3, 2<<4, 2<<5, 2<<6, 2<<7, 2<<8, 2<<9, 2<<10, 2<<11, 2<<12, 2<<13, 2<<14, 63000>
+            (publisher, subscriber, std::chrono::seconds(duration), t);
+    }
+}
+
+template<typename TF, typename D>
+void run_test(
+        MiddlewareKind mk,
+        const TF& transport_info,
+        D duration)
+{
+    switch (mk)
+    {
+        case MiddlewareKind::FAST:
+        {
+            run_test_middleware<MiddlewareKind::FAST>(transport_info, duration);
+            break;
+        }
+        case MiddlewareKind::CED:
+        {
+            run_test_middleware<MiddlewareKind::CED>(transport_info, duration);
+            break;
+        }
+    }
+}
+
+int main()
+{
+    MiddlewareKind mk = MiddlewareKind::FAST;
+    TransportKind transport_kind = TransportKind::tcp;
+    std::chrono::seconds duration{1};
+
+    switch (transport_kind)
+    {
+        case TransportKind::udp:
+        {
+            UDPTransportInfo transport_info;
+            transport_info.ip = "127.0.0.1";
+            transport_info.port = 2000;
+            run_test(mk, transport_info, duration);
+            break;
+        }
+        case TransportKind::tcp:
+        {
+            TCPTransportInfo transport_info;
+            transport_info.ip = "127.0.0.1";
+            transport_info.port = 2000;
+            run_test(mk, transport_info, duration);
+            break;
+        }
+        default:
+            break;
     }
 
     return 0;
