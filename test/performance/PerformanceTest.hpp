@@ -7,6 +7,8 @@
 #include <iostream>
 #include <iomanip>
 
+static std::streambuf* default_buf = std::cout.rdbuf();
+
 constexpr size_t sep_width = 30;
 
 constexpr uint64_t throughput[] = {
@@ -48,6 +50,11 @@ void launch_test(
     {
         return;
     }
+
+    std::streambuf* backup_buf = std::cout.rdbuf();
+    std::cout.rdbuf(default_buf);
+    std::cout << "Running test with data type size " << S << " B, and throughput " << throughput << " bit/s" << std::endl;
+    std::cout.rdbuf(backup_buf);
 
     std::thread publisher_thread(
             &PerformancePublisher<MK>:: template publish<S, D>,

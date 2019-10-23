@@ -47,6 +47,27 @@ protected:
 };
 
 /*************************************************************************************************
+ * OutputDir CLI Option
+ *************************************************************************************************/
+class OutputDir
+{
+public:
+    OutputDir(CLI::App& subcommand)
+        : path_{"./"}
+        , cli_opt_{subcommand.add_option("-o,--output-dir", path_, "Output directory path", true)}
+    {
+        cli_opt_->check(CLI::ExistingPath);
+    }
+
+    bool is_enable() const { return bool(*cli_opt_); }
+    const std::string& get_path() const { return path_; }
+
+protected:
+    std::string path_;
+    CLI::Option* cli_opt_;
+};
+
+/*************************************************************************************************
  * Common CLI Opts
  *************************************************************************************************/
 class CommonOpts
@@ -54,9 +75,11 @@ class CommonOpts
 public:
     CommonOpts(CLI::App& subcommand)
         : middleware_opt_{subcommand}
+        , outputdir_opt_{subcommand}
     {}
 
     MiddlewareOpt middleware_opt_;
+    OutputDir outputdir_opt_;
 };
 
 /*************************************************************************************************
@@ -81,6 +104,9 @@ public:
 private:
     void test_callback()
     {
+        std::ofstream out(opts_ref_.outputdir_opt_.get_path() + "/out.txt");
+        std::cout.rdbuf(out.rdbuf());
+
         launch_test();
     }
 
