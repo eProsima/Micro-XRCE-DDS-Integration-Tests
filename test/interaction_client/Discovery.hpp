@@ -27,7 +27,10 @@ public:
         std::vector<uxrAgentAddress> agent_list;
         for(uint16_t it : discovery_ports)
         {
-            agent_list.emplace_back(uxrAgentAddress{ip_.c_str(), it});
+            uxrAgentAddress address;
+            strcpy(address.ip, ip_.c_str());
+            address.port = it;
+            agent_list.emplace_back(address);
         }
 
         uxr_discovery_agents(1, 5000, on_agent_found, this, agent_list.data(), agent_list.size());
