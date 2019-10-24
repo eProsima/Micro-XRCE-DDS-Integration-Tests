@@ -68,6 +68,24 @@ protected:
 };
 
 /*************************************************************************************************
+ * ExperimentTime CLI Option
+ *************************************************************************************************/
+class ExperimentTime
+{
+public:
+    ExperimentTime(CLI::App& subcommand)
+        : time_{10}
+        , cli_opt_{subcommand.add_option("-t,--time", time_, "Experiment time in seconds", true)}
+    {}
+
+    uint16_t get_time() const { return time_; }
+
+protected:
+    uint16_t time_;
+    CLI::Option* cli_opt_;
+};
+
+/*************************************************************************************************
  * Common CLI Opts
  *************************************************************************************************/
 class CommonOpts
@@ -76,10 +94,12 @@ public:
     CommonOpts(CLI::App& subcommand)
         : middleware_opt_{subcommand}
         , outputdir_opt_{subcommand}
+        , experiment_time_{subcommand}
     {}
 
     MiddlewareOpt middleware_opt_;
     OutputDir outputdir_opt_;
+    ExperimentTime experiment_time_;
 };
 
 /*************************************************************************************************
@@ -107,10 +127,14 @@ private:
         std::ofstream out(opts_ref_.outputdir_opt_.get_path() + "/out.txt");
         std::cout.rdbuf(out.rdbuf());
 
-        launch_test();
+        launch_test(
+                std::chrono::seconds{opts_ref_.experiment_time_.get_time()});
+
+        std::cout.rdbuf(default_buf);
     }
 
-    virtual bool launch_test() = 0;
+    virtual void launch_test(
+            std::chrono::seconds duration) = 0;
 
 protected:
     CLI::App* cli_subcommand_;
@@ -137,7 +161,8 @@ public:
     ~UDPSubcommand() = default;
 
 private:
-    bool launch_test() final
+    void launch_test(
+            std::chrono::seconds duration) final
     {
         UDPTransportInfo transport_info;
         transport_info.ip = ip_.c_str();
@@ -147,12 +172,12 @@ private:
         {
             case MiddlewareKind::FAST:
             {
-                run_test_middleware<MiddlewareKind::FAST>(transport_info, std::chrono::seconds(1));
+                run_test_middleware<MiddlewareKind::FAST>(transport_info, duration);
                 break;
             }
             case MiddlewareKind::CED:
             {
-                run_test_middleware<MiddlewareKind::CED>(transport_info, std::chrono::seconds(1));
+                run_test_middleware<MiddlewareKind::CED>(transport_info, duration);
                 break;
             }
         }
@@ -185,7 +210,8 @@ public:
     ~TCPSubcommand() = default;
 
 private:
-    bool launch_test() final
+    void launch_test(
+            std::chrono::seconds duration) final
     {
         TCPTransportInfo transport_info;
         transport_info.ip = ip_.c_str();
@@ -195,12 +221,12 @@ private:
         {
             case MiddlewareKind::FAST:
             {
-                run_test_middleware<MiddlewareKind::FAST>(transport_info, std::chrono::seconds(1));
+                run_test_middleware<MiddlewareKind::FAST>(transport_info, duration);
                 break;
             }
             case MiddlewareKind::CED:
             {
-                run_test_middleware<MiddlewareKind::CED>(transport_info, std::chrono::seconds(1));
+                run_test_middleware<MiddlewareKind::CED>(transport_info, duration);
                 break;
             }
         }
