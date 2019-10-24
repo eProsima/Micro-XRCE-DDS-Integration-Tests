@@ -105,11 +105,11 @@ TEST_P(PublisherSubscriberInteraction, PubSub10TopicsReliable)
 }
 
 // TODO (#4423) Fix the non-reliable behavior when messages is higher than the agent history to enable this
-/*TEST_P(PublisherSubscriberInteraction, PubSub30TopicsReliable)
+TEST_P(PublisherSubscriberInteraction, PubSub30TopicsReliable)
 {
     check_messages(SMALL_MESSAGE, 30, 0x80);
 }
-*/
+
 
 TEST_P(PublisherSubscriberInteraction, PubSub1FragmentedTopic2Parts)
 {
