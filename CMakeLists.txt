@@ -16,24 +16,32 @@ cmake_minimum_required(VERSION 3.5)
 
 cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
 
-set(CLIENT_BRANCH "develop" CACHE STRING "uClient's branch to be tested.")
-set(AGENT_BRANCH "develop" CACHE STRING "uAgent's branch to be tested.")
+#set(CLIENT_BRANCH "develop" CACHE STRING "uClient's branch to be tested.")
+#set(AGENT_BRANCH "develop" CACHE STRING "uAgent's branch to be tested.")
+#
+#option(UTEST_SUPERBUILD "Active super build" ON)
+#
+#if(UTEST_SUPERBUILD)
+#    project(utest_superbuild NONE)
+#    include(cmake/SuperBuild.cmake)
+#    return()
+#else()
+#    project(microxrcedds_itest LANGUAGES C CXX)
+#endif()
+#
+#find_package(microcdr REQUIRED PATHS "${CMAKE_PREFIX_PATH}" "${CLIENT_INSTALL_DIR}")
+#find_package(microxrcedds_client REQUIRED PATHS "${CLIENT_INSTALL_DIR}")
+#
+#find_package(fastcdr REQUIRED PATHS "${CMAKE_PREFIX_PATH}" "${AGENT_INSTALL_DIR}")
+#find_package(microxrcedds_agent REQUIRED PATHS "${AGENT_INSTALL_DIR}")
 
-option(UTEST_SUPERBUILD "Active super build" ON)
+project(microxrcedds_itests LANGUAGES C CXX)
 
-if(UTEST_SUPERBUILD)
-    project(utest_superbuild NONE)
-    include(cmake/SuperBuild.cmake)
-    return()
-else()
-    project(microxrcedds_itest LANGUAGES C CXX)
-endif()
+find_package(microcdr REQUIRED)
+find_package(microxrcedds_client REQUIRED)
 
-find_package(microcdr REQUIRED PATHS "${CMAKE_PREFIX_PATH}" "${CLIENT_INSTALL_DIR}")
-find_package(microxrcedds_client REQUIRED PATHS "${CLIENT_INSTALL_DIR}")
-
-find_package(fastcdr REQUIRED PATHS "${CMAKE_PREFIX_PATH}" "${AGENT_INSTALL_DIR}")
-find_package(microxrcedds_agent REQUIRED PATHS "${AGENT_INSTALL_DIR}")
+find_package(fastcdr REQUIRED)
+find_package(microxrcedds_agent REQUIRED)
 
 ###############################################################################
 # Testing
