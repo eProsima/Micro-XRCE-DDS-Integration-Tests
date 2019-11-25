@@ -26,7 +26,7 @@ add_gtest(cross_serialization_test
     SOURCES
         ${SRCS}
     ENVIRONMENTS
-        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${CMAKE_PREFIX_PATH}/lib>
     )
 target_include_directories(cross_serialization_test
     PRIVATE
