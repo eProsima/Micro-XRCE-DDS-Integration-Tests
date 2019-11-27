@@ -227,6 +227,9 @@ public:
 
     void close_transport(int transport)
     {
+        // Flash incomming messages.
+        uxr_run_session_time(&session_, 1000);
+
         bool deleted = uxr_delete_session(&session_);
 
         if(0.0f == gateway_.get_lost_value()) //because the agent only send one status to a delete in stream 0.
