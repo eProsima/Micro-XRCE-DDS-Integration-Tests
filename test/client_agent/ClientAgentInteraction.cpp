@@ -50,6 +50,7 @@ public:
                 break;
         }
         agent_->run();
+        agent_->set_verbose_level(6);
     }
 
 protected:

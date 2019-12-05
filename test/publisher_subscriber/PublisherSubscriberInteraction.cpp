@@ -54,6 +54,7 @@ public:
                 break;
         }
         agent_->run();
+        agent_->set_verbose_level(6);
     }
 
     void check_messages(std::string message, size_t number, uint8_t stream_id_raw)

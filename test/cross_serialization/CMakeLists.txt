@@ -26,12 +26,14 @@ add_gtest(cross_serialization_test
     SOURCES
         ${SRCS}
     ENVIRONMENTS
-        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${CMAKE_PREFIX_PATH}/lib>
     )
+
 target_include_directories(cross_serialization_test
     PRIVATE
-        ${CLIENT_SOURCE_DIR}/src/c
+        ${UCLIENT_SOURCE_DIR}/src/c
     )
+
 target_link_libraries(cross_serialization_test
     PRIVATE
         microxrcedds_client
@@ -41,8 +43,10 @@ target_link_libraries(cross_serialization_test
         ${GTEST_BOTH_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
     )
-set_target_properties(cross_serialization_test
-    PROPERTIES
-        CXX_STANDARD 11
-        CXX_STANDARD_REQUIRED YES
+
+set_target_properties(cross_serialization_test PROPERTIES
+    CXX_STANDARD
+        11
+    CXX_STANDARD_REQUIRED
+        YES
     )
