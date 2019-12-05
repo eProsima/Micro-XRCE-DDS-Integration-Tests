@@ -25,8 +25,8 @@ add_gtest(discovery-test
     SOURCES
         DiscoveryIntegration.cpp
     ENVIRONMENTS
-        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
-        $<$<PLATFORM_ID:Windows>:PATH=${AGENT_INSTALL_DIR}/bin;${CLIENT_INSTALL_DIR}/bin;${CMAKE_BINARY_DIR}>
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${CMAKE_PREFIX_PATH}/lib>
+        $<$<PLATFORM_ID:Windows>:PATH=${CMAKE_PREFIX_PATH}/bin>
     )
 
 target_include_directories(discovery-test
