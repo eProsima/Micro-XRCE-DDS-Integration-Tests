@@ -29,8 +29,8 @@ add_gtest(shapes_demo_test
     SOURCES
         ${SRCS}
     ENVIRONMENTS
-        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${AGENT_INSTALL_DIR}/lib;${CLIENT_INSTALL_DIR}/lib>
-        $<$<PLATFORM_ID:Windows>:PATH=${AGENT_INSTALL_DIR}/bin;${CLIENT_INSTALL_DIR}/bin;${CMAKE_BINARY_DIR}>
+        $<$<PLATFORM_ID:Linux>:LD_LIBRARY_PATH=${CMAKE_PREFIX_PATH}/lib>
+        $<$<PLATFORM_ID:Windows>:PATH=${CMAKE_PREFIX_PATH}/bin>
     )
 
 target_include_directories(shapes_demo_test
@@ -60,7 +60,7 @@ set_target_properties(shapes_demo_test PROPERTIES
     )
 
 string(REPLACE " " "' '" UTEST_SHAPESDEMO_DIR "${CLIENT_INSTALL_DIR}/examples/uxr/client/ShapeDemoClient/bin/ShapeDemoClient")
-file(TO_CMAKE_PATH "${AGENT_SOURCE_DIR}/agent.refs" UTEST_SHAPESDEMO_REFS)
+file(TO_CMAKE_PATH "${UAGENT_SOURCE_DIR}/agent.refs" UTEST_SHAPESDEMO_REFS)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in
     ${PROJECT_BINARY_DIR}/include/shapesdemo/config.hpp

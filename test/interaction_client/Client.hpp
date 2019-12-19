@@ -146,6 +146,7 @@ public:
     void publish(uint8_t id, uint8_t stream_id_raw, size_t number, const std::string& message)
     {
         //Used only for waiting the RTPS subscriber matching
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         (void) uxr_run_session_time(&session_, 500);
 
         uxrStreamId output_stream_id = uxr_stream_id_from_raw(stream_id_raw, UXR_OUTPUT_STREAM);
@@ -172,6 +173,9 @@ public:
 
     void subscribe(uint8_t id, uint8_t stream_id_raw, size_t number, const std::string& message)
     {
+        //Used only for waiting the RTPS publisher matching
+        std::this_thread::sleep_for(std::chrono::milliseconds(2600));
+
         expected_message_ = message;
         expected_topic_index_ = 0;
         last_topic_stream_id_ = uxr_stream_id_from_raw(0, UXR_OUTPUT_STREAM);
@@ -223,6 +227,9 @@ public:
 
     void close_transport(int transport)
     {
+        // Flash incomming messages.
+        uxr_run_session_time(&session_, 1000);
+
         bool deleted = uxr_delete_session(&session_);
 
         if(0.0f == gateway_.get_lost_value()) //because the agent only send one status to a delete in stream 0.
