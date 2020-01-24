@@ -4,6 +4,7 @@
 #include "BigHelloWorld.h"
 #include "Gateway.hpp"
 #include <EntitiesInfo.hpp>
+#include <TransportInfo.hpp>
 
 #include <uxr/client/client.h>
 #include <ucdr/microcdr.h>
@@ -15,27 +16,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #endif
-
-#define UDP_TRANSPORT 1
-#define TCP_TRANSPORT 2
-#define SERIAL_TRANSPORT 3
-
-struct IPTransportInfo
-{
-    const char* ip;
-    uint16_t port;
-};
-
-struct UDPTransportInfo : public IPTransportInfo {};
-
-struct TCPTransportInfo : public IPTransportInfo {};
-
-struct SerialTransportInfo
-{
-    const char* dev;
-    uint8_t remote_addr;
-    uint8_t local_addr;
-};
 
 inline bool operator == (const uxrObjectId& obj1, const uxrObjectId& obj2)
 {
@@ -248,9 +228,11 @@ public:
     }
 
     template<typename T>
-    void init_transport(const T& transport_info);
+    void init_transport(
+            const T& transport_info);
 
-    void close_transport(int transport)
+    void close_transport(
+            TransportKind transport_kind)
     {
         // Flash incomming messages.
         uxr_run_session_time(&session_, 1000);
@@ -263,14 +245,21 @@ public:
             EXPECT_EQ(UXR_STATUS_OK, session_.info.last_requested_status);
         }
 
-        switch(transport)
+        switch(transport_kind)
         {
-            case UDP_TRANSPORT:
+            case TransportKind::none:
+                exit(EXIT_FAILURE);
+            case TransportKind::udp:
                 ASSERT_TRUE(uxr_close_udp_transport(&udp_transport_));
                 break;
-            case TCP_TRANSPORT:
+            case TransportKind::tcp:
                 ASSERT_TRUE(uxr_close_tcp_transport(&tcp_transport_));
                 break;
+#ifndef _WIN32
+            case TransportKind::serial:
+                ASSERT_TRUE(uxr_close_serial_transport(&serial_transport_));
+                break;
+#endif // _WIN32
         }
     }
 
@@ -352,12 +341,6 @@ private:
     }
 
     static uint32_t next_client_key_;
-    static const char* participant_xml_;
-    static const char* topic_xml_;
-    static const char* publisher_xml_;
-    static const char* subscriber_xml_;
-    static const char* datawriter_xml_;
-    static const char* datareader_xml_;
 
     Gateway gateway_;
 

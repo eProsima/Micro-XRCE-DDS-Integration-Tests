@@ -12,53 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include(${PROJECT_SOURCE_DIR}/cmake/common/check_configuration.cmake)
-
-cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
+set(_test_name performance-test)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../common/EntitiesInfo.hpp.in
     ${CMAKE_CURRENT_BINARY_DIR}/EntitiesInfo.hpp
     @ONLY
     )
 
-set(SRCS
-    Gateway.cpp
-    BigHelloWorld.c
-    Discovery.cpp
+find_package(CLI11 REQUIRED PATHS ${AGENT_INSTALL_DIR})
+
+add_executable(${_test_name} performance-test.cpp)
+
+target_link_libraries(${_test_name}
+    PRIVATE
+        microxrcedds_client
+        CLI11::CLI11
+        ${CMAKE_THREAD_LIBS_INIT}
     )
 
-add_library(interaction_client STATIC ${SRCS})
-
-set_common_compile_options(interaction_client)
-
-if(MSVC OR MSVC_IDE)
-    target_compile_options(interaction_client
-        PRIVATE
-            /wd4996
-        PUBLIC
-            -D_CRT_SECURE_NO_WARNINGS
-        )
-endif()
-
-target_include_directories(interaction_client
+target_include_directories(${_test_name}
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/../common
         ${CMAKE_CURRENT_BINARY_DIR}
-    PRIVATE
-        ${GTEST_INCLUDE_DIRS}
     )
 
-target_link_libraries(interaction_client
-    PUBLIC
-        microxrcedds_client
-    PRIVATE
-        ${GTEST_BOTH_LIBRARIES}
-    )
-
-set_target_properties(interaction_client PROPERTIES
+set_target_properties(${_test_name} PROPERTIES
     CXX_STANDARD
         11
-    CXX_STANDARD_REQUIRED
+    CXX_STANDARD_REQUIRES
         YES
     )
