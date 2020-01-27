@@ -11,16 +11,15 @@
 
 #include <thread>
 
-class DiscoveryIntegration : public ::testing::TestWithParam<int>
+class DiscoveryIntegration : public ::testing::TestWithParam<TransportKind>
 {
 public:
     const uint16_t AGENT_PORT = 2018;
     const uint16_t DISCOVERY_PORT = eprosima::uxr::DISCOVERY_PORT;
 
     DiscoveryIntegration()
-    : transport_(GetParam())
-    {
-    }
+        : transport_(GetParam())
+    {}
 
     ~DiscoveryIntegration()
     {
@@ -49,12 +48,16 @@ public:
         std::unique_ptr<eprosima::uxr::Server> agent;
         switch(transport_)
         {
-            case UDP_TRANSPORT:
+            case TransportKind::none:
+                return;
+            case TransportKind::udp:
                 agent.reset(new eprosima::uxr::UDPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
-            case TCP_TRANSPORT:
+            case TransportKind::tcp:
                 agent.reset(new eprosima::uxr::TCPv4Agent(port, eprosima::uxr::Middleware::Kind::FAST));
                 break;
+            case TransportKind::serial:
+                return;
         }
         agent->run();
         agent->enable_discovery(discovery_port);
@@ -62,14 +65,14 @@ public:
     }
 
 protected:
-    int transport_;
+    TransportKind transport_;
     std::unique_ptr<Discovery> discovery_;
 
 private:
     std::vector<std::unique_ptr<eprosima::uxr::Server>> agents_;
 };
 
-INSTANTIATE_TEST_CASE_P(Transport, DiscoveryIntegration, ::testing::Values(TCP_TRANSPORT, UDP_TRANSPORT), ::testing::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(Transport, DiscoveryIntegration, ::testing::Values(TransportKind::tcp, TransportKind::udp), ::testing::PrintToStringParamName());
 
 TEST_P(DiscoveryIntegration, DiscoveryUnicast)
 {
