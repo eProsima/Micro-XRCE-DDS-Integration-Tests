@@ -1,4 +1,4 @@
-# Copyright 2019 Proyectos y Sistemas de Mantenimiento SL (eProsima).
+# Copyright 2017-present Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set(_test_name itest-discovery)
+
 cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DEFAULT_FASTRTPS_PROFILES.xml.in
@@ -19,9 +21,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DEFAULT_FASTRTPS_PROFILES.xml.in
     @ONLY
     )
 
-add_executable(discovery-test DiscoveryIntegration.cpp)
+add_executable(${_test_name} DiscoveryIntegration.cpp)
 
-add_gtest(discovery-test
+add_gtest(${_test_name}
     SOURCES
         DiscoveryIntegration.cpp
     ENVIRONMENTS
@@ -29,12 +31,12 @@ add_gtest(discovery-test
         $<$<PLATFORM_ID:Windows>:PATH=${CMAKE_PREFIX_PATH}/bin>
     )
 
-target_include_directories(discovery-test
+target_include_directories(${_test_name}
     PRIVATE
         ${GTEST_INCLUDE_DIR}
     )
 
-target_link_libraries(discovery-test
+target_link_libraries(${_test_name}
     PRIVATE
         interaction_client
         microxrcedds_agent
@@ -42,7 +44,7 @@ target_link_libraries(discovery-test
         ${CMAKE_THREAD_LIBS_INIT}
     )
 
-set_target_properties(discovery-test PROPERTIES
+set_target_properties(${_test_name} PROPERTIES
     CXX_STANDARD
         11
     CXX_STANDARD_REQUIRED

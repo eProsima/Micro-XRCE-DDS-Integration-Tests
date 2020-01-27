@@ -3,6 +3,8 @@
 
 #include "BigHelloWorld.h"
 #include "Gateway.hpp"
+#include <EntitiesInfo.hpp>
+#include <TransportInfo.hpp>
 
 #include <uxr/client/client.h>
 #include <ucdr/microcdr.h>
@@ -10,9 +12,10 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <thread>
-
-#define UDP_TRANSPORT 1
-#define TCP_TRANSPORT 2
+#ifndef _WIN32
+#include <stdio.h>
+#include <fcntl.h>
+#endif
 
 inline bool operator == (const uxrObjectId& obj1, const uxrObjectId& obj2)
 {
@@ -41,55 +44,68 @@ public:
     virtual ~Client()
     {}
 
+    template<MiddlewareKind Kind>
     void create_entities_xml(uint8_t id, uint8_t stream_id_raw, uint8_t expected_status, uint8_t flags)
     {
+        using EInfo = EntitiesInfo<Kind>;
+
         uxrStreamId output_stream_id = uxr_stream_id_from_raw(stream_id_raw, UXR_OUTPUT_STREAM);
         uint16_t request_id; uint8_t status;
 
         uxrObjectId participant_id = uxr_object_id(id, UXR_PARTICIPANT_ID);
-        request_id = uxr_buffer_create_participant_xml(&session_, output_stream_id, participant_id, 0, participant_xml_, flags);
+        request_id = uxr_buffer_create_participant_xml(
+            &session_, output_stream_id, participant_id, 0, EInfo::participant_xml, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
 
         uxrObjectId topic_id = uxr_object_id(id, UXR_TOPIC_ID);
-        request_id = uxr_buffer_create_topic_xml(&session_, output_stream_id, topic_id, participant_id, topic_xml_, flags);
+        request_id = uxr_buffer_create_topic_xml(
+            &session_, output_stream_id, topic_id, participant_id, EInfo::topic_xml, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
 
         uxrObjectId publisher_id = uxr_object_id(id, UXR_PUBLISHER_ID);
-        request_id = uxr_buffer_create_publisher_xml(&session_, output_stream_id, publisher_id, participant_id, publisher_xml_, flags);
+        request_id = uxr_buffer_create_publisher_xml(
+            &session_, output_stream_id, publisher_id, participant_id, EInfo::publisher_xml, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
 
         uxrObjectId datawriter_id = uxr_object_id(id, UXR_DATAWRITER_ID);
-        request_id = uxr_buffer_create_datawriter_xml(&session_, output_stream_id, datawriter_id, publisher_id, datawriter_xml_, flags);
+        request_id = uxr_buffer_create_datawriter_xml(
+            &session_, output_stream_id, datawriter_id, publisher_id, EInfo::datawriter_xml, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
 
         uxrObjectId subscriber_id = uxr_object_id(id, UXR_SUBSCRIBER_ID);
-        request_id = uxr_buffer_create_subscriber_xml(&session_, output_stream_id, subscriber_id, participant_id, subscriber_xml_, flags);
+        request_id = uxr_buffer_create_subscriber_xml(
+            &session_, output_stream_id, subscriber_id, participant_id, EInfo::subscriber_xml, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
 
         uxrObjectId datareader_id = uxr_object_id(id, UXR_DATAREADER_ID);
-        request_id = uxr_buffer_create_datareader_xml(&session_, output_stream_id, datareader_id, subscriber_id, datareader_xml_, flags);
+        request_id = uxr_buffer_create_datareader_xml(
+            &session_, output_stream_id, datareader_id, subscriber_id, EInfo::datareader_xml, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
     }
 
+    template<MiddlewareKind Kind>
     void create_entities_ref(uint8_t id, uint8_t stream_id_raw, uint8_t expected_status, uint8_t flags)
     {
+        using EInfo = EntitiesInfo<Kind>;
+
         uxrStreamId output_stream_id = uxr_stream_id_from_raw(stream_id_raw, UXR_OUTPUT_STREAM);
         uint16_t request_id; uint8_t status;
 
         uxrObjectId participant_id = uxr_object_id(id, UXR_PARTICIPANT_ID);
-        request_id = uxr_buffer_create_participant_ref(&session_, output_stream_id, participant_id, 0, "default_xrce_participant", flags);
+        request_id = uxr_buffer_create_participant_ref(
+            &session_, output_stream_id, participant_id, 0, EInfo::participant_ref, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
@@ -98,7 +114,8 @@ public:
         ASSERT_EQ(request_id, last_status_request_id_);
 
         uxrObjectId topic_id = uxr_object_id(id, UXR_TOPIC_ID);
-        request_id = uxr_buffer_create_topic_ref(&session_, output_stream_id, topic_id, participant_id, "bighelloworld_topic", flags);
+        request_id = uxr_buffer_create_topic_ref(
+            &session_, output_stream_id, topic_id, participant_id, EInfo::topic_ref, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
@@ -107,7 +124,8 @@ public:
         ASSERT_EQ(request_id, last_status_request_id_);
 
         uxrObjectId publisher_id = uxr_object_id(id, UXR_PUBLISHER_ID);
-        request_id = uxr_buffer_create_publisher_xml(&session_, output_stream_id, publisher_id, participant_id, "", flags);
+        request_id = uxr_buffer_create_publisher_xml(
+            &session_, output_stream_id, publisher_id, participant_id, EInfo::publisher_ref, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
@@ -116,7 +134,8 @@ public:
         ASSERT_EQ(request_id, last_status_request_id_);
 
         uxrObjectId datawriter_id = uxr_object_id(id, UXR_DATAWRITER_ID);
-        request_id = uxr_buffer_create_datawriter_ref(&session_, output_stream_id, datawriter_id, publisher_id, "bighelloworld_data_writer", flags);
+        request_id = uxr_buffer_create_datawriter_ref(
+            &session_, output_stream_id, datawriter_id, publisher_id, EInfo::datawriter_ref, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
@@ -125,7 +144,8 @@ public:
         ASSERT_EQ(request_id, last_status_request_id_);
 
         uxrObjectId subscriber_id = uxr_object_id(id, UXR_SUBSCRIBER_ID);
-        request_id = uxr_buffer_create_subscriber_xml(&session_, output_stream_id, subscriber_id, participant_id, "", flags);
+        request_id = uxr_buffer_create_subscriber_xml(
+            &session_, output_stream_id, subscriber_id, participant_id, EInfo::subscriber_ref, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
@@ -134,7 +154,8 @@ public:
         ASSERT_EQ(request_id, last_status_request_id_);
 
         uxrObjectId datareader_id = uxr_object_id(id, UXR_DATAREADER_ID);
-        request_id = uxr_buffer_create_datareader_ref(&session_, output_stream_id, datareader_id, subscriber_id, "bighelloworld_data_reader", flags);
+        request_id = uxr_buffer_create_datareader_ref(
+            &session_, output_stream_id, datareader_id, subscriber_id, EInfo::datareader_ref, flags);
         ASSERT_NE(UXR_INVALID_REQUEST_ID, request_id);
         uxr_run_session_until_all_status(&session_, 3000, &request_id, &status, 1);
         ASSERT_EQ(expected_status, status);
@@ -206,26 +227,12 @@ public:
         }
     }
 
-    void init_transport(int transport, const char* ip, uint16_t port)
-    {
-        switch(transport)
-        {
-            case UDP_TRANSPORT:
-                mtu_ = UXR_CONFIG_UDP_TRANSPORT_MTU;
-                ASSERT_TRUE(uxr_init_udp_transport(&udp_transport_, &udp_platform_, ip, port));
-                uxr_init_session(&session_, gateway_.monitorize(&udp_transport_.comm), client_key_);
-                break;
-            case TCP_TRANSPORT:
-                mtu_ = UXR_CONFIG_TCP_TRANSPORT_MTU;
-                ASSERT_TRUE(uxr_init_tcp_transport(&tcp_transport_, &tcp_platform_, ip, port));
-                uxr_init_session(&session_, gateway_.monitorize(&tcp_transport_.comm), client_key_);
-                break;
-        }
+    template<typename T>
+    void init_transport(
+            const T& transport_info);
 
-        init_common();
-    }
-
-    void close_transport(int transport)
+    void close_transport(
+            TransportKind transport_kind)
     {
         // Flash incomming messages.
         uxr_run_session_time(&session_, 1000);
@@ -238,14 +245,21 @@ public:
             EXPECT_EQ(UXR_STATUS_OK, session_.info.last_requested_status);
         }
 
-        switch(transport)
+        switch(transport_kind)
         {
-            case UDP_TRANSPORT:
+            case TransportKind::none:
+                exit(EXIT_FAILURE);
+            case TransportKind::udp:
                 ASSERT_TRUE(uxr_close_udp_transport(&udp_transport_));
                 break;
-            case TCP_TRANSPORT:
+            case TransportKind::tcp:
                 ASSERT_TRUE(uxr_close_tcp_transport(&tcp_transport_));
                 break;
+#ifndef _WIN32
+            case TransportKind::serial:
+                ASSERT_TRUE(uxr_close_serial_transport(&serial_transport_));
+                break;
+#endif // _WIN32
         }
     }
 
@@ -327,12 +341,6 @@ private:
     }
 
     static uint32_t next_client_key_;
-    static const char* participant_xml_;
-    static const char* topic_xml_;
-    static const char* publisher_xml_;
-    static const char* subscriber_xml_;
-    static const char* datawriter_xml_;
-    static const char* datareader_xml_;
 
     Gateway gateway_;
 
@@ -343,6 +351,8 @@ private:
     uxrUDPPlatform udp_platform_;
     uxrTCPTransport tcp_transport_;
     uxrTCPPlatform tcp_platform_;
+    uxrSerialTransport serial_transport_;
+    uxrSerialPlatform serial_platform_;
 
     size_t mtu_;
     uxrSession session_;
@@ -363,5 +373,36 @@ private:
     size_t expected_topic_index_;
 };
 
+template<>
+inline void Client::init_transport<UDPTransportInfo>(const UDPTransportInfo& transport_info)
+{
+    mtu_ = UXR_CONFIG_UDP_TRANSPORT_MTU;
+    ASSERT_TRUE(uxr_init_udp_transport(&udp_transport_, &udp_platform_, transport_info.ip, transport_info.port));
+    uxr_init_session(&session_, gateway_.monitorize(&udp_transport_.comm), client_key_);
+    init_common();
+}
+
+template<>
+inline void Client::init_transport<TCPTransportInfo>(const TCPTransportInfo& transport_info)
+{
+    mtu_ = UXR_CONFIG_TCP_TRANSPORT_MTU;
+    ASSERT_TRUE(uxr_init_tcp_transport(&tcp_transport_, &tcp_platform_, transport_info.ip, transport_info.port));
+    uxr_init_session(&session_, gateway_.monitorize(&tcp_transport_.comm), client_key_);
+    init_common();
+}
+
+#ifndef _WIN32
+template<>
+inline void Client::init_transport<SerialTransportInfo>(const SerialTransportInfo& transport_info)
+{
+    mtu_ = UXR_CONFIG_SERIAL_TRANSPORT_MTU;
+    int fd = open(transport_info.dev, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    ASSERT_TRUE(uxr_init_serial_transport(&serial_transport_, &serial_platform_, fd, transport_info.remote_addr, transport_info.local_addr));
+    uxr_init_session(&session_, gateway_.monitorize(&serial_transport_.comm), client_key_);
+    init_common();
+}
+#endif
+
+uint32_t Client::next_client_key_ = 0;
 
 #endif //IN_TEST_CLIENT_HPP

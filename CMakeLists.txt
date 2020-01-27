@@ -18,8 +18,8 @@ cmake_host_system_information(RESULT HOSTNAME_SUFFIX QUERY HOSTNAME)
 
 project(microxrcedds_itests LANGUAGES C CXX)
 
-set(UCLIENT_SOURCE_DIR . CACHE PATH "Client source dir.")
-set(UAGENT_SOURCE_DIR . CACHE PATH "Agent source dir.")
+option(UTEST_SUPERBUILD "Active super build." ON)
+option(UTEST_PERFORMANCE "Enable performance tests." OFF)
 
 find_package(microcdr REQUIRED)
 find_package(microxrcedds_client REQUIRED)
@@ -46,4 +46,7 @@ add_subdirectory(test/interaction_client)
 add_subdirectory(test/client_agent)
 add_subdirectory(test/publisher_subscriber)
 add_subdirectory(test/discovery)
-#add_subdirectory(test/shapes_demo) TODO (julianbermudez): fix client and agent paths.
+add_subdirectory(test/shapes_demo)
+if(UTEST_PERFORMANCE)
+    add_subdirectory(test/performance)
+endif()

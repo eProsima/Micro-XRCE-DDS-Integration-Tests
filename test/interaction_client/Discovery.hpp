@@ -15,12 +15,13 @@
 class Discovery
 {
 public:
-    Discovery(int transport, const std::vector<uint16_t>& agent_ports)
-    : ip_("127.0.0.1")
-    , agent_ports_(agent_ports)
-    , transport_(transport)
-    {
-    }
+    Discovery(
+            TransportKind transport,
+            const std::vector<uint16_t>& agent_ports)
+        : ip_("127.0.0.1")
+        , agent_ports_(agent_ports)
+        , transport_(transport)
+    {}
 
     void unicast(const std::vector<uint16_t>& discovery_ports)
     {
@@ -61,7 +62,27 @@ private:
         {
             Client client(0.0f, 1);
             std::cout << "Client connecting to " << address->port << std::endl;
-            client.init_transport(transport_, address->ip, address->port);
+            switch (transport_)
+            {
+                case TransportKind::udp:
+                {
+                    UDPTransportInfo transport_info;
+                    transport_info.ip = address->ip;
+                    transport_info.port = address->port;
+                    client.init_transport<UDPTransportInfo>(transport_info);
+                    break;
+                }
+                case TransportKind::tcp:
+                {
+                    TCPTransportInfo transport_info;
+                    transport_info.ip = address->ip;
+                    transport_info.port = address->port;
+                    client.init_transport<TCPTransportInfo>(transport_info);
+                    break;
+                }
+                default:
+                    break;
+            }
             client.close_transport(transport_);
 
             agent_ports_.erase(it);
@@ -72,7 +93,7 @@ private:
 
     std::string ip_;
     std::vector<uint16_t> agent_ports_;
-    int transport_;
+    TransportKind transport_;
 };
 
 #endif //IN_TEST_DISCOVERY_HPP
